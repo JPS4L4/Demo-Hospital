@@ -16,7 +16,7 @@ Demo de un sitio web de hospital para mostrar un stack **Python + Angular**: una
 │   ├── app/             # core (config, base de datos), models, schemas, routers
 │   ├── alembic/         # migraciones
 │   └── .env.example     # plantilla de variables de entorno
-└── frontend/            # aplicación Angular (páginas, header y footer)
+└── frontend/            # aplicación Angular (Meridiana: portada, noticias, sedes)
 ```
 
 ## Requisitos previos
@@ -74,11 +74,11 @@ La aplicación queda en <http://localhost:4200>.
 | GET | `/noticias/{id}` | Detalle de una noticia (404 si no existe) |
 | POST | `/noticias` | Crea una noticia |
 
-Por ahora el frontend tiene las páginas (inicio, citas, medicamentos, profesionales y noticias) pero todavía no consume la API.
+El frontend (inicio, noticias con detalle y sedes) consume esta API. Las páginas de citas, medicamentos y profesionales son por ahora avisos de "próximamente".
+La URL de la API se define en `frontend/src/environments/environment.ts` (por defecto `http://localhost:8000`).
 
 ## Hoja de ruta
 
-- Frontend conectado a la API
 - Profesionales, pacientes, citas y medicamentos en el backend
 - Login y reserva de citas
 - Tests y CI

@@ -1,1 +1,222 @@
-<p>home works!</p>
+<!-- Portada -->
+<section class="hero border-b border-line">
+  <div class="container-page grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+    <div>
+      <p class="eyebrow rise">Red de clínicas · Colombia</p>
+      <h1 class="rise mt-5 text-[2.5rem] sm:text-5xl lg:text-[3.5rem]" style="--delay: 60ms">
+        Tu salud, en manos que te conocen.
+      </h1>
+      <p class="lead rise mt-6" style="--delay: 120ms">
+        Medicina cercana y coordinada en cuatro ciudades: consulta con especialistas, laboratorio
+        y urgencias las 24 horas, con un equipo que sigue tu caso de principio a fin.
+      </p>
+      <div class="rise mt-8 flex flex-wrap gap-3" style="--delay: 180ms">
+        <a routerLink="/citas" class="btn btn-primary">
+          <app-icon name="calendar" [size]="18" />
+          Pedir cita
+        </a>
+        <a routerLink="/sedes" class="btn btn-secondary">Encontrar una sede</a>
+      </div>
+
+      <dl class="rise mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6" style="--delay: 240ms">
+        <div>
+          <dt class="text-sm text-muted">Sedes</dt>
+          <dd class="font-display text-3xl font-semibold">{{ totalSedes() ?? 4 }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-muted">Urgencias</dt>
+          <dd class="font-display text-3xl font-semibold">24 h</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-muted">Especialidades</dt>
+          <dd class="font-display text-3xl font-semibold">{{ especialidades.length }}+</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="hero-art rise relative" style="--delay: 140ms" aria-hidden="true">
+      <svg viewBox="0 0 400 440" class="h-full w-full" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="1.25">
+          <circle cx="200" cy="200" r="60" />
+          <circle cx="200" cy="200" r="100" />
+          <circle cx="200" cy="200" r="140" />
+          <circle cx="200" cy="200" r="180" />
+          <ellipse cx="200" cy="200" rx="60" ry="180" />
+          <ellipse cx="200" cy="200" rx="120" ry="180" />
+          <path d="M20 200h360M200 20v360" />
+        </g>
+        <path d="M178 150h44v28h28v44h-28v28h-44v-28h-28v-44h28z" fill="currentColor" />
+      </svg>
+      <div class="hero-card card absolute bottom-4 left-4 right-4 flex items-center gap-4 p-4 sm:right-auto sm:max-w-xs">
+        <span class="icon-tile"><app-icon name="phone" [size]="22" /></span>
+        <div class="text-sm leading-snug">
+          <p class="font-semibold text-ink">Línea de atención</p>
+          <p class="text-muted">+57 601 555 0100 · Urgencias 24 h</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Especialidades -->
+<section class="container-page section" aria-labelledby="titulo-especialidades">
+  <div class="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
+    <div class="lg:sticky lg:top-28 lg:self-start">
+      <p class="eyebrow">Qué hacemos</p>
+      <h2 id="titulo-especialidades" class="mt-4 text-3xl md:text-4xl">Especialidades para cada etapa de la vida</h2>
+      <p class="lead mt-4">
+        Equipos que trabajan juntos para que no tengas que repetir tu historia en cada consulta.
+      </p>
+      <a routerLink="/profesionales" class="btn btn-quiet mt-4">
+        Conocer al equipo
+        <app-icon name="arrow-right" [size]="18" />
+      </a>
+    </div>
+
+    <ul class="grid gap-x-10 sm:grid-cols-2">
+      @for (e of especialidades; track e.nombre; let i = $index) {
+        <li class="rise flex gap-4 border-t border-line py-6" [style.--delay]="i * 50 + 'ms'">
+          <span class="icon-tile"><app-icon [name]="e.icon" [size]="22" /></span>
+          <div>
+            <h3 class="text-xl">{{ e.nombre }}</h3>
+            <p class="mt-1.5 text-muted">{{ e.descripcion }}</p>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- Noticias recientes -->
+<section class="border-y border-line bg-sunken" aria-labelledby="titulo-noticias">
+  <div class="container-page section">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Noticias</p>
+        <h2 id="titulo-noticias" class="mt-4 text-3xl md:text-4xl">Novedades de la red</h2>
+      </div>
+      <a routerLink="/noticias" class="btn btn-quiet">
+        Ver todas
+        <app-icon name="arrow-right" [size]="18" />
+      </a>
+    </div>
+
+    <div class="mt-8" [attr.aria-busy]="noticias().status === 'loading'">
+      @switch (noticias().status) {
+        @case ('loading') {
+          <app-skeleton-cards [count]="3" label="Cargando noticias…" />
+        }
+        @case ('error') {
+          <app-state-message
+            kind="error"
+            icon="alert"
+            title="No pudimos cargar las noticias"
+            message="Hubo un problema al conectar con el servidor."
+            retryLabel="Reintentar"
+            (retry)="retryNoticias()"
+          />
+        }
+        @default {
+          @if (noticias(); as n) {
+            @if (n.status === 'ready') {
+              @if (n.data.length === 0) {
+                <app-state-message title="Aún no hay noticias" message="Cuando publiquemos novedades las verás aquí." />
+              } @else {
+                <ul class="grid gap-5 md:grid-cols-3">
+                  @for (noticia of n.data; track noticia.id; let i = $index) {
+                    <li class="rise" [style.--delay]="i * 60 + 'ms'">
+                      <app-news-card [noticia]="noticia" />
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          }
+        }
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Sedes -->
+<section class="container-page section" aria-labelledby="titulo-sedes">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Sedes</p>
+      <h2 id="titulo-sedes" class="mt-4 text-3xl md:text-4xl">Encuentra tu clínica más cercana</h2>
+    </div>
+    <a routerLink="/sedes" class="btn btn-quiet">
+      Ver todas las sedes
+      <app-icon name="arrow-right" [size]="18" />
+    </a>
+  </div>
+
+  <div class="mt-8" [attr.aria-busy]="sedes().status === 'loading'">
+    @switch (sedes().status) {
+      @case ('loading') {
+        <div role="status" class="grid gap-x-10 sm:grid-cols-2">
+          <span class="sr-only">Cargando sedes…</span>
+          @for (n of [1, 2, 3, 4]; track n) {
+            <div class="border-t border-line py-5" aria-hidden="true">
+              <div class="skeleton h-3 w-20"></div>
+              <div class="skeleton mt-3 h-6 w-2/3"></div>
+              <div class="skeleton mt-3 h-3 w-1/2"></div>
+            </div>
+          }
+        </div>
+      }
+      @case ('error') {
+        <app-state-message
+          kind="error"
+          icon="alert"
+          title="No pudimos cargar las sedes"
+          message="Hubo un problema al conectar con el servidor."
+          retryLabel="Reintentar"
+          (retry)="retrySedes()"
+        />
+      }
+      @default {
+        @if (sedes(); as s) {
+          @if (s.status === 'ready') {
+            @if (s.data.length === 0) {
+              <app-state-message icon="map-pin" title="Aún no hay sedes registradas" message="Pronto publicaremos aquí la lista de nuestras sedes." />
+            } @else {
+              <ul class="grid gap-x-10 sm:grid-cols-2">
+                @for (sede of s.data; track sede.id; let i = $index) {
+                  <li class="rise border-t border-line py-5" [style.--delay]="i * 50 + 'ms'">
+                    <p class="eyebrow">{{ sede.ciudad }}</p>
+                    <h3 class="mt-2 text-xl">{{ sede.nombre }}</h3>
+                    <p class="mt-1 text-muted">{{ sede.direccion }}</p>
+                    @if (sede.telefono) {
+                      <p class="mt-1 font-semibold">{{ sede.telefono }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          }
+        }
+      }
+    }
+  </div>
+</section>
+
+<!-- Llamada a la acción -->
+<section class="cta" aria-labelledby="titulo-cta">
+  <div class="container-page flex flex-col items-start justify-between gap-8 py-14 md:flex-row md:items-center md:py-16">
+    <div class="max-w-xl">
+      <h2 id="titulo-cta" class="text-3xl md:text-4xl">¿Necesitas atención? Empieza hoy.</h2>
+      <p class="mt-3 text-lg opacity-90">Pide tu cita en línea o llama a nuestra línea de atención.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a routerLink="/citas" class="btn cta-primary">
+        <app-icon name="calendar" [size]="18" />
+        Pedir cita
+      </a>
+      <a href="tel:+576015550100" class="btn cta-secondary">
+        <app-icon name="phone" [size]="18" />
+        +57 601 555 0100
+      </a>
+    </div>
+  </div>
+</section>
