@@ -6,11 +6,11 @@ from app.schemas.noticia import NoticiaOut, NoticiaBase
 
 router = APIRouter(prefix="/noticias", tags=["Noticias"])
 
-@router.get("/", response_model=list[NoticiaOut])
+@router.get("", response_model=list[NoticiaOut])
 def listar_noticias(db: Session = Depends(get_db)):
     return db.query(Noticia).all()
 
-@router.post("/", response_model=NoticiaOut, status_code=201)
+@router.post("", response_model=NoticiaOut, status_code=201)
 def crear_noticia(noticia: NoticiaBase, db: Session = Depends(get_db)):
     nueva_noticia = Noticia(**noticia.model_dump())
     db.add(nueva_noticia)

@@ -1,5 +1,5 @@
 <header class="main-header">
-    <div class="logo">Hospital</div>
+    <div class="logo font-bold tracking-wide">Hospital</div>
     <nav>
         @for (link of navLinks; track link.path) {
         <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>

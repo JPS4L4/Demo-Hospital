@@ -6,11 +6,11 @@ from app.schemas.sede import SedeOut, SedeBase
 
 router = APIRouter(prefix="/sedes", tags=["Sedes"])
 
-@router.get("/", response_model=list[SedeOut])
+@router.get("", response_model=list[SedeOut])
 def listar_sedes(db: Session = Depends(get_db)):
     return db.query(Sede).all()
 
-@router.post("/", response_model=SedeOut, status_code=201)
+@router.post("", response_model=SedeOut, status_code=201)
 def crear_sede(sede: SedeBase, db: Session = Depends(get_db)):
     nueva_sede = Sede(**sede.model_dump())
     db.add(nueva_sede)
