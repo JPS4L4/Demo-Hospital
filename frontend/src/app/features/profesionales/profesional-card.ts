@@ -68,7 +68,7 @@ import { Profesional, iniciales, nombreCompleto } from './profesional.model';
       }
     }
   `,
-  host: { class: 'block' },
+  host: { class: 'block h-full' },
 })
 export class ProfesionalCard {
   readonly profesional = input.required<Profesional>();
