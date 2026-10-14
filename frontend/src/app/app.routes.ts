@@ -3,26 +3,43 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
+    title: 'Meridiana · Red de salud',
     loadComponent: () => import('./features/home/home').then(m => m.Home),
   },
   {
     path: 'citas',
+    title: 'Citas · Meridiana',
     loadComponent: () => import('./features/citas/citas').then(m => m.Citas),
   },
   {
     path: 'medicamentos',
+    title: 'Medicamentos · Meridiana',
     loadComponent: () => import('./features/medicamentos/medicamentos').then(m => m.Medicamentos),
   },
   {
     path: 'profesionales',
+    title: 'Profesionales · Meridiana',
     loadComponent: () => import('./features/profesionales/profesionales').then(m => m.Profesionales),
   },
   {
     path: 'noticias',
+    title: 'Noticias · Meridiana',
     loadComponent: () => import('./features/noticias/noticias').then(m => m.Noticias),
   },
   {
+    path: 'noticias/:id',
+    title: 'Noticia · Meridiana',
+    loadComponent: () =>
+      import('./features/noticias/noticia-detalle/noticia-detalle').then(m => m.NoticiaDetalle),
+  },
+  {
+    path: 'sedes',
+    title: 'Sedes · Meridiana',
+    loadComponent: () => import('./features/sedes/sedes').then(m => m.Sedes),
+  },
+  {
     path: '**',
+    title: 'Página no encontrada · Meridiana',
     loadComponent: () => import('./features/not-found/not-found').then(m => m.NotFound),
   },
 ];

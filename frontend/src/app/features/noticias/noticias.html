@@ -1,1 +1,48 @@
-<p>noticias works!</p>
+<app-page-header
+  eyebrow="Noticias"
+  title="Lo último en nuestra red de salud"
+  lead="Novedades de nuestras sedes, jornadas de prevención y consejos de nuestros equipos médicos."
+/>
+
+<section class="container-page section" [attr.aria-busy]="state().status === 'loading'">
+  @switch (state().status) {
+    @case ('loading') {
+      <app-skeleton-cards [count]="6" label="Cargando noticias…" />
+    }
+    @case ('error') {
+      <app-state-message
+        kind="error"
+        icon="alert"
+        title="No pudimos cargar las noticias"
+        message="Hubo un problema al conectar con el servidor. Revisa tu conexión e inténtalo de nuevo."
+        retryLabel="Reintentar"
+        (retry)="retry()"
+      />
+    }
+    @default {
+      @if (state(); as s) {
+        @if (s.status === 'ready') {
+          @if (s.data.length === 0) {
+            <app-state-message
+              title="Aún no hay noticias"
+              message="Cuando publiquemos novedades las verás aquí."
+            />
+          } @else {
+            <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              @for (noticia of s.data; track noticia.id; let i = $index) {
+                <li
+                  class="rise"
+                  [class.sm:col-span-2]="i === 0"
+                  [class.lg:col-span-3]="i === 0"
+                  [style.--delay]="i * 50 + 'ms'"
+                >
+                  <app-news-card [noticia]="noticia" [featured]="i === 0" />
+                </li>
+              }
+            </ul>
+          }
+        }
+      }
+    }
+  }
+</section>

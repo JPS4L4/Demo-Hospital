@@ -1,0 +1,44 @@
+<app-page-header
+  eyebrow="Sedes"
+  title="Cerca de ti, en cuatro ciudades"
+  lead="Encuentra la sede más cercana, su dirección y su teléfono. Todas atienden con cita previa y urgencias las 24 horas."
+/>
+
+<section class="container-page section" [attr.aria-busy]="state().status === 'loading'">
+  @switch (state().status) {
+    @case ('loading') {
+      <app-skeleton-cards [count]="4" label="Cargando sedes…" />
+    }
+    @case ('error') {
+      <app-state-message
+        kind="error"
+        icon="alert"
+        title="No pudimos cargar las sedes"
+        message="Hubo un problema al conectar con el servidor. Revisa tu conexión e inténtalo de nuevo."
+        retryLabel="Reintentar"
+        (retry)="retry()"
+      />
+    }
+    @default {
+      @if (state(); as s) {
+        @if (s.status === 'ready') {
+          @if (s.data.length === 0) {
+            <app-state-message
+              icon="map-pin"
+              title="Aún no hay sedes registradas"
+              message="Pronto publicaremos aquí la lista de nuestras sedes."
+            />
+          } @else {
+            <ul class="grid gap-5 sm:grid-cols-2">
+              @for (sede of s.data; track sede.id; let i = $index) {
+                <li class="rise" [style.--delay]="i * 50 + 'ms'">
+                  <app-sede-card [sede]="sede" />
+                </li>
+              }
+            </ul>
+          }
+        }
+      }
+    }
+  }
+</section>

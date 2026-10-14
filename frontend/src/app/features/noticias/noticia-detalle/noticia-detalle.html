@@ -1,0 +1,61 @@
+<div class="container-page py-8 md:py-12">
+  <a routerLink="/noticias" class="btn btn-quiet -ml-1">
+    <app-icon name="arrow-left" [size]="18" />
+    Todas las noticias
+  </a>
+
+  <div class="mt-6" [attr.aria-busy]="state().status === 'loading'">
+    @switch (state().status) {
+      @case ('loading') {
+        <div role="status" class="mx-auto max-w-2xl">
+          <span class="sr-only">Cargando noticia…</span>
+          <div class="skeleton h-3 w-28" aria-hidden="true"></div>
+          <div class="skeleton mt-5 h-10 w-full" aria-hidden="true"></div>
+          <div class="skeleton mt-3 h-10 w-2/3" aria-hidden="true"></div>
+          <div class="skeleton mt-10 h-4 w-full" aria-hidden="true"></div>
+          <div class="skeleton mt-3 h-4 w-full" aria-hidden="true"></div>
+          <div class="skeleton mt-3 h-4 w-4/5" aria-hidden="true"></div>
+        </div>
+      }
+      @case ('not-found') {
+        <app-state-message
+          title="No encontramos esta noticia"
+          message="Es posible que se haya retirado o que el enlace no sea correcto."
+        />
+      }
+      @case ('error') {
+        <app-state-message
+          kind="error"
+          icon="alert"
+          title="No pudimos cargar la noticia"
+          message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+          retryLabel="Reintentar"
+          (retry)="retry()"
+        />
+      }
+      @default {
+        @if (state(); as s) {
+          @if (s.status === 'ready') {
+            <article class="rise mx-auto max-w-2xl">
+              <time class="eyebrow" [attr.datetime]="s.data.fecha_publicacion">
+                {{ s.data.fecha_publicacion | date: 'longDate' }}
+              </time>
+              <h1 class="mt-5 text-4xl md:text-5xl">{{ s.data.titulo }}</h1>
+              <div class="prose-body mt-8 text-lg leading-8">
+                @for (p of parrafos(); track $index) {
+                  <p>{{ p }}</p>
+                }
+              </div>
+              <div class="mt-10 border-t border-line pt-6">
+                <a routerLink="/citas" class="btn btn-primary">
+                  <app-icon name="calendar" [size]="18" />
+                  Pedir cita
+                </a>
+              </div>
+            </article>
+          }
+        }
+      }
+    }
+  </div>
+</div>
