@@ -364,6 +364,9 @@
 
   /* Tablas de administración: el contenedor desplaza en horizontal, no la página. */
   .table-wrap {
+    /* Containing block for absolutely positioned .sr-only cells, so they scroll
+       with the table instead of widening the page. */
+    position: relative;
     overflow-x: auto;
     border: 1px solid var(--line);
     border-radius: 0.75rem;
