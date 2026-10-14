@@ -22,6 +22,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profesionales/profesionales').then(m => m.Profesionales),
   },
   {
+    path: 'profesionales/:id',
+    title: 'Profesional · Meridiana',
+    loadComponent: () =>
+      import('./features/profesionales/profesional-detalle/profesional-detalle').then(m => m.ProfesionalDetalle),
+  },
+  {
     path: 'noticias',
     title: 'Noticias · Meridiana',
     loadComponent: () => import('./features/noticias/noticias').then(m => m.Noticias),

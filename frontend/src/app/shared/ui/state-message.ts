@@ -21,7 +21,7 @@ import { Icon, IconName } from './icon';
       <p class="text-muted">{{ message() }}</p>
       @if (retryLabel()) {
         <button type="button" class="btn btn-secondary mt-2" (click)="retry.emit()">
-          <app-icon name="refresh" [size]="18" />
+          <app-icon [name]="retryIcon()" [size]="18" />
           {{ retryLabel() }}
         </button>
       }
@@ -35,5 +35,6 @@ export class StateMessage {
   readonly message = input.required<string>();
   readonly icon = input<IconName>('inbox');
   readonly retryLabel = input<string>();
+  readonly retryIcon = input<IconName>('refresh');
   readonly retry = output<void>();
 }

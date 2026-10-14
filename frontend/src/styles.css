@@ -273,6 +273,49 @@
     }
   }
 
+  /* Formularios: filtros y búsqueda */
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .field-control {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.875rem;
+    border: 1.5px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 1rem; /* 16 px: iOS no hace zoom al enfocar */
+    line-height: 1.4;
+    transition: border-color 160ms var(--ease-out-soft);
+  }
+  .field-control::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+  .field-control:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-color: var(--brand);
+  }
+  select.field-control {
+    appearance: none;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+  .field-control.has-icon {
+    padding-left: 2.625rem;
+  }
+  @media (hover: hover) {
+    .field-control:hover {
+      border-color: var(--muted);
+    }
+  }
+
   .prose-body p + p {
     margin-top: 1.25em;
   }

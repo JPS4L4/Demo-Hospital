@@ -1,0 +1,52 @@
+/* Mientras llegan los resultados nuevos se mantienen los anteriores, atenuados tras una pausa
+   corta para que una respuesta rápida no parpadee. */
+.results {
+  transition: opacity 160ms var(--ease-out-soft);
+}
+.results-stale {
+  opacity: 0.55;
+  pointer-events: none;
+  transition-delay: 150ms;
+}
+
+/* Control segmentado: radios nativos (flechas del teclado) con aspecto de botones. */
+.segmented {
+  display: flex;
+  min-height: 2.75rem;
+  border: 1.5px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  overflow: hidden;
+}
+.segment {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding-inline: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out-soft),
+    color 160ms var(--ease-out-soft);
+}
+.segment + .segment {
+  border-left: 1.5px solid var(--line);
+}
+.segment:has(input:checked) {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.segment:has(input:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: -3px;
+  z-index: 1;
+}
+@media (hover: hover) {
+  .segment:hover:not(:has(input:checked)) {
+    background: var(--surface-sunken);
+    color: var(--ink);
+  }
+}

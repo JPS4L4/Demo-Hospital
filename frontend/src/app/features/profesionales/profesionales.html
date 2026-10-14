@@ -1,7 +1,133 @@
-<app-coming-soon
+<app-page-header
   eyebrow="Profesionales"
-  title="Nuestro equipo médico"
-  lead="Pronto podrás conocer a los profesionales que te cuidan en cada sede."
-  detail="Estamos reuniendo los perfiles de nuestros médicos y especialistas para que puedas elegir con confianza."
-  [items]="items"
+  title="Conoce a tu equipo médico"
+  lead="Busca por nombre, especialidad o sede y encuentra al profesional indicado para ti."
 />
+
+<section class="container-page section">
+  <form
+    role="search"
+    aria-label="Filtrar profesionales"
+    class="grid gap-4 md:grid-cols-[1.6fr_1fr_1fr]"
+    (submit)="$event.preventDefault()"
+  >
+    <div>
+      <label class="field-label" for="filtro-q">Buscar por nombre</label>
+      <div class="relative">
+        <app-icon name="search" [size]="18" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <input
+          id="filtro-q"
+          type="search"
+          class="field-control has-icon"
+          placeholder="Nombre o apellido"
+          autocomplete="off"
+          [value]="search() ?? query().q"
+          (input)="onSearch($event)"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label class="field-label" for="filtro-especialidad">Especialidad</label>
+      <div class="relative">
+        <select id="filtro-especialidad" class="field-control" (change)="onEspecialidad($event)">
+          <option value="" [selected]="query().especialidadId === null">Todas las especialidades</option>
+          @for (e of especialidades(); track e.id) {
+            <option [value]="e.id" [selected]="e.id === query().especialidadId">{{ e.nombre }}</option>
+          }
+        </select>
+        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+      </div>
+    </div>
+
+    <div>
+      <label class="field-label" for="filtro-sede">Sede</label>
+      <div class="relative">
+        <select id="filtro-sede" class="field-control" (change)="onSede($event)">
+          <option value="" [selected]="query().sedeId === null">Todas las sedes</option>
+          @for (s of sedes(); track s.id) {
+            <option [value]="s.id" [selected]="s.id === query().sedeId">{{ s.nombre }} · {{ s.ciudad }}</option>
+          }
+        </select>
+        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+      </div>
+    </div>
+  </form>
+
+  <div #results class="mt-8 flex min-h-11 flex-wrap items-center justify-between gap-3">
+    <p class="text-muted" role="status">
+      @if (view(); as v) {
+        @if (v.status === 'ready') {
+          <span class="font-semibold text-ink">{{ v.data.total }}</span>
+          {{ v.data.total === 1 ? 'profesional' : 'profesionales' }}
+        }
+      }
+    </p>
+    @if (hasFilters()) {
+      <button type="button" class="btn btn-quiet" (click)="clear()">
+        <app-icon name="x" [size]="16" />
+        Limpiar filtros
+      </button>
+    }
+  </div>
+
+  <div class="mt-4" [attr.aria-busy]="view().status === 'loading' || !!view().stale">
+    @switch (view().status) {
+      @case ('loading') {
+        <app-skeleton-cards [count]="6" label="Cargando profesionales…" />
+      }
+      @case ('error') {
+        <app-state-message
+          kind="error"
+          icon="alert"
+          title="No pudimos cargar los profesionales"
+          message="Hubo un problema al conectar con el servidor. Revisa tu conexión e inténtalo de nuevo."
+          retryLabel="Reintentar"
+          (retry)="retry()"
+        />
+      }
+      @default {
+        @if (view(); as v) {
+          @if (v.status === 'ready') {
+            @if (v.data.items.length === 0 && v.data.total > 0) {
+              <app-state-message
+                icon="users"
+                title="Esa página ya no existe"
+                message="Los resultados cambiaron o el enlace es antiguo."
+                retryLabel="Ir a la primera página"
+                retryIcon="arrow-left"
+                (retry)="goFirstPage()"
+              />
+            } @else if (v.data.items.length === 0) {
+              <app-state-message
+                icon="users"
+                title="No encontramos profesionales"
+                message="Prueba con otro nombre o quita algún filtro para ver más resultados."
+                [retryLabel]="hasFilters() ? 'Limpiar filtros' : undefined"
+                retryIcon="x"
+                (retry)="clear()"
+              />
+            } @else {
+              <div class="results" [class.results-stale]="v.stale">
+                <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  @for (p of v.data.items; track p.id; let i = $index) {
+                    <li class="rise" [style.--delay]="i * 40 + 'ms'">
+                      <app-profesional-card [profesional]="p" />
+                    </li>
+                  }
+                </ul>
+                <app-pagination
+                  class="mt-10"
+                  [total]="v.data.total"
+                  [limit]="pageSize"
+                  [offset]="v.data.offset"
+                  (offsetChange)="onOffset($event)"
+                />
+              </div>
+            }
+          }
+        }
+      }
+    }
+  </div>
+</section>

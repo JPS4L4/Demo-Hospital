@@ -1,0 +1,10 @@
+/* Mientras llegan los resultados nuevos se mantienen los anteriores, atenuados tras una pausa
+   corta para que una respuesta rápida no parpadee. */
+.results {
+  transition: opacity 160ms var(--ease-out-soft);
+}
+.results-stale {
+  opacity: 0.55;
+  pointer-events: none;
+  transition-delay: 150ms;
+}

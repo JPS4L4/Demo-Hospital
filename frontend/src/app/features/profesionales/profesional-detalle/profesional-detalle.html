@@ -1,0 +1,113 @@
+<div class="container-page py-8 md:py-12">
+  <a routerLink="/profesionales" class="btn btn-quiet -ml-1">
+    <app-icon name="arrow-left" [size]="18" />
+    Todos los profesionales
+  </a>
+
+  <div class="mt-6" [attr.aria-busy]="state().status === 'loading'">
+    @switch (state().status) {
+      @case ('loading') {
+        <div role="status" class="grid gap-10 md:grid-cols-[1.4fr_1fr]">
+          <span class="sr-only">Cargando profesional…</span>
+          <div aria-hidden="true">
+            <div class="flex items-center gap-5">
+              <div class="skeleton size-20 rounded-full"></div>
+              <div class="flex-1">
+                <div class="skeleton h-3 w-28"></div>
+                <div class="skeleton mt-3 h-9 w-3/4"></div>
+              </div>
+            </div>
+            <div class="skeleton mt-10 h-4 w-full"></div>
+            <div class="skeleton mt-3 h-4 w-full"></div>
+            <div class="skeleton mt-3 h-4 w-4/5"></div>
+          </div>
+          <div class="card h-56" aria-hidden="true"></div>
+        </div>
+      }
+      @case ('not-found') {
+        <app-state-message
+          icon="users"
+          title="No encontramos a este profesional"
+          message="Es posible que ya no forme parte del equipo o que el enlace no sea correcto."
+        />
+      }
+      @case ('error') {
+        <app-state-message
+          kind="error"
+          icon="alert"
+          title="No pudimos cargar el perfil"
+          message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+          retryLabel="Reintentar"
+          (retry)="retry()"
+        />
+      }
+      @default {
+        @if (state(); as s) {
+          @if (s.status === 'ready') {
+            <article class="rise grid gap-10 md:grid-cols-[1.4fr_1fr] md:gap-14">
+              <div>
+                <div class="flex items-center gap-5" style="--avatar-size: 5rem">
+                  <app-avatar [initials]="iniciales(s.data)" />
+                  <div class="min-w-0">
+                    <p class="eyebrow">{{ s.data.especialidad.nombre }}</p>
+                    <h1 class="mt-3 text-3xl md:text-5xl">{{ nombre(s.data) }}</h1>
+                  </div>
+                </div>
+
+                @if (!s.data.activo) {
+                  <p class="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent">
+                    <app-icon name="info" [size]="16" />
+                    No está atendiendo citas por el momento
+                  </p>
+                }
+
+                <h2 class="mt-10 text-2xl">Sobre {{ s.data.nombres }}</h2>
+                <div class="prose-body mt-4 text-lg leading-8">
+                  @for (p of parrafos(); track $index) {
+                    <p>{{ p }}</p>
+                  }
+                </div>
+              </div>
+
+              <aside class="card h-fit p-6" aria-label="Datos del profesional">
+                <ul class="grid gap-4 text-[0.9375rem]">
+                  <li class="flex items-start gap-3">
+                    <app-icon name="map-pin" [size]="20" class="mt-0.5 text-brand" />
+                    <span>
+                      <a routerLink="/sedes" class="font-semibold underline-offset-4 hover:underline">{{ s.data.sede.nombre }}</a>
+                      <br />
+                      <span class="text-muted">{{ s.data.sede.ciudad }}</span>
+                    </span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <app-icon name="shield-check" [size]="20" class="mt-0.5 text-brand" />
+                    <span>
+                      <span class="text-muted">Registro profesional</span><br />
+                      <span class="font-semibold">{{ s.data.registro_profesional }}</span>
+                    </span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <app-icon name="mail" [size]="20" class="mt-0.5 text-brand" />
+                    <a [href]="'mailto:' + s.data.email" class="min-w-0 break-words font-semibold underline-offset-4 hover:underline">{{ s.data.email }}</a>
+                  </li>
+                  @if (s.data.telefono) {
+                    <li class="flex items-start gap-3">
+                      <app-icon name="phone" [size]="20" class="mt-0.5 text-brand" />
+                      <a [href]="'tel:' + telefonoLimpio(s.data)" class="font-semibold underline-offset-4 hover:underline">{{ s.data.telefono }}</a>
+                    </li>
+                  }
+                </ul>
+                @if (s.data.activo) {
+                  <a routerLink="/citas" class="btn btn-primary mt-6 w-full">
+                    <app-icon name="calendar" [size]="18" />
+                    Pedir cita
+                  </a>
+                }
+              </aside>
+            </article>
+          }
+        }
+      }
+    }
+  </div>
+</div>
