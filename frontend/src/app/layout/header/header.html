@@ -38,6 +38,44 @@
       <app-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" [size]="20" />
     </button>
 
+    @if (!auth.restoring()) {
+      <div class="account-area">
+        @if (auth.usuario(); as usuario) {
+          <div class="user-menu" (focusout)="onUserMenuFocusOut($event)">
+            <button
+              #userButton
+              type="button"
+              class="user-button"
+              (click)="toggleUserMenu()"
+              [attr.aria-expanded]="userMenuOpen()"
+              aria-controls="menu-usuario"
+              [attr.aria-label]="'Menú de ' + auth.nombre()"
+            >
+              <span class="user-initials" aria-hidden="true">{{ auth.iniciales() }}</span>
+              <span class="user-name">{{ auth.nombre() }}</span>
+              <app-icon name="chevron-down" [size]="16" />
+            </button>
+            @if (userMenuOpen()) {
+              <div #userMenuPanel id="menu-usuario" class="user-panel">
+                <p class="user-panel-head">
+                  <span class="block font-semibold text-ink">{{ auth.nombre() }}</span>
+                  <span class="block break-all text-sm text-muted">{{ usuario.email }}</span>
+                </p>
+                @if (auth.isAdmin()) {
+                  <a routerLink="/admin" class="user-item"><app-icon name="layout-dashboard" [size]="18" />Panel</a>
+                } @else {
+                  <a routerLink="/mis-citas" class="user-item"><app-icon name="calendar-check" [size]="18" />Mis citas</a>
+                }
+                <button type="button" class="user-item" (click)="logout()"><app-icon name="log-out" [size]="18" />Cerrar sesión</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <a routerLink="/ingresar" class="account-link"><app-icon name="user" [size]="18" />Ingresar</a>
+        }
+      </div>
+    }
+
     <a routerLink="/citas" class="btn btn-primary hidden sm:inline-flex">
       <app-icon name="calendar" [size]="18" />
       Pedir cita
@@ -72,6 +110,23 @@
           Pedir cita
         </a>
         <a routerLink="/citas" class="mobile-link mobile-link--sm-up">Citas</a>
+        @if (!auth.restoring()) {
+          @if (auth.usuario(); as usuario) {
+            <p class="mobile-account">
+              <span class="block font-semibold text-ink">{{ auth.nombre() }}</span>
+              <span class="block break-all text-sm text-muted">{{ usuario.email }}</span>
+            </p>
+            @if (auth.isAdmin()) {
+              <a routerLink="/admin" class="mobile-link">Panel</a>
+            } @else {
+              <a routerLink="/mis-citas" class="mobile-link">Mis citas</a>
+            }
+            <button type="button" class="mobile-link mobile-link--button" (click)="logout()">Cerrar sesión</button>
+          } @else {
+            <a routerLink="/ingresar" class="mobile-link">Ingresar</a>
+            <a routerLink="/registro" class="mobile-link">Crear cuenta</a>
+          }
+        }
       </div>
     </nav>
   }

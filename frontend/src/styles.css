@@ -319,6 +319,160 @@
   .prose-body p + p {
     margin-top: 1.25em;
   }
+
+  /* Control segmentado: radios nativos (flechas del teclado) con aspecto de botones. */
+  .segmented {
+    display: flex;
+    min-height: 2.75rem;
+    border: 1.5px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .segment {
+    position: relative;
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding-inline: 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background-color 160ms var(--ease-out-soft),
+      color 160ms var(--ease-out-soft);
+  }
+  .segment + .segment {
+    border-left: 1.5px solid var(--line);
+  }
+  .segment:has(input:checked) {
+    background: var(--brand);
+    color: var(--on-brand);
+  }
+  .segment:has(input:focus-visible) {
+    outline: 3px solid var(--ring);
+    outline-offset: -3px;
+    z-index: 1;
+  }
+  @media (hover: hover) {
+    .segment:hover:not(:has(input:checked)) {
+      background: var(--surface-sunken);
+      color: var(--ink);
+    }
+  }
+
+  /* Tablas de administración: el contenedor desplaza en horizontal, no la página. */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 0.75rem;
+    background: var(--surface);
+  }
+  .data-table {
+    width: 100%;
+    min-width: 40rem;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .data-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-sunken);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .data-table .row-muted td {
+    color: var(--muted);
+  }
+  .table-stale {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 160ms var(--ease-out-soft) 150ms;
+  }
+  .data-table .col-actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Botones compactos de fila y variante peligrosa */
+  .btn-icon {
+    width: 2.75rem;
+    padding: 0;
+  }
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  .btn-danger-quiet {
+    color: var(--danger);
+    border-color: var(--line);
+    background: transparent;
+  }
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    .btn-danger-quiet:hover {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+    }
+  }
+
+  /* Fechas largas en minúscula ("jueves, 15 de…"): solo la primera letra en mayúscula */
+  .capitalize-first::first-letter {
+    text-transform: uppercase;
+  }
+
+  /* Casilla con etiqueta clicable */
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .check input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--brand);
+  }
+
+  /* Avisos en línea */
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--line);
+    background: var(--surface-sunken);
+    font-size: 0.9375rem;
+  }
+  .notice-error {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .notice-info {
+    border-color: transparent;
+    background: var(--brand-soft);
+    color: var(--ink);
+  }
 }
 
 .sr-only-focusable:not(:focus):not(:focus-within) {

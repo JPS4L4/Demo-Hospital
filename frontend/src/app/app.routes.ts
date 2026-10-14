@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { guestGuard } from './core/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -10,6 +11,18 @@ export const routes: Routes = [
     path: 'citas',
     title: 'Citas · Meridiana',
     loadComponent: () => import('./features/citas/citas').then(m => m.Citas),
+  },
+  {
+    path: 'ingresar',
+    title: 'Ingresar · Meridiana',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login/login').then(m => m.Login),
+  },
+  {
+    path: 'registro',
+    title: 'Crear cuenta · Meridiana',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/registro/registro').then(m => m.Registro),
   },
   {
     path: 'medicamentos',
