@@ -1,7 +1,377 @@
-<app-coming-soon
+<app-page-header
   eyebrow="Citas"
   title="Pide tu cita en línea"
-  lead="Pronto podrás reservar consultas con nuestros profesionales desde cualquier dispositivo."
-  detail="Estamos terminando el sistema de reservas. Mientras tanto, puedes llamar a la línea de atención al +57 601 555 0100 y te ayudaremos a agendar."
-  [items]="items"
+  lead="Elige la especialidad, el profesional y un horario libre. Puedes mirar toda la agenda sin cuenta; solo la necesitas para confirmar."
 />
+
+<section class="container-page section">
+  <div class="mx-auto max-w-3xl">
+    @if (auth.isAdmin()) {
+      <p class="notice notice-info mb-6" role="status">
+        <app-icon name="info" [size]="18" class="mt-0.5" />
+        <span>
+          Estás con una cuenta de administración: las citas en línea son para pacientes.
+          Para agendar a un paciente usa la <a routerLink="/admin/agenda" class="font-semibold underline underline-offset-4">agenda del panel</a>.
+        </span>
+      </p>
+    }
+
+    @if (creada(); as cita) {
+      <article class="card rise p-6 md:p-8" aria-labelledby="cita-creada">
+        <span class="icon-tile"><app-icon name="check-circle" [size]="24" /></span>
+        <h2 id="cita-creada" tabindex="-1" class="mt-5 text-2xl md:text-3xl">Tu cita quedó confirmada</h2>
+        <p class="mt-2 text-muted">Puedes verla o cancelarla cuando quieras desde «Mis citas».</p>
+        <dl class="summary mt-6">
+          <dt>Profesional</dt>
+          <dd>{{ cita.profesional.nombres }} {{ cita.profesional.apellidos }}</dd>
+          <dt>Especialidad</dt>
+          <dd>{{ cita.profesional.especialidad.nombre }}</dd>
+          <dt>Sede</dt>
+          <dd>{{ cita.sede.nombre }}, {{ cita.sede.ciudad }}</dd>
+          <dt>Fecha</dt>
+          <dd class="capitalize-first">{{ fechaLarga(cita.inicio) }}</dd>
+          <dt>Hora</dt>
+          <dd>{{ horaCita(cita.inicio) }}</dd>
+          <dt>Motivo</dt>
+          <dd>{{ cita.motivo }}</dd>
+        </dl>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a routerLink="/mis-citas" class="btn btn-primary">
+            <app-icon name="calendar-check" [size]="18" />
+            Ver mis citas
+          </a>
+          <button type="button" class="btn btn-secondary" (click)="nuevaCita()">Pedir otra cita</button>
+        </div>
+      </article>
+    } @else {
+      <ol class="grid gap-4" aria-label="Pasos para pedir la cita">
+        <!-- Paso 1: especialidad -->
+        <li class="step card" [class.step-current]="paso() === 1" [class.step-done]="paso() > 1" [attr.aria-current]="paso() === 1 ? 'step' : null" [attr.data-paso-actual]="paso() === 1 ? '' : null">
+          <div class="step-head">
+            <span class="step-num" aria-hidden="true">
+              @if (paso() > 1) { <app-icon name="check" [size]="16" /> } @else { 1 }
+            </span>
+            <div class="min-w-0 flex-1">
+              <h2 tabindex="-1" class="step-title">Especialidad</h2>
+              @if (paso() > 1) {
+                <p class="step-summary">{{ especialidadNombre() }}</p>
+              }
+            </div>
+            @if (paso() > 1) {
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(1)">Cambiar<span class="sr-only"> especialidad</span></button>
+            }
+          </div>
+
+          @if (paso() === 1) {
+            <div class="step-body" [attr.aria-busy]="especialidadesState().status === 'loading'">
+              @switch (especialidadesState().status) {
+                @case ('loading') {
+                  <div role="status" class="grid gap-3 sm:grid-cols-2">
+                    <span class="sr-only">Cargando especialidades…</span>
+                    @for (n of [1, 2, 3, 4]; track n) {
+                      <div class="skeleton h-20" aria-hidden="true"></div>
+                    }
+                  </div>
+                }
+                @case ('error') {
+                  <app-state-message
+                    kind="error"
+                    icon="alert"
+                    title="No pudimos cargar las especialidades"
+                    message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+                    retryLabel="Reintentar"
+                    (retry)="reintentarEspecialidades()"
+                  />
+                }
+                @default {
+                  @if (especialidadesState(); as s) {
+                    @if (s.status === 'ready') {
+                      <ul class="grid gap-3 sm:grid-cols-2">
+                        @for (e of s.data; track e.id) {
+                          <li>
+                            <button type="button" class="choice" (click)="elegirEspecialidad(e.id)">
+                              <span class="choice-title">{{ e.nombre }}</span>
+                              @if (e.descripcion) {
+                                <span class="choice-sub line-clamp-2">{{ e.descripcion }}</span>
+                              }
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  }
+                }
+              }
+            </div>
+          }
+        </li>
+
+        <!-- Paso 2: profesional -->
+        <li class="step card" [class.step-current]="paso() === 2" [class.step-done]="paso() > 2" [attr.aria-current]="paso() === 2 ? 'step' : null" [attr.data-paso-actual]="paso() === 2 ? '' : null">
+          <div class="step-head">
+            <span class="step-num" aria-hidden="true">
+              @if (paso() > 2) { <app-icon name="check" [size]="16" /> } @else { 2 }
+            </span>
+            <div class="min-w-0 flex-1">
+              <h2 tabindex="-1" class="step-title">Profesional</h2>
+              @if (paso() > 2) {
+                @if (profesional(); as p) {
+                  <p class="step-summary">{{ nombre(p) }} · {{ p.sede.nombre }}</p>
+                } @else {
+                  <p class="step-summary"><span class="skeleton inline-block h-4 w-40 align-middle"></span></p>
+                }
+              }
+            </div>
+            @if (paso() > 2) {
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(2)">Cambiar<span class="sr-only"> profesional</span></button>
+            }
+          </div>
+
+          @if (paso() === 2) {
+            <div class="step-body">
+              @if (profesionalProblema(); as problema) {
+                <p class="notice notice-error mb-4" role="alert">
+                  <app-icon name="alert" [size]="18" class="mt-0.5" />
+                  {{ problema }} Elige a otro profesional de la lista.
+                </p>
+              }
+              @if (especialidadId() === null) {
+                <button type="button" class="btn btn-secondary" (click)="irAPaso(1)">Elegir una especialidad</button>
+              } @else {
+                @switch (profesionalesList()?.status ?? 'loading') {
+                  @case ('loading') {
+                    <div role="status" class="grid gap-3 sm:grid-cols-2">
+                      <span class="sr-only">Cargando profesionales…</span>
+                      @for (n of [1, 2, 3, 4]; track n) {
+                        <div class="skeleton h-24" aria-hidden="true"></div>
+                      }
+                    </div>
+                  }
+                  @case ('error') {
+                    <app-state-message
+                      kind="error"
+                      icon="alert"
+                      title="No pudimos cargar los profesionales"
+                      message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+                      retryLabel="Reintentar"
+                      (retry)="reintentarProfesionales()"
+                    />
+                  }
+                  @default {
+                    @if (profesionalesList(); as lista) {
+                      @if (lista.status === 'ready') {
+                        @if (lista.data.length === 0) {
+                          <app-state-message
+                            icon="users"
+                            title="No hay profesionales disponibles"
+                            message="Por ahora esta especialidad no tiene profesionales atendiendo. Prueba con otra."
+                            retryLabel="Elegir otra especialidad"
+                            retryIcon="arrow-left"
+                            (retry)="irAPaso(1)"
+                          />
+                        } @else {
+                          <ul class="grid gap-3 sm:grid-cols-2">
+                            @for (p of lista.data; track p.id) {
+                              <li>
+                                <button type="button" class="choice choice-person" (click)="elegirProfesional(p)">
+                                  <app-avatar [initials]="iniciales(p)" style="--avatar-size: 2.75rem" />
+                                  <span class="min-w-0">
+                                    <span class="choice-title block">{{ nombre(p) }}</span>
+                                    <span class="choice-sub block">{{ p.sede.nombre }}, {{ p.sede.ciudad }}</span>
+                                  </span>
+                                </button>
+                              </li>
+                            }
+                          </ul>
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            </div>
+          }
+        </li>
+
+        <!-- Paso 3: día y hora -->
+        <li class="step card" [class.step-current]="paso() === 3" [class.step-done]="paso() > 3" [attr.aria-current]="paso() === 3 ? 'step' : null" [attr.data-paso-actual]="paso() === 3 ? '' : null">
+          <div class="step-head">
+            <span class="step-num" aria-hidden="true">
+              @if (paso() > 3) { <app-icon name="check" [size]="16" /> } @else { 3 }
+            </span>
+            <div class="min-w-0 flex-1">
+              <h2 tabindex="-1" class="step-title">Día y hora</h2>
+              @if (paso() > 3) {
+                <p class="step-summary"><span class="capitalize-first inline-block">{{ fechaLarga(seleccion().fecha!) }}</span> · {{ horaElegida()?.etiqueta }}</p>
+              }
+            </div>
+            @if (paso() > 3) {
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(3)">Cambiar<span class="sr-only"> día y hora</span></button>
+            }
+          </div>
+
+          @if (paso() === 3) {
+            <div class="step-body">
+              @if (avisoHorario(); as aviso) {
+                <p class="notice notice-error mb-4" role="alert">
+                  <app-icon name="alert" [size]="18" class="mt-0.5" />
+                  {{ aviso }}
+                </p>
+              }
+
+              <fieldset class="m-0 min-w-0 border-0 p-0">
+                <legend class="field-label">Día (hora de Bogotá, de lunes a sábado)</legend>
+                <div class="days">
+                  @for (d of dias; track d.fecha) {
+                    <button
+                      type="button"
+                      class="day"
+                      [attr.aria-pressed]="seleccion().fecha === d.fecha"
+                      [attr.aria-label]="d.domingo ? d.largo + ', sin atención' : d.largo"
+                      [disabled]="d.domingo"
+                      (click)="elegirDia(d.fecha)"
+                    >
+                      <span class="day-week">{{ d.semana }}</span>
+                      <span class="day-num">{{ d.dia }}</span>
+                      <span class="day-month">{{ d.mes }}</span>
+                    </button>
+                  }
+                </div>
+              </fieldset>
+
+              <div class="mt-6" [attr.aria-busy]="slotsState()?.status === 'loading'">
+                @if (seleccion().fecha === null) {
+                  <p class="text-muted">Elige un día para ver los horarios libres.</p>
+                } @else {
+                  @switch (slotsState()?.status ?? 'loading') {
+                    @case ('loading') {
+                      <div role="status" class="slots">
+                        <span class="sr-only">Cargando horarios…</span>
+                        @for (n of [1, 2, 3, 4, 5, 6]; track n) {
+                          <div class="skeleton h-11" aria-hidden="true"></div>
+                        }
+                      </div>
+                    }
+                    @case ('error') {
+                      <app-state-message
+                        kind="error"
+                        icon="alert"
+                        title="No pudimos cargar los horarios"
+                        message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+                        retryLabel="Reintentar"
+                        (retry)="reintentarHorarios()"
+                      />
+                    }
+                    @default {
+                      @if (horarios(); as h) {
+                        @if (h.total === 0) {
+                          <p class="notice notice-info" role="status">
+                            <app-icon name="info" [size]="18" class="mt-0.5" />
+                            No quedan horarios libres ese día. Prueba con otro.
+                          </p>
+                        } @else {
+                          <p class="mb-4 text-muted" role="status">
+                            <span class="font-semibold text-ink">{{ h.total }}</span>
+                            {{ h.total === 1 ? 'horario libre' : 'horarios libres' }} · citas de {{ duracion }} minutos
+                          </p>
+                          @if (h.manana.length) {
+                            <h3 class="slots-title">Mañana</h3>
+                            <ul class="slots">
+                              @for (s of h.manana; track s.hora) {
+                                <li><button type="button" class="slot" (click)="elegirHora(s.hora)">{{ s.etiqueta }}</button></li>
+                              }
+                            </ul>
+                          }
+                          @if (h.tarde.length) {
+                            <h3 class="slots-title">Tarde</h3>
+                            <ul class="slots">
+                              @for (s of h.tarde; track s.hora) {
+                                <li><button type="button" class="slot" (click)="elegirHora(s.hora)">{{ s.etiqueta }}</button></li>
+                              }
+                            </ul>
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              </div>
+            </div>
+          }
+        </li>
+
+        <!-- Paso 4: motivo y confirmación -->
+        <li class="step card" [class.step-current]="paso() === 4" [attr.aria-current]="paso() === 4 ? 'step' : null" [attr.data-paso-actual]="paso() === 4 ? '' : null">
+          <div class="step-head">
+            <span class="step-num" aria-hidden="true">4</span>
+            <div class="min-w-0 flex-1">
+              <h2 tabindex="-1" class="step-title">Confirma tu cita</h2>
+            </div>
+          </div>
+
+          @if (paso() === 4) {
+            <div class="step-body">
+              @if (profesional(); as p) {
+                <dl class="summary">
+                  <dt>Profesional</dt>
+                  <dd>{{ nombre(p) }}</dd>
+                  <dt>Especialidad</dt>
+                  <dd>{{ p.especialidad.nombre }}</dd>
+                  <dt>Sede</dt>
+                  <dd>{{ p.sede.nombre }}, {{ p.sede.ciudad }}</dd>
+                  <dt>Fecha</dt>
+                  <dd class="capitalize-first">{{ fechaLarga(seleccion().fecha!) }}</dd>
+                  <dt>Hora</dt>
+                  <dd>{{ horaElegida()?.etiqueta }} · {{ duracion }} minutos</dd>
+                </dl>
+              }
+
+              @if (auth.restoring()) {
+                <p class="mt-6 text-muted" role="status">Verificando tu sesión…</p>
+              } @else if (auth.isAdmin()) {
+                <p class="notice notice-info mt-6">
+                  <app-icon name="info" [size]="18" class="mt-0.5" />
+                  Las citas en línea las confirman los pacientes desde su cuenta.
+                </p>
+              } @else if (!auth.usuario()) {
+                <div class="mt-6 rounded-lg border border-dashed border-line bg-sunken p-4">
+                  <p class="font-semibold">Para confirmar necesitas ingresar</p>
+                  <p class="mt-1 text-[0.9375rem] text-muted">Guardamos tu selección: al volver estarás en este mismo paso.</p>
+                  <div class="mt-4 flex flex-wrap gap-3">
+                    <a routerLink="/ingresar" [queryParams]="{ returnUrl: urlActual() }" class="btn btn-primary" (click)="saveDraft()">Ingresar para confirmar</a>
+                    <a routerLink="/registro" [queryParams]="{ returnUrl: urlActual() }" class="btn btn-secondary" (click)="saveDraft()">Crear cuenta</a>
+                  </div>
+                </div>
+              }
+
+              @if (!auth.restoring() && !auth.isAdmin()) {
+                <form class="mt-6 grid gap-4" [formGroup]="form" (ngSubmit)="confirmar()" novalidate [attr.aria-busy]="submitting()">
+                  <app-field for="cita-motivo" label="Motivo de la consulta" [control]="form.controls.motivo" hint="Cuéntanos en pocas palabras por qué pides la cita (máximo 500 caracteres).">
+                    <textarea id="cita-motivo" class="field-control" rows="4" maxlength="500" formControlName="motivo"></textarea>
+                  </app-field>
+                  <p class="-mt-2 text-right text-sm text-muted" aria-hidden="true">{{ form.controls.motivo.value.length }}/500</p>
+
+                  @if (formError(); as error) {
+                    <p class="notice notice-error" role="alert">
+                      <app-icon name="alert" [size]="18" class="mt-0.5" />
+                      {{ error }}
+                    </p>
+                  }
+
+                  @if (auth.usuario()) {
+                    <div>
+                      <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+                        <app-icon name="calendar-check" [size]="18" />
+                        {{ submitting() ? 'Confirmando…' : 'Confirmar cita' }}
+                      </button>
+                    </div>
+                  }
+                </form>
+              }
+            </div>
+          }
+        </li>
+      </ol>
+    }
+  </div>
+</section>

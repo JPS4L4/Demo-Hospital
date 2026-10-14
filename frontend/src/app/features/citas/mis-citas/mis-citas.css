@@ -1,0 +1,54 @@
+/* Tarjeta de cita: bloque de fecha a la izquierda, datos al centro, acción a la derecha (debajo en móvil). */
+.cita {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  padding: 1.25rem;
+}
+@media (min-width: 40rem) {
+  .cita {
+    flex-wrap: nowrap;
+    padding: 1.5rem;
+  }
+}
+.cita-inactiva {
+  background: var(--surface-sunken);
+}
+.cita-fecha {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  width: 4.25rem;
+  padding: 0.5rem 0;
+  border-radius: 0.625rem;
+  background: var(--brand-soft);
+  color: var(--brand);
+  line-height: 1.15;
+}
+.cita-inactiva .cita-fecha {
+  background: var(--surface);
+  color: var(--muted);
+}
+.cita-semana {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cita-dia {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+.cita-cuando {
+  margin: 0;
+  font-weight: 600;
+}
+.cita-accion {
+  flex: none;
+}
+.tabs {
+  min-width: 16rem;
+}

@@ -1,0 +1,129 @@
+<app-page-header
+  eyebrow="Tu cuenta"
+  title="Mis citas"
+  lead="Consulta tus próximas citas, revisa el historial y cancela las que ya no necesites."
+/>
+
+<section class="container-page section">
+  @if (auth.isAdmin()) {
+    <app-state-message
+      icon="info"
+      title="Mis citas es para pacientes"
+      message="Con una cuenta de administración gestionas la agenda completa desde el panel."
+    >
+      <a routerLink="/admin/agenda" class="btn btn-primary mt-2">Ir a la agenda</a>
+    </app-state-message>
+  } @else {
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <fieldset class="m-0 min-w-0 border-0 p-0">
+        <legend class="field-label">Ver</legend>
+        <div class="segmented tabs">
+          @for (v of vistas; track v.value) {
+            <label class="segment">
+              <input type="radio" name="vista" class="sr-only" [value]="v.value" [checked]="vista() === v.value" (change)="vista.set(v.value)" />
+              <span>{{ v.label }}@if (grupos(); as g) { ({{ g[v.value].length }}) }</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+      <a routerLink="/citas" class="btn btn-primary">
+        <app-icon name="plus" [size]="18" />
+        Pedir una cita
+      </a>
+    </div>
+
+    <p class="sr-only" role="status">{{ anuncio() }}</p>
+
+    <div class="mt-8" [attr.aria-busy]="state().status === 'loading'">
+      <h2 id="resultados" tabindex="-1" class="sr-only">{{ vista() === 'proximas' ? 'Citas próximas' : 'Citas anteriores' }}</h2>
+      @switch (state().status) {
+        @case ('loading') {
+          <app-skeleton-cards [count]="3" label="Cargando tus citas…" />
+        }
+        @case ('error') {
+          <app-state-message
+            kind="error"
+            icon="alert"
+            title="No pudimos cargar tus citas"
+            message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+            retryLabel="Reintentar"
+            (retry)="retry()"
+          />
+        }
+        @default {
+          @if (grupos()) {
+            @if (visibles().length === 0) {
+              @if (vista() === 'proximas') {
+                <app-state-message
+                  icon="calendar"
+                  title="No tienes citas próximas"
+                  message="Reserva una consulta en pocos pasos: eliges especialidad, profesional y un horario libre."
+                >
+                  <a routerLink="/citas" class="btn btn-primary mt-2">Pedir una cita</a>
+                </app-state-message>
+              } @else {
+                <app-state-message
+                  icon="inbox"
+                  title="Aún no tienes citas anteriores"
+                  message="Aquí verás las citas atendidas, canceladas o ya pasadas."
+                />
+              }
+            } @else {
+              <ul class="grid gap-4">
+                @for (c of visibles(); track c.id; let i = $index) {
+                  @let d = dia(c);
+                  <li class="card cita rise" [style.--delay]="i * 40 + 'ms'" [class.cita-inactiva]="c.estado === 'cancelada'">
+                    <div class="cita-fecha" aria-hidden="true">
+                      <span class="cita-semana">{{ d.semana }}</span>
+                      <span class="cita-dia">{{ d.dia }}</span>
+                      <span class="cita-semana">{{ d.mes }}</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <app-estado-badge [estado]="c.estado" />
+                        <p class="cita-cuando">
+                          <span class="capitalize-first inline-block">{{ fechaLarga(c.inicio) }}</span>
+                          · {{ hora(c.inicio) }}
+                        </p>
+                      </div>
+                      <h3 class="mt-2 text-xl">{{ c.profesional.nombres }} {{ c.profesional.apellidos }}</h3>
+                      <p class="text-sm font-semibold text-accent">{{ c.profesional.especialidad.nombre }}</p>
+                      <p class="mt-2 flex items-start gap-2 text-[0.9375rem] text-muted">
+                        <app-icon name="map-pin" [size]="18" class="mt-0.5 text-brand" />
+                        <span>{{ c.sede.nombre }}, {{ c.sede.ciudad }}</span>
+                      </p>
+                      <p class="mt-1 flex items-start gap-2 text-[0.9375rem] text-muted">
+                        <app-icon name="file-text" [size]="18" class="mt-0.5 text-brand" />
+                        <span class="min-w-0 break-words">{{ c.motivo }}</span>
+                      </p>
+                    </div>
+                    @if (puedeCancelar(c)) {
+                      <button type="button" class="btn btn-danger-quiet btn-sm cita-accion" (click)="pedirCancelar(c)">
+                        <app-icon name="x" [size]="16" />
+                        Cancelar<span class="sr-only"> cita del {{ fechaLarga(c.inicio) }}</span>
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          }
+        }
+      }
+    </div>
+
+    <app-confirm-dialog
+      [open]="cancelando() !== null"
+      title="¿Cancelar esta cita?"
+      [message]="mensajeCancelar()"
+      confirmLabel="Sí, cancelar cita"
+      cancelLabel="Conservar cita"
+      busyLabel="Cancelando…"
+      [danger]="true"
+      [busy]="cancelBusy()"
+      [error]="cancelError()"
+      (confirmed)="confirmarCancelacion()"
+      (cancelled)="cerrarDialogo()"
+    />
+  }
+</section>

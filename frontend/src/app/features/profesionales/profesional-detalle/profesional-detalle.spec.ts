@@ -62,7 +62,10 @@ describe('ProfesionalDetalle', () => {
       'mailto:sofia.beltran@example.com',
     );
     expect(links.find((a) => a.textContent?.includes('555 0103'))?.getAttribute('href')).toBe('tel:+576015550103');
-    expect(links.find((a) => a.textContent?.includes('Pedir cita'))?.getAttribute('href')).toBe('/citas');
+    // Deep link: the booking flow opens with this professional and specialty preselected.
+    expect(links.find((a) => a.textContent?.includes('Pedir cita'))?.getAttribute('href')).toBe(
+      '/citas?profesional_id=3&especialidad_id=3',
+    );
   });
 
   it('omits the phone when missing and hides the booking button for inactive professionals', async () => {

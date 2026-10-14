@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './core/auth/auth.guards';
+import { authGuard, guestGuard } from './core/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -11,6 +11,12 @@ export const routes: Routes = [
     path: 'citas',
     title: 'Citas · Meridiana',
     loadComponent: () => import('./features/citas/citas').then(m => m.Citas),
+  },
+  {
+    path: 'mis-citas',
+    title: 'Mis citas · Meridiana',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/citas/mis-citas/mis-citas').then(m => m.MisCitas),
   },
   {
     path: 'ingresar',

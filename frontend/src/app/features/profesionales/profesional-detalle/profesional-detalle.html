@@ -98,7 +98,11 @@
                   }
                 </ul>
                 @if (s.data.activo) {
-                  <a routerLink="/citas" class="btn btn-primary mt-6 w-full">
+                  <a
+                    routerLink="/citas"
+                    [queryParams]="{ profesional_id: s.data.id, especialidad_id: s.data.especialidad_id }"
+                    class="btn btn-primary mt-6 w-full"
+                  >
                     <app-icon name="calendar" [size]="18" />
                     Pedir cita
                   </a>

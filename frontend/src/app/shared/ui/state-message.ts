@@ -25,6 +25,7 @@ import { Icon, IconName } from './icon';
           {{ retryLabel() }}
         </button>
       }
+      <ng-content />
     </div>
   `,
   host: { class: 'block' },

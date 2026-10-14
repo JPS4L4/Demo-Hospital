@@ -431,6 +431,41 @@
     }
   }
 
+  /* Lista de datos para resúmenes (cita, confirmación) */
+  .summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.125rem 1.5rem;
+    margin: 0;
+  }
+  .summary dt {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .summary dd {
+    margin: 0;
+    font-weight: 500;
+  }
+  @media (min-width: 40rem) {
+    .summary {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+    .summary dt,
+    .summary dd {
+      padding-block: 0.5rem;
+      margin: 0;
+      border-top: 1px solid var(--line);
+    }
+    .summary dt {
+      align-self: start;
+      padding-top: 0.625rem;
+    }
+  }
+
   /* Fechas largas en minúscula ("jueves, 15 de…"): solo la primera letra en mayúscula */
   .capitalize-first::first-letter {
     text-transform: uppercase;
