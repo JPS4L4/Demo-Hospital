@@ -45,7 +45,7 @@
 
     <button
       type="button"
-      class="theme-toggle lg:hidden"
+      class="theme-toggle menu-toggle"
       (click)="toggleMenu()"
       [attr.aria-expanded]="menuOpen()"
       aria-controls="menu-movil"
@@ -71,7 +71,7 @@
           <app-icon name="calendar" [size]="18" />
           Pedir cita
         </a>
-        <a routerLink="/citas" class="mobile-link hidden sm:flex">Citas</a>
+        <a routerLink="/citas" class="mobile-link mobile-link--sm-up">Citas</a>
       </div>
     </nav>
   }

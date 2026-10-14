@@ -58,6 +58,14 @@
   }
 }
 
+/* Unlayered component styles win over Tailwind's utilities layer, so `lg:hidden`
+   cannot hide a .theme-toggle; hide the menu button here instead. */
+@media (min-width: 64rem) {
+  .menu-toggle {
+    display: none;
+  }
+}
+
 .mobile-menu {
   animation: menu-in 200ms var(--ease-out-soft);
   max-height: calc(100dvh - 4rem);
@@ -78,6 +86,12 @@
   font-weight: 500;
   color: var(--ink);
   text-decoration: none;
+}
+/* Below sm the menu shows the "Pedir cita" button instead of this link. */
+@media (max-width: 39.99rem) {
+  .mobile-link--sm-up {
+    display: none;
+  }
 }
 .mobile-link.nav-active {
   color: var(--brand);
