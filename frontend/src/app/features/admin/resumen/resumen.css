@@ -1,0 +1,26 @@
+.stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  height: 100%;
+  padding: 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 180ms var(--ease-out-soft);
+}
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+@media (hover: hover) {
+  .stat:hover {
+    border-color: var(--brand);
+  }
+}
+.stat:focus-visible {
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+}

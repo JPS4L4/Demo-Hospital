@@ -1,0 +1,57 @@
+/* Panel: pestañas en fila que se desplazan dentro de su contenedor; a partir de lg, columna lateral. */
+.admin-shell {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+.admin-nav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  /* Margen para que el anillo de foco no se recorte dentro del contenedor desplazable. */
+  padding: 0.25rem 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.admin-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background-color 160ms var(--ease-out-soft),
+    color 160ms var(--ease-out-soft);
+}
+.admin-link-active {
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .admin-link:hover:not(.admin-link-active) {
+    background: var(--surface-sunken);
+    color: var(--ink);
+  }
+}
+@media (min-width: 64rem) {
+  .admin-shell {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .admin-nav {
+    position: sticky;
+    top: 6rem;
+    flex-direction: column;
+    overflow: visible;
+    padding: 0;
+    border-bottom: 0;
+  }
+}

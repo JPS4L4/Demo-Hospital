@@ -1,0 +1,189 @@
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h2 tabindex="-1" class="text-2xl">Profesionales</h2>
+    <p class="mt-1 text-muted">Crea, edita y activa o desactiva a los profesionales que reciben citas.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="abrir('nuevo', $event)">
+    <app-icon name="plus" [size]="18" />
+    Nuevo profesional
+  </button>
+</div>
+
+<p class="sr-only" role="status">{{ anuncio() }}</p>
+
+@if (edicion(); as e) {
+  <form class="card rise mt-6 grid gap-5 p-5 sm:grid-cols-2 md:p-6" [formGroup]="form" (ngSubmit)="guardar()" novalidate [attr.aria-busy]="guardando()" aria-labelledby="prof-form-titulo">
+    <h3 id="prof-form-titulo" class="text-xl sm:col-span-2">{{ esNuevo(e) ? 'Nuevo profesional' : 'Editar profesional' }}</h3>
+
+    @if (formError(); as error) {
+      <p class="notice notice-error sm:col-span-2" role="alert">
+        <app-icon name="alert" [size]="18" class="mt-0.5" />
+        {{ error }}
+      </p>
+    }
+
+    <app-field for="prof-nombres" label="Nombres" [control]="form.controls.nombres">
+      <input id="prof-nombres" class="field-control" formControlName="nombres" autocomplete="off" />
+    </app-field>
+    <app-field for="prof-apellidos" label="Apellidos" [control]="form.controls.apellidos">
+      <input id="prof-apellidos" class="field-control" formControlName="apellidos" autocomplete="off" />
+    </app-field>
+
+    <app-field for="prof-especialidad" label="Especialidad" [control]="form.controls.especialidad_id">
+      <div class="relative">
+        <select id="prof-especialidad" class="field-control" (change)="onSelectNumber('especialidad_id', $event)" (blur)="form.controls.especialidad_id.markAsTouched()">
+          <option value="" [selected]="form.controls.especialidad_id.value === null">Selecciona una especialidad</option>
+          @for (s of especialidades(); track s.id) {
+            <option [value]="s.id" [selected]="s.id === form.controls.especialidad_id.value">{{ s.nombre }}</option>
+          }
+        </select>
+        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+      </div>
+    </app-field>
+    <app-field for="prof-sede" label="Sede" [control]="form.controls.sede_id">
+      <div class="relative">
+        <select id="prof-sede" class="field-control" (change)="onSelectNumber('sede_id', $event)" (blur)="form.controls.sede_id.markAsTouched()">
+          <option value="" [selected]="form.controls.sede_id.value === null">Selecciona una sede</option>
+          @for (s of sedes(); track s.id) {
+            <option [value]="s.id" [selected]="s.id === form.controls.sede_id.value">{{ s.nombre }} · {{ s.ciudad }}</option>
+          }
+        </select>
+        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+      </div>
+    </app-field>
+
+    <app-field for="prof-registro" label="Registro profesional" [control]="form.controls.registro_profesional">
+      <input id="prof-registro" class="field-control" formControlName="registro_profesional" autocomplete="off" />
+    </app-field>
+    <app-field for="prof-email" label="Correo electrónico" [control]="form.controls.email">
+      <input id="prof-email" type="email" class="field-control" formControlName="email" autocomplete="off" inputmode="email" />
+    </app-field>
+
+    <app-field for="prof-telefono" label="Teléfono" [control]="form.controls.telefono" [optional]="true">
+      <input id="prof-telefono" type="tel" class="field-control" formControlName="telefono" autocomplete="off" inputmode="tel" />
+    </app-field>
+    <div class="flex items-end">
+      <label class="check">
+        <input type="checkbox" formControlName="activo" />
+        <span>Atiende citas (activo)</span>
+      </label>
+    </div>
+
+    <app-field class="sm:col-span-2" for="prof-bio" label="Presentación" [control]="form.controls.bio" [optional]="true" hint="Hasta 600 caracteres; separa los párrafos con una línea en blanco.">
+      <textarea id="prof-bio" class="field-control" rows="5" maxlength="600" formControlName="bio"></textarea>
+    </app-field>
+
+    <div class="flex flex-wrap gap-3 sm:col-span-2">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : esNuevo(e) ? 'Crear profesional' : 'Guardar cambios' }}
+      </button>
+      <button type="button" class="btn btn-secondary" [disabled]="guardando()" (click)="cerrar()">Cancelar</button>
+    </div>
+  </form>
+}
+
+<form class="mt-6 max-w-md" role="search" aria-label="Buscar profesionales" (submit)="$event.preventDefault()">
+  <label class="field-label" for="prof-buscar">Buscar por nombre</label>
+  <div class="relative">
+    <app-icon name="search" [size]="18" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+    <input id="prof-buscar" type="search" class="field-control has-icon" placeholder="Nombre o apellido" autocomplete="off" [value]="search()" (input)="onSearch($event)" />
+  </div>
+</form>
+
+@if (actionError(); as error) {
+  <p class="notice notice-error mt-6" role="alert">
+    <app-icon name="alert" [size]="18" class="mt-0.5" />
+    {{ error }}
+  </p>
+}
+
+<div class="mt-6" [attr.aria-busy]="view().status === 'loading' || !!view().stale">
+  @switch (view().status) {
+    @case ('loading') {
+      <div role="status" class="grid gap-3">
+        <span class="sr-only">Cargando profesionales…</span>
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="skeleton h-14" aria-hidden="true"></div>
+        }
+      </div>
+    }
+    @case ('error') {
+      <app-state-message
+        kind="error"
+        icon="alert"
+        title="No pudimos cargar los profesionales"
+        message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+        retryLabel="Reintentar"
+        (retry)="retry()"
+      />
+    }
+    @default {
+      @if (view(); as v) {
+        @if (v.status === 'ready') {
+          @if (v.data.items.length === 0) {
+            <app-state-message
+              icon="users"
+              title="No encontramos profesionales"
+              message="Prueba con otro nombre o crea uno nuevo."
+              [retryLabel]="search() ? 'Limpiar búsqueda' : undefined"
+              retryIcon="x"
+              (retry)="limpiar()"
+            />
+          } @else {
+            <p class="mb-3 text-muted"><span class="font-semibold text-ink">{{ v.data.total }}</span> {{ v.data.total === 1 ? 'profesional' : 'profesionales' }}</p>
+            <div class="table-wrap" [class.table-stale]="v.stale">
+              <table class="data-table">
+                <caption class="sr-only">Profesionales</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Especialidad</th>
+                    <th scope="col">Sede</th>
+                    <th scope="col">Registro</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col" class="col-actions"><span class="sr-only">Acciones</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of v.data.items; track item.id) {
+                    @let p = actual(item);
+                    <tr [class.row-muted]="!p.activo">
+                      <td>
+                        <span class="block font-semibold">{{ nombre(p) }}</span>
+                        <span class="block text-sm text-muted">{{ p.email }}</span>
+                      </td>
+                      <td>{{ p.especialidad.nombre }}</td>
+                      <td class="whitespace-nowrap">{{ p.sede.nombre }}</td>
+                      <td class="whitespace-nowrap">{{ p.registro_profesional }}</td>
+                      <td>
+                        @if (p.activo) {
+                          <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-sm font-semibold" style="background: var(--brand-soft); color: var(--brand)">
+                            <app-icon name="check" [size]="14" />Activo
+                          </span>
+                        } @else {
+                          <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-sm font-semibold" style="background: var(--surface-sunken); color: var(--muted)">
+                            <app-icon name="ban" [size]="14" />Inactivo
+                          </span>
+                        }
+                      </td>
+                      <td class="col-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="abrir(p, $event)">
+                          <app-icon name="pencil" [size]="16" />
+                          Editar<span class="sr-only"> a {{ nombre(p) }}</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm ml-2" [disabled]="busyId() === p.id" (click)="alternarActivo(p)">
+                          {{ p.activo ? 'Desactivar' : 'Activar' }}<span class="sr-only"> a {{ nombre(p) }}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-pagination class="mt-6" [total]="v.data.total" [limit]="pageSize" [offset]="v.data.offset" (offsetChange)="onOffset($event)" />
+          }
+        }
+      }
+    }
+  }
+</div>

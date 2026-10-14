@@ -1,0 +1,39 @@
+<h2 class="text-2xl">Resumen</h2>
+<p class="mt-1 text-muted">Cómo va la operación en este momento.</p>
+
+<div class="mt-6" [attr.aria-busy]="state().status === 'loading'">
+  @switch (state().status) {
+    @case ('error') {
+      <app-state-message
+        kind="error"
+        icon="alert"
+        title="No pudimos cargar el resumen"
+        message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+        retryLabel="Reintentar"
+        (retry)="retry()"
+      />
+    }
+    @default {
+      <ul class="grid gap-4 sm:grid-cols-2">
+        @for (t of tarjetas; track t.key; let i = $index) {
+          <li class="rise" [style.--delay]="i * 40 + 'ms'">
+            <a [routerLink]="t.link" class="card stat">
+              <span class="icon-tile"><app-icon [name]="t.icon" [size]="22" /></span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold text-muted">{{ t.label }}</span>
+                @if (state(); as s) {
+                  @if (s.status === 'ready') {
+                    <span class="stat-value block">{{ s.data[t.key] }}</span>
+                  } @else {
+                    <span class="skeleton mt-1 block h-9 w-14" role="status"><span class="sr-only">Cargando…</span></span>
+                  }
+                }
+                <span class="block text-sm text-muted">{{ t.hint }}</span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

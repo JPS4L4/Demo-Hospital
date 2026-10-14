@@ -13,6 +13,12 @@ export interface Profesional {
   sede: { id: number; nombre: string; ciudad: string };
 }
 
+/** Cuerpo de `POST/PUT /profesionales`. */
+export type ProfesionalInput = Pick<
+  Profesional,
+  'nombres' | 'apellidos' | 'especialidad_id' | 'sede_id' | 'registro_profesional' | 'email' | 'telefono' | 'activo'
+> & { bio: string | null };
+
 export function nombreCompleto(p: Pick<Profesional, 'nombres' | 'apellidos'>): string {
   return `${p.nombres} ${p.apellidos}`.trim();
 }

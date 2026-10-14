@@ -1,0 +1,28 @@
+<div class="border-b border-line bg-sunken">
+  <div class="container-page py-8 md:py-10">
+    <p class="eyebrow">Panel</p>
+    <h1 class="mt-3 text-3xl md:text-4xl">Administración</h1>
+    <p class="mt-2 text-muted">Sesión de {{ auth.usuario()?.email }}</p>
+  </div>
+</div>
+
+<div class="container-page admin-shell py-8 md:py-10">
+  <nav class="admin-nav" aria-label="Secciones del panel">
+    @for (s of sections; track s.path) {
+      <a
+        [routerLink]="s.path"
+        routerLinkActive="admin-link-active"
+        ariaCurrentWhenActive="page"
+        [routerLinkActiveOptions]="{ exact: s.exact }"
+        class="admin-link"
+      >
+        <app-icon [name]="s.icon" [size]="18" />
+        {{ s.label }}
+      </a>
+    }
+  </nav>
+
+  <div class="min-w-0">
+    <router-outlet />
+  </div>
+</div>

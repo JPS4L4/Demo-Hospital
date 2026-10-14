@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guards';
+import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -29,6 +29,12 @@ export const routes: Routes = [
     title: 'Crear cuenta · Meridiana',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/registro/registro').then(m => m.Registro),
+  },
+  {
+    path: 'admin',
+    title: 'Panel · Meridiana',
+    canActivate: [adminGuard],
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES),
   },
   {
     path: 'medicamentos',

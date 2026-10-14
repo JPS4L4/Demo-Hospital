@@ -64,9 +64,12 @@ export function formatFechaLarga(value: string): string {
 /** "15 oct 2026" */
 export function formatFechaCorta(value: string): string {
   const date = value.length === 10 ? atNoon(value) : new Date(value);
-  return new Intl.DateTimeFormat(LOCALE, { timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric' })
-    .format(date)
-    .replace(/\./g, '');
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat(LOCALE, { timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric' })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+  return `${p['day']} ${p['month'].replace(/\./g, '')} ${p['year']}`;
 }
 
 /** "9:00 a. m." */
