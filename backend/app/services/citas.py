@@ -95,3 +95,4 @@ def validar_sede(profesional: Profesional, sede_id: int | None) -> int:
     if sede_id is not None and sede_id != profesional.sede_id:
         raise HTTPException(422, "La sede indicada no coincide con la sede del profesional")
     return profesional.sede_id
+

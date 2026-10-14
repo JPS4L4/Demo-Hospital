@@ -27,7 +27,8 @@ class ProfesionalResumen(OrmModel):
 
 
 class CitaCreate(OrmModel):
-    paciente_id: int
+    # Admin: obligatorio. Paciente: se toma de su sesión; si se envía debe ser el suyo (403 si no).
+    paciente_id: int | None = None
     profesional_id: int
     # Opcional: si se omite se usa la sede del profesional; si se envía debe coincidir con ella
     sede_id: int | None = None
@@ -62,3 +63,4 @@ class CitaOut(OrmModel):
     paciente: PacienteResumen
     profesional: ProfesionalResumen
     sede: SedeResumen
+

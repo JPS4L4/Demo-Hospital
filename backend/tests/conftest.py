@@ -34,14 +34,21 @@ if not make_url(TEST_URL).database.endswith("_test"):
 
 # Debe fijarse antes de importar la app: así el engine global nunca apunta a la base real.
 os.environ["DATABASE_URL"] = TEST_URL
+# Secreto propio de las pruebas (nunca el de un entorno real)
+os.environ["JWT_SECRET"] = "secreto-solo-para-pruebas-0123456789abcdef"
+os.environ["JWT_EXPIRE_MINUTES"] = "60"
 
 from app.core.database import Base, get_db  # noqa: E402
 from app.main import app as api  # noqa: E402
 import app.models.cita, app.models.especialidad, app.models.medicamento, app.models.noticia  # noqa: E402,F401,E401
-import app.models.paciente, app.models.profesional, app.models.sede  # noqa: E402,F401,E401
+import app.models.paciente, app.models.profesional, app.models.sede, app.models.usuario  # noqa: E402,F401,E401
 
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
+
+from app.core.security import hashear  # noqa: E402
+from app.models.paciente import Paciente  # noqa: E402
+from app.models.usuario import Usuario  # noqa: E402
 
 
 def _crear_base_si_falta() -> None:
@@ -81,8 +88,12 @@ def db(engine):
         sesion.close()
 
 
+CONTRASENA = "Contrasena-de-prueba-1"
+
+
 @pytest.fixture
-def client(engine):
+def anon(engine):
+    """Cliente sin sesión."""
     factoria = sessionmaker(bind=engine, autoflush=False)
 
     def _get_db():
@@ -96,6 +107,67 @@ def client(engine):
     with TestClient(api) as c:
         yield c
     api.dependency_overrides.clear()
+
+
+def _con_token(cliente: TestClient, email: str, contrasena: str = CONTRASENA) -> TestClient:
+    r = cliente.post("/auth/login", json={"email": email, "password": contrasena})
+    assert r.status_code == 200, r.text
+    cliente.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
+    return cliente
+
+
+@pytest.fixture
+def admin(db):
+    usuario = Usuario(email="admin-prueba@example.com", password_hash=hashear(CONTRASENA), rol="admin")
+    db.add(usuario)
+    db.commit()
+    return usuario
+
+
+@pytest.fixture
+def client(anon, admin):
+    """Cliente autenticado como administrador: las pruebas de recursos lo usan por defecto."""
+    return _con_token(anon, admin.email)
+
+
+@pytest.fixture
+def cuenta_paciente(db):
+    """Fábrica de cuentas de paciente (ficha + usuario) creadas directamente en la base."""
+    contador = {"n": 0}
+
+    def _crear(**kw) -> Usuario:
+        contador["n"] += 1
+        n = contador["n"]
+        ficha = Paciente(
+            tipo_documento="CC",
+            numero_documento=f"2000{n:05d}",
+            nombres=f"Cuenta{n}",
+            apellidos=f"Prueba{n}",
+            fecha_nacimiento="1992-03-04",
+            email=f"cuenta{n}@example.com",
+            telefono="3001234567",
+        )
+        usuario = Usuario(email=ficha.email, password_hash=hashear(CONTRASENA), rol="paciente", paciente=ficha)
+        db.add(usuario)
+        db.commit()
+        return usuario
+
+    return _crear
+
+
+@pytest.fixture
+def cliente_de(anon):
+    """Devuelve un cliente nuevo autenticado como el usuario dado (otra sesión HTTP distinta de `client`)."""
+    abiertos = []
+
+    def _hacer(usuario: Usuario) -> TestClient:
+        c = TestClient(api)
+        abiertos.append(c)
+        return _con_token(c, usuario.email)
+
+    yield _hacer
+    for c in abiertos:
+        c.close()
 
 
 # --- fábricas de datos vía API -------------------------------------------------------------

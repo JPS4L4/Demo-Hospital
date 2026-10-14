@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.auth import require_admin
 from app.core.database import get_db
 from app.core.errors import guardar, obtener_o_404
 from app.models.sede import Sede
@@ -29,7 +30,7 @@ def obtener_sede(sede_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Sede, sede_id, NO_ENCONTRADA)
 
 
-@router.post("", response_model=SedeOut, status_code=201)
+@router.post("", response_model=SedeOut, status_code=201, dependencies=[Depends(require_admin)])
 def crear_sede(sede: SedeBase, db: Session = Depends(get_db)):
     nueva_sede = Sede(**sede.model_dump())
     db.add(nueva_sede)
@@ -38,7 +39,7 @@ def crear_sede(sede: SedeBase, db: Session = Depends(get_db)):
     return nueva_sede
 
 
-@router.put("/{sede_id}", response_model=SedeOut)
+@router.put("/{sede_id}", response_model=SedeOut, dependencies=[Depends(require_admin)])
 def actualizar_sede(sede_id: int, datos: SedeBase, db: Session = Depends(get_db)):
     sede = obtener_o_404(db, Sede, sede_id, NO_ENCONTRADA)
     for campo, valor in datos.model_dump().items():
@@ -48,7 +49,7 @@ def actualizar_sede(sede_id: int, datos: SedeBase, db: Session = Depends(get_db)
     return sede
 
 
-@router.delete("/{sede_id}", status_code=204)
+@router.delete("/{sede_id}", status_code=204, dependencies=[Depends(require_admin)])
 def eliminar_sede(sede_id: int, db: Session = Depends(get_db)):
     sede = obtener_o_404(db, Sede, sede_id, NO_ENCONTRADA)
     db.delete(sede)

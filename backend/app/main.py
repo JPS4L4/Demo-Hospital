@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import citas, especialidades, medicamentos, noticias, pacientes, profesionales, sedes
+from app.routers import auth, citas, especialidades, medicamentos, noticias, pacientes, profesionales, sedes
 
 app = FastAPI(title="Hospital API")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 def health_check():
     return {"status": "ok"}
 
+app.include_router(auth.router)
 app.include_router(sedes.router)
 app.include_router(noticias.router)
 app.include_router(especialidades.router)

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.auth import require_admin
 from app.core.database import get_db
 from app.core.errors import guardar, obtener_o_404
 from app.core.pagination import Page, PageParams, escapar_like, paginar
@@ -32,7 +33,7 @@ def obtener_especialidad(especialidad_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Especialidad, especialidad_id, NO_ENCONTRADA)
 
 
-@router.post("", response_model=EspecialidadOut, status_code=201)
+@router.post("", response_model=EspecialidadOut, status_code=201, dependencies=[Depends(require_admin)])
 def crear_especialidad(datos: EspecialidadBase, db: Session = Depends(get_db)):
     nueva = Especialidad(**datos.model_dump())
     db.add(nueva)
@@ -41,7 +42,7 @@ def crear_especialidad(datos: EspecialidadBase, db: Session = Depends(get_db)):
     return nueva
 
 
-@router.put("/{especialidad_id}", response_model=EspecialidadOut)
+@router.put("/{especialidad_id}", response_model=EspecialidadOut, dependencies=[Depends(require_admin)])
 def actualizar_especialidad(especialidad_id: int, datos: EspecialidadBase, db: Session = Depends(get_db)):
     especialidad = obtener_o_404(db, Especialidad, especialidad_id, NO_ENCONTRADA)
     for campo, valor in datos.model_dump().items():
@@ -51,7 +52,7 @@ def actualizar_especialidad(especialidad_id: int, datos: EspecialidadBase, db: S
     return especialidad
 
 
-@router.delete("/{especialidad_id}", status_code=204)
+@router.delete("/{especialidad_id}", status_code=204, dependencies=[Depends(require_admin)])
 def eliminar_especialidad(especialidad_id: int, db: Session = Depends(get_db)):
     especialidad = obtener_o_404(db, Especialidad, especialidad_id, NO_ENCONTRADA)
     db.delete(especialidad)

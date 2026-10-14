@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.auth import require_admin
 from app.core.database import get_db
 from app.core.errors import guardar, obtener_o_404
 from app.models.noticia import Noticia
@@ -33,7 +34,7 @@ def obtener_noticia(noticia_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Noticia, noticia_id, NO_ENCONTRADA)
 
 
-@router.post("", response_model=NoticiaOut, status_code=201)
+@router.post("", response_model=NoticiaOut, status_code=201, dependencies=[Depends(require_admin)])
 def crear_noticia(noticia: NoticiaBase, db: Session = Depends(get_db)):
     nueva_noticia = Noticia(**noticia.model_dump())
     db.add(nueva_noticia)
@@ -42,7 +43,7 @@ def crear_noticia(noticia: NoticiaBase, db: Session = Depends(get_db)):
     return nueva_noticia
 
 
-@router.put("/{noticia_id}", response_model=NoticiaOut)
+@router.put("/{noticia_id}", response_model=NoticiaOut, dependencies=[Depends(require_admin)])
 def actualizar_noticia(noticia_id: int, datos: NoticiaBase, db: Session = Depends(get_db)):
     noticia = obtener_o_404(db, Noticia, noticia_id, NO_ENCONTRADA)
     for campo, valor in datos.model_dump().items():
@@ -52,7 +53,7 @@ def actualizar_noticia(noticia_id: int, datos: NoticiaBase, db: Session = Depend
     return noticia
 
 
-@router.delete("/{noticia_id}", status_code=204)
+@router.delete("/{noticia_id}", status_code=204, dependencies=[Depends(require_admin)])
 def eliminar_noticia(noticia_id: int, db: Session = Depends(get_db)):
     noticia = obtener_o_404(db, Noticia, noticia_id, NO_ENCONTRADA)
     db.delete(noticia)

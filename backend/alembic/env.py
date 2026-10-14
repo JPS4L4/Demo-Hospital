@@ -8,6 +8,7 @@ from app.models.profesional import Profesional
 from app.models.medicamento import Medicamento
 from app.models.paciente import Paciente
 from app.models.cita import Cita
+from app.models.usuario import Usuario
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

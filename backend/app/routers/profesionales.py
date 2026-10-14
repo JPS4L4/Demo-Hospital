@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.auth import require_admin
 from app.core.database import get_db
 from app.core.errors import guardar, obtener_o_404
 from app.core.pagination import Page, PageParams, escapar_like, paginar
@@ -51,7 +52,7 @@ def obtener_profesional(profesional_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
 
 
-@router.post("", response_model=ProfesionalOut, status_code=201)
+@router.post("", response_model=ProfesionalOut, status_code=201, dependencies=[Depends(require_admin)])
 def crear_profesional(datos: ProfesionalBase, db: Session = Depends(get_db)):
     _validar_referencias(db, datos)
     nuevo = Profesional(**datos.model_dump())
@@ -61,7 +62,7 @@ def crear_profesional(datos: ProfesionalBase, db: Session = Depends(get_db)):
     return nuevo
 
 
-@router.put("/{profesional_id}", response_model=ProfesionalOut)
+@router.put("/{profesional_id}", response_model=ProfesionalOut, dependencies=[Depends(require_admin)])
 def actualizar_profesional(profesional_id: int, datos: ProfesionalBase, db: Session = Depends(get_db)):
     profesional = obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
     _validar_referencias(db, datos)
@@ -72,7 +73,7 @@ def actualizar_profesional(profesional_id: int, datos: ProfesionalBase, db: Sess
     return profesional
 
 
-@router.delete("/{profesional_id}", status_code=204)
+@router.delete("/{profesional_id}", status_code=204, dependencies=[Depends(require_admin)])
 def eliminar_profesional(profesional_id: int, db: Session = Depends(get_db)):
     profesional = obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
     db.delete(profesional)
