@@ -1,5 +1,5 @@
 """Datos de ejemplo para el demo: sedes, noticias, especialidades, profesionales,
-medicamentos, pacientes y citas.
+medicamentos, pacientes, citas y las cuentas demo (un admin y un paciente).
 
 Uso (desde backend/, con las migraciones aplicadas):
 
@@ -8,10 +8,16 @@ Uso (desde backend/, con las migraciones aplicadas):
 Es idempotente: cada registro se identifica por una clave natural (nombre, título,
 registro profesional, documento, paciente + profesional + motivo...) y solo se inserta
 si todavía no existe. Todo el contenido es ficticio.
+
+Cuentas demo (solo para el demo público; contraseñas en DEMO_ADMIN_PASSWORD y DEMO_PATIENT_PASSWORD,
+con valores por defecto documentados en el README): `admin@meridiana.example` y el correo de la
+primera paciente del seed. Si la cuenta ya existe no se toca (no se restablece su contraseña).
 """
 from datetime import date, datetime, timedelta, timezone
 
+from app.core.config import settings
 from app.core.database import SessionLocal
+from app.core.security import hashear
 from app.models.cita import Cita
 from app.models.especialidad import Especialidad
 from app.models.medicamento import Medicamento
@@ -19,6 +25,7 @@ from app.models.noticia import Noticia
 from app.models.paciente import Paciente
 from app.models.profesional import Profesional
 from app.models.sede import Sede
+from app.models.usuario import Usuario
 from app.services.citas import TZ_CLINICA
 
 SEDES = [
@@ -187,6 +194,10 @@ CITAS = [
     (0, "RM-20010", 8, 14, 30, 30, "Chequeo preventivo anual"),
 ]
 
+ADMIN_EMAIL = "admin@meridiana.example"
+# Índice (en PACIENTES) de la paciente que tiene cuenta demo
+PACIENTE_DEMO = 0
+
 
 def _dia_habil(dias: int, hora: int, minuto: int) -> datetime:
     """Fecha futura (lunes a sábado) a `dias` días o más de hoy, en hora de Bogotá."""
@@ -330,6 +341,30 @@ def seed() -> dict[str, int]:
                 )
                 nuevas_citas += 1
 
+        nuevos_usuarios = 0
+        if db.query(Usuario).filter(Usuario.email == ADMIN_EMAIL).first() is None:
+            db.add(Usuario(email=ADMIN_EMAIL, password_hash=hashear(settings.demo_admin_password), rol="admin"))
+            nuevos_usuarios += 1
+        tipo, documento = PACIENTES[PACIENTE_DEMO][:2]
+        ficha_demo = (
+            db.query(Paciente)
+            .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
+            .one()
+        )
+        tiene_cuenta = db.query(Usuario).filter(
+            (Usuario.paciente_id == ficha_demo.id) | (Usuario.email == ficha_demo.email)
+        ).first()
+        if tiene_cuenta is None:
+            db.add(
+                Usuario(
+                    email=ficha_demo.email,
+                    password_hash=hashear(settings.demo_patient_password),
+                    rol="paciente",
+                    paciente_id=ficha_demo.id,
+                )
+            )
+            nuevos_usuarios += 1
+
         db.commit()
         nuevos = {
             "sedes": nuevas_sedes,
@@ -339,6 +374,7 @@ def seed() -> dict[str, int]:
             "medicamentos": nuevos_medicamentos,
             "pacientes": nuevos_pacientes,
             "citas": nuevas_citas,
+            "usuarios": nuevos_usuarios,
         }
         print("Registros nuevos: " + " | ".join(f"{k}: {v}" for k, v in nuevos.items()))
         return nuevos
