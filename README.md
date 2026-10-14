@@ -44,11 +44,13 @@ python -m venv .venv
 pip install -r requirements.txt
 cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
 alembic upgrade head
+python -m app.seed          # datos de ejemplo (sedes y noticias); se puede repetir sin duplicar
 uvicorn app.main:app --reload
 ```
 
 La API queda en <http://localhost:8000> y la documentación interactiva en <http://localhost:8000/docs>.
 Si cambias las credenciales de la base de datos, actualiza `DATABASE_URL` en `backend/.env`.
+Los orígenes permitidos por CORS se configuran con `CORS_ORIGINS` (lista separada por comas; por defecto `http://localhost:4200`).
 
 ### 3. Frontend
 
@@ -66,8 +68,10 @@ La aplicación queda en <http://localhost:4200>.
 |--------|------|-------------|
 | GET | `/health` | Estado de la API |
 | GET | `/sedes` | Lista las sedes |
+| GET | `/sedes/{id}` | Detalle de una sede (404 si no existe) |
 | POST | `/sedes` | Crea una sede |
-| GET | `/noticias` | Lista las noticias |
+| GET | `/noticias` | Lista las noticias, la más reciente primero |
+| GET | `/noticias/{id}` | Detalle de una noticia (404 si no existe) |
 | POST | `/noticias` | Crea una noticia |
 
 Por ahora el frontend tiene las páginas (inicio, citas, medicamentos, profesionales y noticias) pero todavía no consume la API.

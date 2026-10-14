@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.noticia import Noticia
@@ -8,7 +8,14 @@ router = APIRouter(prefix="/noticias", tags=["Noticias"])
 
 @router.get("", response_model=list[NoticiaOut])
 def listar_noticias(db: Session = Depends(get_db)):
-    return db.query(Noticia).all()
+    return db.query(Noticia).order_by(Noticia.fecha_publicacion.desc(), Noticia.id.desc()).all()
+
+@router.get("/{noticia_id}", response_model=NoticiaOut)
+def obtener_noticia(noticia_id: int, db: Session = Depends(get_db)):
+    noticia = db.get(Noticia, noticia_id)
+    if noticia is None:
+        raise HTTPException(status_code=404, detail="Noticia no encontrada")
+    return noticia
 
 @router.post("", response_model=NoticiaOut, status_code=201)
 def crear_noticia(noticia: NoticiaBase, db: Session = Depends(get_db)):
