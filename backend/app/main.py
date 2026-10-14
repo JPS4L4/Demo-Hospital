@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import especialidades, noticias, profesionales, sedes
+from app.routers import especialidades, medicamentos, noticias, profesionales, sedes
 
 app = FastAPI(title="Hospital API")
 
@@ -21,3 +21,4 @@ app.include_router(sedes.router)
 app.include_router(noticias.router)
 app.include_router(especialidades.router)
 app.include_router(profesionales.router)
+app.include_router(medicamentos.router)

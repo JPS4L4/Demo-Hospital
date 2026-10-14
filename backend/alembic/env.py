@@ -5,6 +5,7 @@ from app.models.sede import Sede
 from app.models.noticia import Noticia
 from app.models.especialidad import Especialidad
 from app.models.profesional import Profesional
+from app.models.medicamento import Medicamento
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

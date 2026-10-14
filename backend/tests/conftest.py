@@ -37,7 +37,7 @@ os.environ["DATABASE_URL"] = TEST_URL
 
 from app.core.database import Base, get_db  # noqa: E402
 from app.main import app as api  # noqa: E402
-import app.models.especialidad, app.models.noticia, app.models.profesional, app.models.sede  # noqa: E402,F401,E401
+import app.models.especialidad, app.models.medicamento, app.models.noticia, app.models.profesional, app.models.sede  # noqa: E402,F401,E401
 
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
