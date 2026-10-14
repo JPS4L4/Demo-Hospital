@@ -1,1 +1,21 @@
-<p>not-found works!</p>
+<section class="container-page section">
+  <div class="mx-auto grid max-w-4xl items-center gap-10 md:grid-cols-[auto_1fr]">
+    <p class="font-display text-[7rem] font-semibold leading-none text-brand md:text-[10rem]" aria-hidden="true">404</p>
+    <div>
+      <p class="eyebrow">Página no encontrada</p>
+      <h1 class="mt-4 text-3xl md:text-4xl">No encontramos lo que buscas</h1>
+      <p class="lead mt-4">
+        La dirección puede estar mal escrita o la página ya no existe. Estos enlaces te llevan a los
+        lugares más consultados.
+      </p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a routerLink="/" class="btn btn-primary">
+          <app-icon name="arrow-left" [size]="18" />
+          Volver al inicio
+        </a>
+        <a routerLink="/citas" class="btn btn-secondary">Pedir cita</a>
+        <a routerLink="/sedes" class="btn btn-quiet">Ver sedes</a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -10,4 +10,12 @@ import { Footer } from './layout/footer/footer';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {}
+export class App {
+  // <base href="/"> haría que "#contenido" navegara a la raíz; se mueve el foco a mano.
+  skipToContent(event: Event): void {
+    event.preventDefault();
+    const main = document.getElementById('contenido');
+    main?.focus();
+    main?.scrollIntoView();
+  }
+}

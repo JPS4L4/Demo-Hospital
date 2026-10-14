@@ -23,6 +23,6 @@ describe('App', () => {
     expect(compiled.querySelector('app-header')).toBeTruthy();
     expect(compiled.querySelector('main router-outlet')).toBeTruthy();
     expect(compiled.querySelector('app-footer')).toBeTruthy();
-    expect(compiled.querySelector('.logo')?.textContent).toContain('Hospital');
+    expect(compiled.querySelector('.logo')?.textContent).toContain('Meridiana');
   });
 });

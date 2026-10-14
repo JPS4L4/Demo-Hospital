@@ -1,0 +1,26 @@
+.footer-title {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+}
+.footer-list {
+  display: grid;
+  gap: 0.55rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer-link {
+  color: var(--ink);
+  text-decoration: none;
+}
+.footer-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

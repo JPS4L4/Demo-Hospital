@@ -1,8 +1,78 @@
-<header class="main-header">
-    <div class="logo font-bold tracking-wide">Hospital</div>
-    <nav>
-        @for (link of navLinks; track link.path) {
-        <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
-        }
+<div class="hidden border-b border-line bg-brand-soft text-sm md:block">
+  <div class="container-page flex items-center justify-between gap-6 py-1.5">
+    <p class="flex items-center gap-2 text-ink">
+      <app-icon name="clock" [size]="16" />
+      Urgencias abiertas las 24 horas
+    </p>
+    <a class="flex items-center gap-2 font-semibold text-ink hover:underline" href="tel:+576015550100">
+      <app-icon name="phone" [size]="16" />
+      Línea de atención +57 601 555 0100
+    </a>
+  </div>
+</div>
+
+<header class="main-header sticky top-0 z-40 border-b border-line bg-paper">
+  <div class="container-page flex h-16 items-center gap-3 lg:h-[4.5rem]">
+    <a routerLink="/" class="logo mr-auto rounded-md" aria-label="Meridiana, ir al inicio">
+      <app-logo />
+    </a>
+
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Principal">
+      @for (link of navLinks; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="nav-active"
+          ariaCurrentWhenActive="page"
+          [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+          class="nav-link"
+        >{{ link.label }}</a>
+      }
     </nav>
+
+    <button
+      type="button"
+      class="theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    >
+      <app-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" [size]="20" />
+    </button>
+
+    <a routerLink="/citas" class="btn btn-primary hidden sm:inline-flex">
+      <app-icon name="calendar" [size]="18" />
+      Pedir cita
+    </a>
+
+    <button
+      type="button"
+      class="theme-toggle lg:hidden"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="menu-movil"
+      [attr.aria-label]="menuOpen() ? 'Cerrar menú' : 'Abrir menú'"
+    >
+      <app-icon [name]="menuOpen() ? 'x' : 'menu'" [size]="22" />
+    </button>
+  </div>
+
+  @if (menuOpen()) {
+    <nav id="menu-movil" class="mobile-menu border-t border-line bg-paper lg:hidden" aria-label="Principal (móvil)">
+      <div class="container-page flex flex-col py-3">
+        @for (link of navLinks; track link.path) {
+          <a
+            [routerLink]="link.path"
+            routerLinkActive="nav-active"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+            class="mobile-link"
+          >{{ link.label }}</a>
+        }
+        <a routerLink="/citas" class="btn btn-primary mt-3 sm:hidden">
+          <app-icon name="calendar" [size]="18" />
+          Pedir cita
+        </a>
+        <a routerLink="/citas" class="mobile-link hidden sm:flex">Citas</a>
+      </div>
+    </nav>
+  }
 </header>
