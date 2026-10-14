@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import AwareDatetime
@@ -64,3 +64,14 @@ class CitaOut(OrmModel):
     profesional: ProfesionalResumen
     sede: SedeResumen
 
+
+class HuecoOut(OrmModel):
+    inicio: datetime
+    fin: datetime
+
+
+class DisponibilidadOut(OrmModel):
+    profesional_id: int
+    fecha: date
+    duracion_min: Duracion
+    huecos: list[HuecoOut]

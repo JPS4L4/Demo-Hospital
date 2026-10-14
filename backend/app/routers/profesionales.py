@@ -1,3 +1,6 @@
+from datetime import date, datetime
+from typing import get_args
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -9,7 +12,9 @@ from app.core.pagination import Page, PageParams, escapar_like, paginar
 from app.models.especialidad import Especialidad
 from app.models.profesional import Profesional
 from app.models.sede import Sede
+from app.schemas.cita import DisponibilidadOut, Duracion
 from app.schemas.profesional import ProfesionalBase, ProfesionalOut
+from app.services import citas as reglas
 
 router = APIRouter(prefix="/profesionales", tags=["Profesionales"])
 
@@ -50,6 +55,29 @@ def listar_profesionales(
 @router.get("/{profesional_id}", response_model=ProfesionalOut)
 def obtener_profesional(profesional_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
+
+
+@router.get("/{profesional_id}/disponibilidad", response_model=DisponibilidadOut)
+def disponibilidad(
+    profesional_id: int,
+    fecha: date = Query(..., description="Día a consultar, YYYY-MM-DD (hora de Bogotá)"),
+    duracion: int = Query(30, description="Duración de la cita en minutos; también es el paso entre huecos"),
+    db: Session = Depends(get_db),
+):
+    """Huecos libres del profesional en un día. Fechas pasadas → 422; domingos, profesional inactivo o
+    día ya agotado → lista vacía."""
+    profesional = obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
+    if duracion not in get_args(Duracion):
+        raise HTTPException(422, "La duración debe ser 20, 30, 40 o 60 minutos")
+    if fecha < datetime.now(reglas.TZ_CLINICA).date():
+        raise HTTPException(422, "La fecha debe ser hoy o posterior")
+    huecos = reglas.huecos_libres(db, profesional, fecha, duracion)
+    return {
+        "profesional_id": profesional.id,
+        "fecha": fecha,
+        "duracion_min": duracion,
+        "huecos": [{"inicio": i, "fin": f} for i, f in huecos],
+    }
 
 
 @router.post("", response_model=ProfesionalOut, status_code=201, dependencies=[Depends(require_admin)])

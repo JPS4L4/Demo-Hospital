@@ -5,8 +5,11 @@
 - El profesional debe estar activo (409).
 - Sin solapes para el mismo profesional ni para el mismo paciente entre citas no canceladas (409).
 - Si se indica sede debe ser la del profesional (422).
+
+`huecos_libres` aplica estas mismas reglas (constantes, horario, solapes) para ofrecer solo
+horarios que `validar_agenda` aceptaría, de modo que la reserva y la disponibilidad no discrepen.
 """
-from datetime import datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
@@ -96,3 +99,35 @@ def validar_sede(profesional: Profesional, sede_id: int | None) -> int:
         raise HTTPException(422, "La sede indicada no coincide con la sede del profesional")
     return profesional.sede_id
 
+
+def huecos_libres(
+    db: Session, profesional: Profesional, dia: date, duracion_min: int, ahora: datetime | None = None
+) -> list[tuple[datetime, datetime]]:
+    """Huecos (inicio, fin) libres del profesional en `dia` (hora de Bogotá), uno cada `duracion_min` minutos.
+
+    Vacío si es domingo, si el profesional no está activo o si ya no queda ningún hueco futuro.
+    Excluye los que se solapan con citas no canceladas del profesional y los que ya pasaron.
+    """
+    if dia.weekday() > SABADO or not profesional.activo:
+        return []
+    ahora = ahora or datetime.now(timezone.utc)
+    apertura = datetime.combine(dia, APERTURA, tzinfo=TZ_CLINICA)
+    cierre = datetime.combine(dia, CIERRE, tzinfo=TZ_CLINICA)
+    ocupadas = db.execute(
+        select(Cita.inicio, Cita.fin).where(
+            Cita.profesional_id == profesional.id,
+            Cita.estado != "cancelada",
+            Cita.inicio < cierre,
+            Cita.fin > apertura,
+        )
+    ).all()
+    paso = timedelta(minutes=duracion_min)
+    huecos = []
+    inicio = apertura
+    while inicio + paso <= cierre:
+        fin = inicio + paso
+        # mismo criterio que validar_agenda: futuro y sin solape con citas no canceladas
+        if inicio > ahora and not any(o_ini < fin and o_fin > inicio for o_ini, o_fin in ocupadas):
+            huecos.append((inicio, fin))
+        inicio = fin
+    return huecos
