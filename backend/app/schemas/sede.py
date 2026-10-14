@@ -1,13 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+from app.schemas.common import texto
+
 
 class SedeBase(BaseModel):
-    nombre: str
-    direccion: str
-    ciudad: str
-    telefono: str | None = None
+    nombre: texto(120)
+    direccion: texto(200)
+    ciudad: texto(80)
+    telefono: texto(40) | None = None
+
 
 class SedeOut(SedeBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

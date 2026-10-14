@@ -3,6 +3,8 @@ from app.core.database import Base
 from app.core.config import settings
 from app.models.sede import Sede
 from app.models.noticia import Noticia
+from app.models.especialidad import Especialidad
+from app.models.profesional import Profesional
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
