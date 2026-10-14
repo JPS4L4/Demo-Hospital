@@ -37,7 +37,8 @@ os.environ["DATABASE_URL"] = TEST_URL
 
 from app.core.database import Base, get_db  # noqa: E402
 from app.main import app as api  # noqa: E402
-import app.models.especialidad, app.models.medicamento, app.models.noticia, app.models.profesional, app.models.sede  # noqa: E402,F401,E401
+import app.models.cita, app.models.especialidad, app.models.medicamento, app.models.noticia  # noqa: E402,F401,E401
+import app.models.paciente, app.models.profesional, app.models.sede  # noqa: E402,F401,E401
 
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
@@ -135,3 +136,27 @@ def crear(client):
             return r.json()
 
     return Fabrica()
+
+
+@pytest.fixture
+def paciente(client):
+    """Fábrica de pacientes únicos vía API."""
+    contador = {"n": 0}
+
+    def _crear(**kw):
+        contador["n"] += 1
+        n = contador["n"]
+        datos = {
+            "tipo_documento": "CC",
+            "numero_documento": f"1000{n:05d}",
+            "nombres": f"Paciente{n}",
+            "apellidos": f"Prueba{n}",
+            "fecha_nacimiento": "1990-05-17",
+            "email": f"paciente{n}@example.com",
+            "telefono": "3001234567",
+        } | kw
+        r = client.post("/pacientes", json=datos)
+        assert r.status_code == 201, r.text
+        return r.json()
+
+    return _crear
