@@ -61,7 +61,8 @@ export class MisCitas {
   protected readonly mensajeCancelar = computed(() => {
     const c = this.cancelando();
     if (!c) return '';
-    return `Cita con ${c.profesional.nombres} ${c.profesional.apellidos}, ${formatFechaLarga(c.inicio)} a las ${formatHora(c.inicio)}. El horario quedará libre para otras personas.`;
+    // The time ends in "a. m."/"p. m.", so it must not be followed by a period.
+    return `Tu cita con ${c.profesional.nombres} ${c.profesional.apellidos} del ${formatFechaLarga(c.inicio)} a las ${formatHora(c.inicio)} quedará libre para otras personas.`;
   });
   protected readonly cancelBusy = signal(false);
   protected readonly cancelError = signal<string | null>(null);

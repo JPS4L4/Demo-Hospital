@@ -76,7 +76,8 @@ export class AdminAgenda {
   protected readonly mensajeCancelar = computed(() => {
     const c = this.cancelando();
     if (!c) return '';
-    return `${c.paciente.nombres} ${c.paciente.apellidos} con ${c.profesional.nombres} ${c.profesional.apellidos}, ${formatHora(c.inicio)}. El horario quedará libre.`;
+    // The time ends in "a. m."/"p. m.", so it must not be followed by a period.
+    return `El horario de ${c.paciente.nombres} ${c.paciente.apellidos} con ${c.profesional.nombres} ${c.profesional.apellidos} (${formatHora(c.inicio)}) quedará libre.`;
   });
 
   protected readonly fechaLarga = formatFechaLarga;
