@@ -1,6 +1,6 @@
 """Reglas de agenda de las citas.
 
-- La cita debe empezar en el futuro (422).
+- La cita debe empezar en el futuro y no más de un año adelante (422).
 - Atención de lunes a sábado, 07:00 a 19:00 hora de Bogotá; la cita completa debe caber (409).
 - El profesional debe estar activo (409).
 - Sin solapes para el mismo profesional ni para el mismo paciente entre citas no canceladas (409).
@@ -25,6 +25,7 @@ TZ_CLINICA = ZoneInfo("America/Bogota")
 APERTURA = time(7, 0)
 CIERRE = time(19, 0)
 SABADO = 5
+MAX_DIAS_ANTICIPACION = 365
 
 
 def a_hora_clinica(valor: datetime) -> datetime:
@@ -82,6 +83,12 @@ def validar_agenda(
     """Aplica todas las reglas y devuelve el instante de fin de la cita."""
     if inicio <= datetime.now(UTC):
         raise HTTPException(422, "La cita debe programarse en una fecha y hora futuras")
+    # Antes de sumar la duración: una fecha cercana al año 9999 desbordaría el datetime (500).
+    if inicio > datetime.now(UTC) + timedelta(days=MAX_DIAS_ANTICIPACION):
+        raise HTTPException(
+            422,
+            f"La cita no puede programarse con más de {MAX_DIAS_ANTICIPACION} días de anticipación",
+        )
     fin = inicio + timedelta(minutes=duracion_min)
     if not profesional.activo:
         raise HTTPException(409, "El profesional no está activo y no puede recibir citas")

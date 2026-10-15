@@ -71,6 +71,26 @@ def test_cita_en_el_pasado_422(client, escenario):
     assert r.status_code == 422 and "futur" in r.json()["detail"]
 
 
+def test_cita_demasiado_lejana_422(client, escenario):
+    lejana = dia_futuro(LUNES, 10, 0, semanas=60)
+    r = reservar(client, escenario, lejana)
+    assert r.status_code == 422 and "anticipación" in r.json()["detail"]
+
+
+@pytest.mark.parametrize("anio", [2200, 9999])
+def test_fecha_extrema_no_desborda_al_crear(client, escenario, anio):
+    r = reservar(client, escenario, dia_futuro(LUNES, 10, 0).replace(year=anio))
+    assert r.status_code == 422, r.text
+
+
+def test_fecha_extrema_no_desborda_al_reprogramar(client, escenario):
+    cita = reservar(client, escenario, dia_futuro(LUNES, 10, 0)).json()
+    for anio in (2200, 9999):
+        lejana = dia_futuro(LUNES, 10, 0).replace(year=anio)
+        r = client.put(f"/citas/{cita['id']}", json={"inicio": iso(lejana)})
+        assert r.status_code == 422, r.text
+
+
 def test_domingo_409(client, escenario):
     r = reservar(client, escenario, dia_futuro(DOMINGO, 10, 0))
     assert r.status_code == 409 and "domingo" in r.json()["detail"]
