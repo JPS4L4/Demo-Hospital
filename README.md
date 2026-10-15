@@ -146,6 +146,16 @@ Borrar la ficha de un paciente (admin) borra también su cuenta.
 
 El seed no modifica una cuenta que ya existe (no restablece su contraseña). Cualquier paciente nuevo se crea desde `/auth/registro`.
 
+### Reinicio periódico de la demo
+
+Las credenciales de las cuentas demo son públicas, así que cualquiera puede crear o borrar datos. Para que el estropicio se deshaga solo, la API puede **reiniciar la base** cada cierto tiempo: vacía todas las tablas de datos (`TRUNCATE ... RESTART IDENTITY CASCADE`; `alembic_version` no se toca) y vuelve a ejecutar el seed, todo en una sola transacción, de modo que o queda como un seed recién hecho o no cambia nada. Las citas se generan otra vez relativas a la fecha del reinicio y las cuentas demo recuperan sus contraseñas por defecto.
+
+- **Está desactivado por defecto**, porque borra todos los datos. Para activarlo en el despliegue del demo público define `DEMO_RESET_ENABLED=true` (y, si quieres, `DEMO_RESET_INTERVAL_HORAS`) en el entorno de la API. No lo actives en ningún entorno con datos reales.
+- Se programa dentro de la propia API (tarea en segundo plano), sin cron ni servicios extra. El primer reinicio llega tras un intervalo completo, no al arrancar. Cada reinicio queda en el registro (`hecho` u `omitido`); si falla, se registra el error y se reintenta en el siguiente intervalo.
+- Con varios workers o réplicas, todos programan el reinicio pero solo uno lo ejecuta: se coordinan con un *advisory lock* de PostgreSQL (`pg_try_advisory_xact_lock`) y los demás lo omiten.
+- En local puedes lanzarlo a mano con un intervalo corto, p. ej. `DEMO_RESET_ENABLED=true DEMO_RESET_INTERVAL_HORAS=0.01`.
+- La pantalla de ingreso avisa a quien visita la demo de que los datos se reinician periódicamente.
+
 ### Variables de entorno
 
 | Variable | Obligatoria | Descripción |
@@ -155,6 +165,8 @@ El seed no modifica una cuenta que ya existe (no restablece su contraseña). Cua
 | `JWT_EXPIRE_MINUTES` | no | Vigencia del token en minutos (60) |
 | `CORS_ORIGINS` | no | Orígenes permitidos (`http://localhost:4200`) |
 | `DEMO_ADMIN_PASSWORD`, `DEMO_PATIENT_PASSWORD` | no | Contraseñas de las cuentas demo del seed |
+| `DEMO_RESET_ENABLED` | no | `true` activa el reinicio periódico de la demo (`false`) |
+| `DEMO_RESET_INTERVAL_HORAS` | no | Horas entre reinicios, mayor que 0 (6) |
 | `LOG_LEVEL` | no | Nivel de registro: `DEBUG`, `INFO`, `WARNING` o `ERROR` (`INFO`) |
 | `RATE_LIMIT_ENABLED` | no | `false` desactiva el límite de intentos (`true`) |
 | `RATE_LIMIT_LOGIN_POR_MINUTO` | no | Intentos por IP y minuto en `POST /auth/login` (10) |
