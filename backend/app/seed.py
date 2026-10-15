@@ -16,6 +16,8 @@ primera paciente del seed. Si la cuenta ya existe no se toca (no se restablece s
 
 from datetime import UTC, date, datetime, timedelta
 
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.security import hashear
@@ -338,186 +340,191 @@ def _dia_habil(dias: int, hora: int, minuto: int) -> datetime:
     return fecha
 
 
-def seed() -> dict[str, int]:
-    db = SessionLocal()
-    try:
-        nuevas_sedes = 0
-        for datos in SEDES:
-            existe = db.query(Sede).filter(Sede.nombre == datos["nombre"]).first()
-            if existe is None:
-                db.add(Sede(**datos))
-                nuevas_sedes += 1
+def sembrar(db: Session) -> dict[str, int]:
+    """Inserta los datos que falten usando la sesión dada. No confirma la transacción: quien la
+    llama decide cuándo (así el reinicio de la demo vacía y siembra de forma atómica)."""
+    nuevas_sedes = 0
+    for datos in SEDES:
+        existe = db.query(Sede).filter(Sede.nombre == datos["nombre"]).first()
+        if existe is None:
+            db.add(Sede(**datos))
+            nuevas_sedes += 1
 
-        nuevas_noticias = 0
-        ahora = datetime.now(UTC)
-        for dias, titulo, contenido in NOTICIAS:
-            existe = db.query(Noticia).filter(Noticia.titulo == titulo).first()
-            if existe is None:
-                db.add(
-                    Noticia(
-                        titulo=titulo,
-                        contenido=contenido,
-                        fecha_publicacion=ahora - timedelta(days=dias),
-                    )
-                )
-                nuevas_noticias += 1
-
-        db.flush()
-
-        nuevas_especialidades = 0
-        for nombre, descripcion in ESPECIALIDADES:
-            if db.query(Especialidad).filter(Especialidad.nombre == nombre).first() is None:
-                db.add(Especialidad(nombre=nombre, descripcion=descripcion))
-                nuevas_especialidades += 1
-        db.flush()
-
-        especialidades = {e.nombre: e.id for e in db.query(Especialidad).all()}
-        sedes = {s.nombre: s.id for s in db.query(Sede).all()}
-        nuevos_profesionales = 0
-        for nombres, apellidos, especialidad, sede, registro, telefono, bio in PROFESIONALES:
-            existe = (
-                db.query(Profesional).filter(Profesional.registro_profesional == registro).first()
-            )
-            if existe is None:
-                slug = f"{nombres}.{apellidos.split()[0]}".lower()
-                for con_tilde, sin_tilde in zip("áéíóúñ", "aeioun", strict=True):
-                    slug = slug.replace(con_tilde, sin_tilde)
-                db.add(
-                    Profesional(
-                        nombres=nombres,
-                        apellidos=apellidos,
-                        especialidad_id=especialidades[especialidad],
-                        sede_id=sedes[sede],
-                        registro_profesional=registro,
-                        email=f"{slug}@example.com",
-                        telefono=telefono,
-                        bio=bio,
-                    )
-                )
-                nuevos_profesionales += 1
-
-        nuevos_medicamentos = 0
-        for nombre, activo, presentacion, concentracion, formula, stock, precio in MEDICAMENTOS:
-            existe = (
-                db.query(Medicamento)
-                .filter(Medicamento.nombre == nombre, Medicamento.concentracion == concentracion)
-                .first()
-            )
-            if existe is None:
-                db.add(
-                    Medicamento(
-                        nombre=nombre,
-                        principio_activo=activo,
-                        presentacion=presentacion,
-                        concentracion=concentracion,
-                        requiere_formula=formula,
-                        stock=stock,
-                        precio=precio,
-                    )
-                )
-                nuevos_medicamentos += 1
-
-        nuevos_pacientes = 0
-        for tipo, documento, nombres, apellidos, nacimiento, email, telefono, eps in PACIENTES:
-            existe = (
-                db.query(Paciente)
-                .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
-                .first()
-            )
-            if existe is None:
-                db.add(
-                    Paciente(
-                        tipo_documento=tipo,
-                        numero_documento=documento,
-                        nombres=nombres,
-                        apellidos=apellidos,
-                        fecha_nacimiento=nacimiento,
-                        email=email,
-                        telefono=telefono,
-                        eps=eps,
-                    )
-                )
-                nuevos_pacientes += 1
-        db.flush()
-
-        nuevas_citas = 0
-        for idx_paciente, registro, dias, hora, minuto, duracion, motivo in CITAS:
-            tipo, documento = PACIENTES[idx_paciente][:2]
-            paciente = (
-                db.query(Paciente)
-                .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
-                .one()
-            )
-            profesional = (
-                db.query(Profesional).filter(Profesional.registro_profesional == registro).one()
-            )
-            existe = (
-                db.query(Cita)
-                .filter(
-                    Cita.paciente_id == paciente.id,
-                    Cita.profesional_id == profesional.id,
-                    Cita.motivo == motivo,
-                )
-                .first()
-            )
-            if existe is None:
-                inicio = _dia_habil(dias, hora, minuto)
-                db.add(
-                    Cita(
-                        paciente_id=paciente.id,
-                        profesional_id=profesional.id,
-                        sede_id=profesional.sede_id,
-                        inicio=inicio,
-                        fin=inicio + timedelta(minutes=duracion),
-                        duracion_min=duracion,
-                        motivo=motivo,
-                    )
-                )
-                nuevas_citas += 1
-
-        nuevos_usuarios = 0
-        if db.query(Usuario).filter(Usuario.email == ADMIN_EMAIL).first() is None:
+    nuevas_noticias = 0
+    ahora = datetime.now(UTC)
+    for dias, titulo, contenido in NOTICIAS:
+        existe = db.query(Noticia).filter(Noticia.titulo == titulo).first()
+        if existe is None:
             db.add(
-                Usuario(
-                    email=ADMIN_EMAIL,
-                    password_hash=hashear(settings.demo_admin_password),
-                    rol="admin",
+                Noticia(
+                    titulo=titulo,
+                    contenido=contenido,
+                    fecha_publicacion=ahora - timedelta(days=dias),
                 )
             )
-            nuevos_usuarios += 1
-        tipo, documento = PACIENTES[PACIENTE_DEMO][:2]
-        ficha_demo = (
+            nuevas_noticias += 1
+
+    db.flush()
+
+    nuevas_especialidades = 0
+    for nombre, descripcion in ESPECIALIDADES:
+        if db.query(Especialidad).filter(Especialidad.nombre == nombre).first() is None:
+            db.add(Especialidad(nombre=nombre, descripcion=descripcion))
+            nuevas_especialidades += 1
+    db.flush()
+
+    especialidades = {e.nombre: e.id for e in db.query(Especialidad).all()}
+    sedes = {s.nombre: s.id for s in db.query(Sede).all()}
+    nuevos_profesionales = 0
+    for nombres, apellidos, especialidad, sede, registro, telefono, bio in PROFESIONALES:
+        existe = db.query(Profesional).filter(Profesional.registro_profesional == registro).first()
+        if existe is None:
+            slug = f"{nombres}.{apellidos.split()[0]}".lower()
+            for con_tilde, sin_tilde in zip("áéíóúñ", "aeioun", strict=True):
+                slug = slug.replace(con_tilde, sin_tilde)
+            db.add(
+                Profesional(
+                    nombres=nombres,
+                    apellidos=apellidos,
+                    especialidad_id=especialidades[especialidad],
+                    sede_id=sedes[sede],
+                    registro_profesional=registro,
+                    email=f"{slug}@example.com",
+                    telefono=telefono,
+                    bio=bio,
+                )
+            )
+            nuevos_profesionales += 1
+
+    nuevos_medicamentos = 0
+    for nombre, activo, presentacion, concentracion, formula, stock, precio in MEDICAMENTOS:
+        existe = (
+            db.query(Medicamento)
+            .filter(Medicamento.nombre == nombre, Medicamento.concentracion == concentracion)
+            .first()
+        )
+        if existe is None:
+            db.add(
+                Medicamento(
+                    nombre=nombre,
+                    principio_activo=activo,
+                    presentacion=presentacion,
+                    concentracion=concentracion,
+                    requiere_formula=formula,
+                    stock=stock,
+                    precio=precio,
+                )
+            )
+            nuevos_medicamentos += 1
+
+    nuevos_pacientes = 0
+    for tipo, documento, nombres, apellidos, nacimiento, email, telefono, eps in PACIENTES:
+        existe = (
+            db.query(Paciente)
+            .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
+            .first()
+        )
+        if existe is None:
+            db.add(
+                Paciente(
+                    tipo_documento=tipo,
+                    numero_documento=documento,
+                    nombres=nombres,
+                    apellidos=apellidos,
+                    fecha_nacimiento=nacimiento,
+                    email=email,
+                    telefono=telefono,
+                    eps=eps,
+                )
+            )
+            nuevos_pacientes += 1
+    db.flush()
+
+    nuevas_citas = 0
+    for idx_paciente, registro, dias, hora, minuto, duracion, motivo in CITAS:
+        tipo, documento = PACIENTES[idx_paciente][:2]
+        paciente = (
             db.query(Paciente)
             .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
             .one()
         )
-        tiene_cuenta = (
-            db.query(Usuario)
-            .filter((Usuario.paciente_id == ficha_demo.id) | (Usuario.email == ficha_demo.email))
+        profesional = (
+            db.query(Profesional).filter(Profesional.registro_profesional == registro).one()
+        )
+        existe = (
+            db.query(Cita)
+            .filter(
+                Cita.paciente_id == paciente.id,
+                Cita.profesional_id == profesional.id,
+                Cita.motivo == motivo,
+            )
             .first()
         )
-        if tiene_cuenta is None:
+        if existe is None:
+            inicio = _dia_habil(dias, hora, minuto)
             db.add(
-                Usuario(
-                    email=ficha_demo.email,
-                    password_hash=hashear(settings.demo_patient_password),
-                    rol="paciente",
-                    paciente_id=ficha_demo.id,
+                Cita(
+                    paciente_id=paciente.id,
+                    profesional_id=profesional.id,
+                    sede_id=profesional.sede_id,
+                    inicio=inicio,
+                    fin=inicio + timedelta(minutes=duracion),
+                    duracion_min=duracion,
+                    motivo=motivo,
                 )
             )
-            nuevos_usuarios += 1
+            nuevas_citas += 1
 
+    nuevos_usuarios = 0
+    if db.query(Usuario).filter(Usuario.email == ADMIN_EMAIL).first() is None:
+        db.add(
+            Usuario(
+                email=ADMIN_EMAIL,
+                password_hash=hashear(settings.demo_admin_password),
+                rol="admin",
+            )
+        )
+        nuevos_usuarios += 1
+    tipo, documento = PACIENTES[PACIENTE_DEMO][:2]
+    ficha_demo = (
+        db.query(Paciente)
+        .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
+        .one()
+    )
+    tiene_cuenta = (
+        db.query(Usuario)
+        .filter((Usuario.paciente_id == ficha_demo.id) | (Usuario.email == ficha_demo.email))
+        .first()
+    )
+    if tiene_cuenta is None:
+        db.add(
+            Usuario(
+                email=ficha_demo.email,
+                password_hash=hashear(settings.demo_patient_password),
+                rol="paciente",
+                paciente_id=ficha_demo.id,
+            )
+        )
+        nuevos_usuarios += 1
+
+    db.flush()
+    return {
+        "sedes": nuevas_sedes,
+        "noticias": nuevas_noticias,
+        "especialidades": nuevas_especialidades,
+        "profesionales": nuevos_profesionales,
+        "medicamentos": nuevos_medicamentos,
+        "pacientes": nuevos_pacientes,
+        "citas": nuevas_citas,
+        "usuarios": nuevos_usuarios,
+    }
+
+
+def seed() -> dict[str, int]:
+    db = SessionLocal()
+    try:
+        nuevos = sembrar(db)
         db.commit()
-        nuevos = {
-            "sedes": nuevas_sedes,
-            "noticias": nuevas_noticias,
-            "especialidades": nuevas_especialidades,
-            "profesionales": nuevos_profesionales,
-            "medicamentos": nuevos_medicamentos,
-            "pacientes": nuevos_pacientes,
-            "citas": nuevas_citas,
-            "usuarios": nuevos_usuarios,
-        }
         print("Registros nuevos: " + " | ".join(f"{k}: {v}" for k, v in nuevos.items()))
         return nuevos
     finally:
