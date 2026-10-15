@@ -18,6 +18,11 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./agenda/agenda').then((m) => m.AdminAgenda),
       },
       {
+        path: 'analitica',
+        title: 'Analítica · Panel Meridiana',
+        loadComponent: () => import('./analitica/analitica').then((m) => m.AdminAnalitica),
+      },
+      {
         path: 'noticias',
         title: 'Noticias · Panel Meridiana',
         loadComponent: () => import('./noticias/admin-noticias').then((m) => m.AdminNoticias),

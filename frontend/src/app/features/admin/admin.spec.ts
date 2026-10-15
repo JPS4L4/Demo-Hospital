@@ -6,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Admin } from './admin';
 
 describe('Admin shell', () => {
-  it('offers the four sections as sub-navigation and marks the current one', async () => {
+  it('offers the five sections as sub-navigation and marks the current one', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
@@ -26,12 +26,14 @@ describe('Admin shell', () => {
     expect(links.map((a) => a.textContent?.trim())).toEqual([
       'Resumen',
       'Agenda',
+      'Analítica',
       'Noticias',
       'Profesionales',
     ]);
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
       '/admin',
       '/admin/agenda',
+      '/admin/analitica',
       '/admin/noticias',
       '/admin/profesionales',
     ]);

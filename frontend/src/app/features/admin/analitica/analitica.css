@@ -1,0 +1,110 @@
+/* Frescura de los datos */
+.fresh {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+/* Filtros: en móvil una columna; el periodo personalizado ocupa su propia fila. */
+.filters {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+.filters-range {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 48rem) {
+  .filters {
+    grid-template-columns: auto repeat(2, minmax(0, 1fr));
+    align-items: end;
+  }
+  .filters-range {
+    grid-column: 1 / -1;
+    max-width: 28rem;
+  }
+}
+
+/* Indicadores */
+.kpis {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kpis-stale {
+  opacity: 0.55;
+  transition: opacity 160ms var(--ease-out-soft) 150ms;
+}
+.kpi {
+  display: grid;
+  align-content: start;
+  padding: 1rem;
+  min-width: 0;
+}
+.kpi-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.kpi-value {
+  margin-top: 0.125rem;
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+.kpi-hint {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+/* Cinco indicadores: de 3 + 2 en pantallas medianas, sin hueco al final. */
+.kpi-value,
+.kpi-label {
+  white-space: nowrap;
+}
+@media (min-width: 40rem) {
+  .kpis {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .kpis > :nth-child(-n + 3) {
+    grid-column: span 2;
+  }
+  .kpis > :nth-child(n + 4) {
+    grid-column: span 3;
+  }
+}
+@media (min-width: 80rem) {
+  .kpis {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .kpis > li {
+    grid-column: auto !important;
+  }
+}
+
+/* Gráficos: una columna en móvil, dos en pantallas anchas; la tendencia ocupa todo el ancho. */
+.charts {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 64rem) {
+  .charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .charts-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.filters .segment {
+  white-space: nowrap;
+}

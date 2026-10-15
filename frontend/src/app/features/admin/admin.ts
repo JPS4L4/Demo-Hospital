@@ -16,6 +16,7 @@ export class Admin {
   protected readonly sections: { path: string; label: string; icon: IconName; exact: boolean }[] = [
     { path: '/admin', label: 'Resumen', icon: 'layout-dashboard', exact: true },
     { path: '/admin/agenda', label: 'Agenda', icon: 'calendar-check', exact: false },
+    { path: '/admin/analitica', label: 'Analítica', icon: 'activity', exact: false },
     { path: '/admin/noticias', label: 'Noticias', icon: 'newspaper', exact: false },
     { path: '/admin/profesionales', label: 'Profesionales', icon: 'users', exact: false },
   ];

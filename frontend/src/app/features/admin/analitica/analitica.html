@@ -1,0 +1,308 @@
+<h2 class="text-2xl">Analítica</h2>
+<p class="mt-1 text-muted">
+  Vista OLAP: un esquema en estrella (hechos de citas y dimensiones) que se refresca por lotes, no
+  en tiempo real. Cada filtro y cada nivel de detalle consulta ese modelo.
+</p>
+
+@if (noDisponible(); as detalle) {
+  <div class="mt-6">
+    <app-state-message
+      kind="error"
+      icon="alert"
+      title="La analítica no está disponible"
+      [message]="detalle + ' Si acabas de actualizar el código, aplica las migraciones de la base.'"
+      retryLabel="Reintentar"
+      (retry)="retry()"
+    />
+  </div>
+} @else {
+  <!-- Frescura de los datos -->
+  <div class="fresh mt-6" [attr.aria-busy]="estado().status === 'loading'">
+    <div class="min-w-0">
+      @switch (estado().status) {
+        @case ('loading') {
+          <span class="skeleton block h-5 w-64 max-w-full" role="status"
+            ><span class="sr-only">Cargando el estado de los datos…</span></span
+          >
+        }
+        @case ('ready') {
+          @if (estado(); as e) {
+            @if (e.status === 'ready') {
+              <p class="font-semibold">
+                @if (e.data.refrescado_en; as cuando) {
+                  Datos actualizados a {{ fechaCorta(cuando) }}, {{ hora(cuando) }}
+                } @else {
+                  El modelo analítico aún no se ha refrescado
+                }
+              </p>
+              @if (!e.data.actualizada) {
+                <p class="notice mt-2" role="status">
+                  <app-icon name="alert" [size]="18" class="mt-0.5" />
+                  <span
+                    >Hay citas que todavía no están en la analítica ({{ e.data.citas_oltp }} en el
+                    sistema operativo, {{ e.data.citas_analitica }} aquí). Pulsa «Refrescar» para
+                    ponerla al día.</span
+                  >
+                </p>
+              }
+            }
+          }
+        }
+        @default {
+          <p class="notice notice-error" role="alert">
+            <app-icon name="alert" [size]="18" class="mt-0.5" />
+            No pudimos leer el estado de los datos.
+            <button type="button" class="btn btn-quiet btn-sm" (click)="retry()">Reintentar</button>
+          </p>
+        }
+      }
+    </div>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="refrescando()"
+      [attr.aria-busy]="refrescando()"
+      (click)="refrescar()"
+    >
+      <app-icon name="refresh" [size]="18" />
+      {{ refrescando() ? 'Refrescando…' : 'Refrescar' }}
+    </button>
+  </div>
+
+  <div role="status">
+    @if (feedback(); as f) {
+      <p class="notice mt-3" [class.notice-error]="!f.ok" [class.notice-info]="f.ok">
+        <app-icon [name]="f.ok ? 'check-circle' : 'alert'" [size]="18" class="mt-0.5" />
+        {{ f.texto }}
+      </p>
+    }
+  </div>
+
+  <!-- Filtros -->
+  <form class="filters mt-6" (submit)="$event.preventDefault()" aria-label="Filtrar la analítica">
+    <fieldset class="m-0 min-w-0 border-0 p-0">
+      <legend class="field-label">Periodo</legend>
+      <div class="segmented">
+        @for (p of presets; track p.value) {
+          <label class="segment">
+            <input
+              type="radio"
+              name="periodo"
+              class="sr-only"
+              [value]="p.value"
+              [checked]="preset() === p.value"
+              (change)="onPreset(p.value)"
+            />
+            <span>{{ p.label }}</span>
+          </label>
+        }
+      </div>
+    </fieldset>
+
+    <div>
+      <label class="field-label" for="an-sede">Sede</label>
+      <div class="relative">
+        <select id="an-sede" class="field-control" (change)="onSede($event)">
+          <option value="" [selected]="sedeId() === null">Todas las sedes</option>
+          @for (s of sedes(); track s.id) {
+            <option [value]="s.id" [selected]="s.id === sedeId()">{{ s.nombre }}</option>
+          }
+        </select>
+        <app-icon
+          name="chevron-down"
+          [size]="18"
+          class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label class="field-label" for="an-esp">Especialidad</label>
+      <div class="relative">
+        <select id="an-esp" class="field-control" (change)="onEspecialidad($event)">
+          <option value="" [selected]="especialidadId() === null">Todas las especialidades</option>
+          @for (e of especialidades(); track e.id) {
+            <option [value]="e.id" [selected]="e.id === especialidadId()">{{ e.nombre }}</option>
+          }
+        </select>
+        <app-icon
+          name="chevron-down"
+          [size]="18"
+          class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
+      </div>
+    </div>
+
+    @if (preset() === 'custom') {
+      <div class="filters-range">
+        <div>
+          <label class="field-label" for="an-desde">Desde</label>
+          <input
+            id="an-desde"
+            type="date"
+            class="field-control"
+            [value]="desdeCustom()"
+            [max]="hastaCustom() || hoy"
+            (change)="onFecha($event, 'desde')"
+          />
+        </div>
+        <div>
+          <label class="field-label" for="an-hasta">Hasta</label>
+          <input
+            id="an-hasta"
+            type="date"
+            class="field-control"
+            [value]="hastaCustom()"
+            [min]="desdeCustom()"
+            (change)="onFecha($event, 'hasta')"
+          />
+        </div>
+      </div>
+    }
+  </form>
+
+  @if (rango(); as r) {
+    <p class="mt-3 text-sm text-muted">
+      Del {{ fechaCorta(r.desde) }} al {{ fechaCorta(r.hasta) }}.
+    </p>
+  } @else {
+    <p class="notice notice-error mt-3" role="alert">
+      <app-icon name="alert" [size]="18" class="mt-0.5" />
+      Elige un periodo válido: la fecha de inicio no puede ser posterior a la de fin.
+    </p>
+  }
+
+  <!-- Indicadores -->
+  <div class="mt-6" [attr.aria-busy]="resumen().status === 'loading' || !!resumen().stale">
+    @if (resumen().status === 'error') {
+      <app-state-message
+        kind="error"
+        icon="alert"
+        title="No pudimos cargar los indicadores"
+        message="Hubo un problema al conectar con el servidor. Inténtalo de nuevo."
+        retryLabel="Reintentar"
+        (retry)="retry()"
+      />
+    } @else {
+      <ul class="kpis" [class.kpis-stale]="resumen().stale">
+        @if (kpis(); as lista) {
+          @for (k of lista; track k.label; let i = $index) {
+            <li class="card kpi rise" [style.--delay]="i * 40 + 'ms'">
+              <span class="kpi-label">{{ k.label }}</span>
+              <span class="kpi-value">{{ k.valor }}</span>
+              <span class="kpi-hint">{{ k.hint }}</span>
+            </li>
+          }
+        } @else {
+          @for (n of [1, 2, 3, 4, 5]; track n) {
+            <li class="card kpi" role="status">
+              <span class="skeleton block h-4 w-20"></span>
+              <span class="skeleton mt-2 block h-8 w-16"></span>
+              <span class="sr-only">Cargando indicador…</span>
+            </li>
+          }
+        }
+      </ul>
+    }
+  </div>
+
+  <!-- Gráficos -->
+  <div class="charts mt-6">
+    @let t = tendencia();
+    <app-widget
+      class="charts-wide"
+      titulo="Citas en el tiempo"
+      descripcion="Cambia el nivel para subir (roll-up) o bajar (drill-down) por la jerarquía de fecha."
+      [estado]="estadoDe(t)"
+      [vacio]="t.status === 'ready' && t.data.puntos.length === 0"
+      [stale]="!!t.stale"
+      (retry)="retry()"
+    >
+      <fieldset widget-actions class="m-0 min-w-0 border-0 p-0">
+        <legend class="field-label">Nivel de detalle</legend>
+        <div class="segmented">
+          @for (n of niveles; track n.value) {
+            <label class="segment">
+              <input
+                type="radio"
+                name="nivel"
+                class="sr-only"
+                [value]="n.value"
+                [checked]="nivel() === n.value"
+                (change)="nivel.set(n.value)"
+              />
+              <span>{{ n.label }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+      @if (t.status === 'ready') {
+        <app-trend-chart
+          nombre="Citas y cancelaciones por periodo"
+          [puntos]="t.data.puntos"
+          [series]="t.data.series"
+        />
+      }
+    </app-widget>
+
+    @let e = porEspecialidad();
+    <app-widget
+      titulo="Demanda por especialidad"
+      descripcion="Citas en el periodo, de mayor a menor."
+      [estado]="estadoDe(e)"
+      [vacio]="vacio(e)"
+      [stale]="!!e.stale"
+      (retry)="retry()"
+    >
+      @if (e.status === 'ready') {
+        <app-bar-chart nombre="Citas por especialidad" [datos]="e.data" />
+      }
+    </app-widget>
+
+    @let c = cancelacion();
+    <app-widget
+      titulo="Cancelación por especialidad"
+      descripcion="Porcentaje de las citas que se cancelaron."
+      [estado]="estadoDe(c)"
+      [vacio]="vacio(c)"
+      [stale]="!!c.stale"
+      (retry)="retry()"
+    >
+      @if (c.status === 'ready') {
+        <app-bar-chart
+          nombre="Tasa de cancelación por especialidad"
+          formato="porcentaje"
+          tono="accent"
+          [datos]="c.data"
+        />
+      }
+    </app-widget>
+
+    @let s = porSede();
+    <app-widget
+      titulo="Citas por sede"
+      [estado]="estadoDe(s)"
+      [vacio]="vacio(s)"
+      [stale]="!!s.stale"
+      (retry)="retry()"
+    >
+      @if (s.status === 'ready') {
+        <app-bar-chart nombre="Citas por sede" [datos]="s.data" />
+      }
+    </app-widget>
+
+    @let h = horas();
+    <app-widget
+      titulo="Horas pico"
+      descripcion="Citas por día de la semana y hora de inicio."
+      [estado]="estadoDe(h)"
+      [vacio]="vacio(h)"
+      [stale]="!!h.stale"
+      (retry)="retry()"
+    >
+      @if (h.status === 'ready') {
+        <app-heatmap nombre="Citas por día de la semana y hora" [celdas]="h.data" />
+      }
+    </app-widget>
+  </div>
+}
