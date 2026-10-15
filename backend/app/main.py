@@ -14,6 +14,7 @@ from app.core.database import get_db
 from app.core.errors import mensaje_de_integridad
 from app.core.logs import configurar_logging
 from app.routers import (
+    analitica,
     auth,
     citas,
     especialidades,
@@ -96,3 +97,4 @@ app.include_router(profesionales.router)
 app.include_router(medicamentos.router)
 app.include_router(pacientes.router)
 app.include_router(citas.router)
+app.include_router(analitica.router)
