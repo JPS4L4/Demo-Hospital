@@ -1,8 +1,42 @@
-# Demo Hospital
+# Meridiana · Demo Hospital
+
+Web de una red de clínicas con **reserva de citas sin dobles reservas** y un **panel de analítica** sobre un esquema en estrella, hecha con FastAPI, PostgreSQL y Angular. Proyecto de demostración, no un sistema clínico real.
 
 [![CI](https://github.com/JPS4L4/Demo-Hospital/actions/workflows/ci.yml/badge.svg)](https://github.com/JPS4L4/Demo-Hospital/actions/workflows/ci.yml)
 
-Demo de un sitio web de hospital para mostrar un stack **Python + Angular**: una API REST en FastAPI con PostgreSQL y un frontend en Angular. Es un proyecto de demostración en construcción, no un sistema clínico real.
+> **Demo en vivo:** _próximamente_
+> <!-- Tras el despliegue, sustituye "_próximamente_" por [https://tu-demo.example](https://tu-demo.example) -->
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/capturas/inicio.webp" alt="Portada de Meridiana" /></td>
+    <td width="50%"><img src="docs/capturas/reserva.webp" alt="Reserva de cita: elección de día y horario libre" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/capturas/analitica-oscuro.webp" alt="Panel de analítica en modo oscuro" /></td>
+    <td width="50%" align="center"><img src="docs/capturas/movil.webp" alt="Panel de analítica en móvil" width="260" /></td>
+  </tr>
+</table>
+
+## Qué incluye
+
+- **OLTP y OLAP en el mismo PostgreSQL:** tablas operativas normalizadas y un esquema en estrella (hechos y dimensiones como vistas materializadas) con roll-up, drill-down, slice, dice y pivote. [Detalle](#analítica-oltp-y-olap).
+- **Dashboard de analítica** con gráficos SVG propios, claro y oscuro, accesible con teclado y con tabla equivalente; marca los periodos incompletos para no confundirlos con caídas reales.
+- **Autenticación y roles:** JWT, contraseñas con Argon2id, paciente y administrador con permisos distintos y límite de intentos. [Detalle](#autenticación-y-permisos).
+- **Disponibilidad de agenda** por profesional, con horario de atención, duración de cita y huecos libres calculados en hora de Bogotá.
+- **Sin dobles reservas, aunque falle el código:** restricciones `EXCLUDE` de PostgreSQL además de la validación de la API; de dos reservas simultáneas del mismo hueco, una gana y la otra recibe `409`. [Detalle](#reglas-de-las-citas).
+- **CI en GitHub Actions:** ruff, migraciones desde cero y `alembic check`, pytest, ESLint, Prettier, Vitest y build del frontend.
+
+**Stack:** Python 3.12 · FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL 16 · Angular 21 · Tailwind CSS 4 · Docker Compose.
+
+## Cuentas demo
+
+| Rol | Correo | Contraseña |
+|-----|--------|------------|
+| Administrador (panel y analítica) | `admin@meridiana.example` | `Admin-Demo-2026` |
+| Paciente (reserva y «Mis citas») | `paula.herrera@example.com` | `Paciente-Demo-2026` |
+
+Son cuentas públicas de la demo. Cuando el despliegue tiene `DEMO_RESET_ENABLED=true`, los datos se reinician cada pocas horas: lo que crees o borres no es permanente. Para levantarla en local, ve a [Cómo arrancar](#cómo-arrancar).
 
 ## Stack
 
