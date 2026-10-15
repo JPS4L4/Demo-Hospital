@@ -1,15 +1,15 @@
 """Registro, inicio de sesión y /auth/me."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
+from conftest import CONTRASENA
 
 from app.core.config import settings
 from app.core.security import ALGORITMO
 from app.models.paciente import Paciente
 from app.models.usuario import Usuario
-from conftest import CONTRASENA
 
 REGISTRO = {
     "tipo_documento": "CC",
@@ -24,7 +24,7 @@ REGISTRO = {
 
 
 def token_para(usuario_id, **cambios):
-    ahora = datetime.now(timezone.utc)
+    ahora = datetime.now(UTC)
     claims = {"sub": str(usuario_id), "iat": ahora, "exp": ahora + timedelta(minutes=5)} | cambios
     return jwt.encode(claims, settings.jwt_secret, algorithm=ALGORITMO)
 
@@ -139,7 +139,7 @@ def test_me_sin_token_401(anon):
 
 def test_me_rechaza_tokens_invalidos(anon, cuenta_paciente, db):
     usuario = cuenta_paciente()
-    ahora = datetime.now(timezone.utc)
+    ahora = datetime.now(UTC)
     futuro = ahora + timedelta(minutes=5)
     invalidos = {
         "basura": "esto-no-es-un-jwt",

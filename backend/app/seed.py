@@ -14,7 +14,7 @@ con valores por defecto documentados en el README): `admin@meridiana.example` y 
 primera paciente del seed. Si la cuenta ya existe no se toca (no se restablece su contraseña).
 """
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from app.core.config import settings
 from app.core.database import SessionLocal
@@ -349,7 +349,7 @@ def seed() -> dict[str, int]:
                 nuevas_sedes += 1
 
         nuevas_noticias = 0
-        ahora = datetime.now(timezone.utc)
+        ahora = datetime.now(UTC)
         for dias, titulo, contenido in NOTICIAS:
             existe = db.query(Noticia).filter(Noticia.titulo == titulo).first()
             if existe is None:
@@ -380,7 +380,7 @@ def seed() -> dict[str, int]:
             )
             if existe is None:
                 slug = f"{nombres}.{apellidos.split()[0]}".lower()
-                for con_tilde, sin_tilde in zip("áéíóúñ", "aeioun"):
+                for con_tilde, sin_tilde in zip("áéíóúñ", "aeioun", strict=True):
                     slug = slug.replace(con_tilde, sin_tilde)
                 db.add(
                     Profesional(

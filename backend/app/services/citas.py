@@ -10,7 +10,7 @@
 horarios que `validar_agenda` aceptaría, de modo que la reserva y la disponibilidad no discrepen.
 """
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
@@ -80,7 +80,7 @@ def validar_agenda(
     excluir_id: int | None = None,
 ) -> datetime:
     """Aplica todas las reglas y devuelve el instante de fin de la cita."""
-    if inicio <= datetime.now(timezone.utc):
+    if inicio <= datetime.now(UTC):
         raise HTTPException(422, "La cita debe programarse en una fecha y hora futuras")
     fin = inicio + timedelta(minutes=duracion_min)
     if not profesional.activo:
@@ -118,7 +118,7 @@ def huecos_libres(
     """
     if dia.weekday() > SABADO or not profesional.activo:
         return []
-    ahora = ahora or datetime.now(timezone.utc)
+    ahora = ahora or datetime.now(UTC)
     apertura = datetime.combine(dia, APERTURA, tzinfo=TZ_CLINICA)
     cierre = datetime.combine(dia, CIERRE, tzinfo=TZ_CLINICA)
     ocupadas = db.execute(

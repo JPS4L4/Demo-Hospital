@@ -5,6 +5,13 @@ extend-exclude = [".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+# E501: el formateador ya ajusta el codigo; quedan solo cadenas y docstrings largos en espanol.
+# UP046: Page conserva Generic[T] explicito, que pydantic ya resuelve sin cambiar el comportamiento.
+ignore = ["E501", "UP046"]
+
+[tool.ruff.lint.per-file-ignores]
+# conftest fija variables de entorno antes de importar la app, asi que sus imports van tras codigo.
+"tests/conftest.py" = ["E402"]
 
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI usa Depends(...) y Query(...) como valores por defecto de los parametros.

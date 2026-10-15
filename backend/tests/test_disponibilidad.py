@@ -1,10 +1,10 @@
 """GET /profesionales/{id}/disponibilidad y su coherencia con las reglas de reserva."""
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
-
 from agenda import BOGOTA, dia_futuro, iso
+
 from app.models.profesional import Profesional
 from app.services.citas import huecos_libres
 
@@ -96,7 +96,7 @@ def test_hoy_no_ofrece_horas_pasadas(db, prof):
     dia = date(2999, 1, 4)  # un lunes
 
     def primero(h, m):
-        ahora = datetime(2999, 1, 4, h, m, tzinfo=BOGOTA).astimezone(timezone.utc)
+        ahora = datetime(2999, 1, 4, h, m, tzinfo=BOGOTA).astimezone(UTC)
         huecos = huecos_libres(db, profesional, dia, 30, ahora=ahora)
         return huecos[0][0].astimezone(BOGOTA).strftime("%H:%M") if huecos else None
 

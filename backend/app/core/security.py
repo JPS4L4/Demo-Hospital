@@ -1,6 +1,6 @@
 """Hash de contraseñas (Argon2id vía pwdlib) y tokens JWT (HS256 vía PyJWT)."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from pwdlib import PasswordHash
@@ -27,7 +27,7 @@ def verificar(contrasena: str, hash_guardado: str | None) -> bool:
 
 def crear_token(usuario_id: int) -> tuple[str, int]:
     """Devuelve (token, segundos de vigencia)."""
-    ahora = datetime.now(timezone.utc)
+    ahora = datetime.now(UTC)
     vigencia = timedelta(minutes=settings.jwt_expire_minutes)
     claims = {"sub": str(usuario_id), "iat": ahora, "exp": ahora + vigencia}
     return jwt.encode(claims, settings.jwt_secret, algorithm=ALGORITMO), int(

@@ -1,4 +1,5 @@
 from sqlalchemy import CheckConstraint, Column, Date, Identity, Integer, String, UniqueConstraint
+
 from app.core.database import Base
 
 

@@ -1,19 +1,10 @@
 from logging.config import fileConfig
-from app.core.database import Base
-from app.core.config import settings
-from app.models.sede import Sede
-from app.models.noticia import Noticia
-from app.models.especialidad import Especialidad
-from app.models.profesional import Profesional
-from app.models.medicamento import Medicamento
-from app.models.paciente import Paciente
-from app.models.cita import Cita
-from app.models.usuario import Usuario
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.core.config import settings
+from app.core.database import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

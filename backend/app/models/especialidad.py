@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Identity, Integer, String, Text, UniqueConstraint
+
 from app.core.database import Base
 
 

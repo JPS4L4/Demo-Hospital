@@ -3,7 +3,6 @@
 from datetime import timedelta
 
 import pytest
-
 from agenda import dia_futuro, iso
 from conftest import CONTRASENA
 

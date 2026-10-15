@@ -1,9 +1,8 @@
 """Citas y reglas de agenda (tarea D3)."""
 
-from datetime import timedelta, timezone
+from datetime import UTC, timedelta
 
 import pytest
-
 from agenda import dia_futuro, iso
 
 LUNES, SABADO, DOMINGO = 0, 5, 6
@@ -103,10 +102,10 @@ def test_horario_de_atencion(client, escenario, hora, minuto, duracion, esperado
 
 def test_horario_se_evalua_en_hora_de_bogota_aunque_llegue_en_utc(client, escenario):
     # 12:00 UTC = 07:00 en Bogotá (dentro); 11:30 UTC = 06:30 (fuera)
-    dentro = dia_futuro(LUNES, 7, 0).astimezone(timezone.utc)
+    dentro = dia_futuro(LUNES, 7, 0).astimezone(UTC)
     assert dentro.hour == 12
     assert reservar(client, escenario, dentro).status_code == 201
-    fuera = dia_futuro(LUNES + 1, 6, 30).astimezone(timezone.utc)
+    fuera = dia_futuro(LUNES + 1, 6, 30).astimezone(UTC)
     assert reservar(client, escenario, fuera).status_code == 409
 
 

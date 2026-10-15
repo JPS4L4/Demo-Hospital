@@ -1,6 +1,6 @@
 """El seed es idempotente y sus datos cumplen las reglas del dominio."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.config import settings
 from app.models.usuario import Usuario
@@ -61,7 +61,7 @@ def test_datos_del_seed_son_consistentes(client):
     assert client.get("/medicamentos", params={"requiere_formula": "true"}).json()["total"] > 0
 
     citas = client.get("/citas", params={"limit": 100}).json()["items"]
-    ahora = datetime.now(timezone.utc)
+    ahora = datetime.now(UTC)
     for c in citas:
         inicio = datetime.fromisoformat(c["inicio"])
         assert inicio > ahora and c["estado"] == "programada"

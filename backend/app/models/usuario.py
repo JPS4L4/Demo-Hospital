@@ -12,6 +12,7 @@ from sqlalchemy import (
     true,
 )
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 
