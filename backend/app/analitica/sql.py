@@ -1,4 +1,4 @@
-"""SQL del modelo en estrella (schema `analitica`), compartido por la migración y las pruebas.
+r"""SQL del modelo en estrella (schema `analitica`), compartido por la migración y las pruebas.
 
 `create_all` de SQLAlchemy no crea vistas materializadas, así que el DDL vive aquí, en una sola
 lista ordenada (`CREAR`) y su inversa (`ELIMINAR`). La migración de Alembic y `tests/conftest.py`
