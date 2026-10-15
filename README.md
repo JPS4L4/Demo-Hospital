@@ -155,8 +155,24 @@ El seed no modifica una cuenta que ya existe (no restablece su contraseña). Cua
 | `JWT_EXPIRE_MINUTES` | no | Vigencia del token en minutos (60) |
 | `CORS_ORIGINS` | no | Orígenes permitidos (`http://localhost:4200`) |
 | `DEMO_ADMIN_PASSWORD`, `DEMO_PATIENT_PASSWORD` | no | Contraseñas de las cuentas demo del seed |
+| `LOG_LEVEL` | no | Nivel de registro: `DEBUG`, `INFO`, `WARNING` o `ERROR` (`INFO`) |
+| `RATE_LIMIT_ENABLED` | no | `false` desactiva el límite de intentos (`true`) |
+| `RATE_LIMIT_LOGIN_POR_MINUTO` | no | Intentos por IP y minuto en `POST /auth/login` (10) |
+| `RATE_LIMIT_REGISTRO_POR_MINUTO` | no | Intentos por IP y minuto en `POST /auth/registro` (5) |
+| `TRUSTED_PROXY` | no | `true` solo si la API está detrás de un proxy de confianza que añade `X-Forwarded-For` (`false`) |
 
-No implementado: límite de intentos de login (fuerza bruta), recuperación de contraseña y verificación de correo.
+### Límite de intentos
+
+`POST /auth/login` y `POST /auth/registro` (cada uno con su propio contador) admiten un número máximo de peticiones por IP y minuto, porque cada una cuesta un hash Argon2. Al superarlo responde `429` con `{"detail": "Demasiados intentos. Espera N segundos..."}` y la cabecera `Retry-After`. Cuentan todas las peticiones, correctas o no. El resto de la API no tiene límite.
+
+- El contador vive en la memoria de cada proceso y se reinicia con él: con varios workers el límite efectivo se multiplica. Para una demo basta; en producción conviene un límite en el proxy o un almacén compartido.
+- Con `TRUSTED_PROXY=false` (por defecto) se usa la IP de la conexión y se ignora `X-Forwarded-For`, que cualquiera puede falsear. Actívalo solo detrás de un proxy propio: entonces se toma la **última** IP del encabezado, la que añade ese proxy.
+
+No implementado: recuperación de contraseña y verificación de correo.
+
+### Salud del servicio
+
+`GET /health` ejecuta `SELECT 1` en la base de datos: `200 {"status": "ok"}` si responde y `503 {"status": "error", "database": "no disponible"}` si no, para que un balanceador o monitor distinga una API viva de una API sin base de datos. El motor SQLAlchemy usa `pool_pre_ping` y `pool_recycle` (30 min) para no reutilizar conexiones cortadas. Los errores no controlados responden `500 {"detail": "Error interno del servidor"}` y quedan registrados con su traza; un error de integridad que ningún endpoint tradujo responde `409`.
 
 ### Reglas de las citas
 
@@ -166,7 +182,11 @@ Al crear o reprogramar una cita (`inicio` con zona horaria, `duracion_min` ∈ 2
 - La sede es la del profesional; si se envía `sede_id` debe coincidir → `422`.
 - El profesional debe estar activo → `409`.
 - Horario de atención: lunes a sábado, 7:00 a. m. a 7:00 p. m. (hora de Bogotá); la cita completa, incluida su duración, debe caber → `409`.
+- `inicio` no puede estar a más de 365 días de anticipación → `422`.
 - Sin solapes para el mismo profesional ni para el mismo paciente entre citas no canceladas → `409`. Cancelar una cita libera su horario.
+
+**Sin dobles reservas, aunque falle el código.** Además de la validación de la API (que bloquea las filas del paciente y del profesional con `SELECT ... FOR UPDATE`), la base de datos tiene dos restricciones `EXCLUDE` (`ex_citas_profesional_solape` y `ex_citas_paciente_solape`, con `btree_gist`) que impiden que dos citas no canceladas del mismo profesional, o del mismo paciente, se solapen en el rango `[inicio, fin)`; citas contiguas sí caben. Si dos reservas simultáneas del mismo hueco llegan a la vez, una responde `201` y la otra `409`. La migración que las crea necesita `CREATE EXTENSION btree_gist` (en PostgreSQL 13+ es una extensión de confianza, así que basta ser dueño de la base) y falla si ya hay citas solapadas, que habría que corregir antes.
+
 - `desde` / `hasta` (filtros) sin zona horaria se interpretan en hora de Bogotá.
 
 El frontend consume esta API.
@@ -200,7 +220,11 @@ npm run format        # Prettier, reescribe los archivos
 npm run format:check  # Prettier, solo comprueba
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) ejecuta todo esto en cada push a `main` y en cada pull request: en el backend `ruff check`, `ruff format --check` y `pytest` (con un PostgreSQL 16 como servicio); en el frontend `npm run lint`, `npm run format:check`, `npm test` y `npm run build`.
+### Migraciones
+
+Las migraciones están en `backend/alembic/` (`alembic upgrade head` desde `backend/`). Tras cambiar un modelo, genera la migración con `alembic revision --autogenerate -m "..."` y revísala. `alembic check` falla si los modelos y las migraciones no coinciden. Limitación: Alembic no detecta las restricciones `EXCLUDE`, así que esas se mantienen a mano (modelo y migración).
+
+GitHub Actions (`.github/workflows/ci.yml`) ejecuta todo esto en cada push a `main` y en cada pull request: en el backend `ruff check`, `ruff format --check`, `alembic upgrade head` y `alembic check` (contra un PostgreSQL 16 como servicio, para comprobar que las migraciones aplican desde cero y no hay deriva) y `pytest`; en el frontend `npm run lint`, `npm run format:check`, `npm test` y `npm run build`.
 
 ## Hoja de ruta
 
