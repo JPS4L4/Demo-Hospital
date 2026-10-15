@@ -64,7 +64,7 @@ def health_check(db: Session = Depends(get_db)):
         return JSONResponse(
             status_code=503, content={"status": "error", "database": "no disponible"}
         )
-    return {"status": "ok", "database": "ok"}
+    return {"status": "ok"}
 
 
 app.include_router(auth.router)

@@ -14,7 +14,7 @@ from app.main import app as api
 def test_health_ok_consulta_la_base(anon):
     r = anon.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    assert r.json() == {"status": "ok"}
 
 
 def test_health_503_si_la_base_falla(anon):
