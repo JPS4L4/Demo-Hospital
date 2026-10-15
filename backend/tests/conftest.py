@@ -24,7 +24,7 @@ def _url_de_pruebas() -> str:
     base = (
         os.environ.get("DATABASE_URL")
         or dotenv_values(Path(__file__).resolve().parents[1] / ".env").get("DATABASE_URL")
-        or "postgresql://hospital:hospital@localhost:5432/hospital_db"
+        or "postgresql://hospital:hospital@localhost:55432/hospital_db"
     )
     return make_url(base).set(database="hospital_test").render_as_string(hide_password=False)
 

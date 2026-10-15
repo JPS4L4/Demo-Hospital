@@ -1,14 +1,15 @@
 services:
   db:
     image: postgres:16
-    container_name: hospital_db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-hospital_db}
       POSTGRES_USER: ${POSTGRES_USER:-hospital}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hospital}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # 55432 y no 5432 para no chocar con un PostgreSQL local ya instalado. Si lo cambias,
+      # usa el mismo puerto en DATABASE_URL (backend/.env).
+      - "${POSTGRES_PORT:-55432}:5432"
     volumes:
       - hospital_pgdata:/var/lib/postgresql/data
     healthcheck:

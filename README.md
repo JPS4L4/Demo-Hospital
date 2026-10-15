@@ -24,46 +24,98 @@ Demo de un sitio web de hospital para mostrar un stack **Python + Angular**: una
 
 ## Requisitos previos
 
-- Docker y Docker Compose
-- Python 3.12
-- Node.js 20+ y npm
+| Herramienta | Versión | Para qué |
+|-------------|---------|----------|
+| Docker con Compose v2 (`docker compose`) | reciente | PostgreSQL 16 en un contenedor |
+| Python | 3.12 | API (FastAPI) |
+| Node.js y npm | Node 22 (LTS) | Frontend (Angular 21) |
+| Git | cualquiera | Clonar el repositorio |
+
+Puertos libres: `55432` (PostgreSQL), `8000` (API) y `4200` (frontend). PostgreSQL usa el `55432` y no el `5432` habitual para no chocar con uno que ya tengas instalado.
 
 ## Cómo arrancar
 
+Desde cero, con un clon limpio. Los pasos 1 y 2 se hacen una sola vez; la API (paso 2) y el frontend (paso 3) quedan corriendo a la vez, cada uno en su terminal.
+
+```bash
+git clone https://github.com/JPS4L4/Demo-Hospital.git
+cd Demo-Hospital
+```
+
 ### 1. Base de datos
+
+Desde la raíz del repositorio (PowerShell o bash):
 
 ```bash
 docker compose up -d
+docker compose ps      # espera a que la columna STATUS diga "healthy"
 ```
 
-Levanta PostgreSQL en `localhost:5432` (base `hospital_db`). Usuario y contraseña por defecto de desarrollo: `hospital` / `hospital`; se pueden cambiar con las variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `POSTGRES_PORT` (si el puerto 5432 ya está ocupado en tu máquina).
+Levanta PostgreSQL en `localhost:55432` (base `hospital_db`, usuario y contraseña de desarrollo `hospital` / `hospital`). Los datos viven en un volumen de Docker y sobreviven a reinicios.
 
 ### 2. Backend
 
-```bash
+**Windows (PowerShell):**
+
+```powershell
 cd backend
 python -m venv .venv
-# Windows: .venv\Scripts\activate   |   Linux/macOS: source .venv/bin/activate
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
+Copy-Item .env.example .env
+python -c "import re,secrets,pathlib; p=pathlib.Path('.env'); p.write_text(re.sub(r'(?m)^JWT_SECRET=.*', 'JWT_SECRET='+secrets.token_urlsafe(48), p.read_text(encoding='utf-8')), encoding='utf-8')"
 alembic upgrade head
-python -m app.seed          # datos de ejemplo (sedes, noticias, profesionales, medicamentos, pacientes, citas y cuentas demo); se puede repetir sin duplicar
+python -m app.seed
 uvicorn app.main:app --reload
 ```
 
-La API queda en <http://localhost:8000> y la documentación interactiva en <http://localhost:8000/docs>.
-Si cambias las credenciales de la base de datos, actualiza `DATABASE_URL` en `backend/.env`. `JWT_SECRET` es obligatorio (ver [Variables de entorno](#variables-de-entorno)): si tu `.env` es anterior al login, añade esa variable.
+**Linux / macOS (bash):**
+
+```bash
+cd backend
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python -c "import re,secrets,pathlib; p=pathlib.Path('.env'); p.write_text(re.sub(r'(?m)^JWT_SECRET=.*', 'JWT_SECRET='+secrets.token_urlsafe(48), p.read_text(encoding='utf-8')), encoding='utf-8')"
+alembic upgrade head
+python -m app.seed
+uvicorn app.main:app --reload
+```
+
+Qué hace cada paso:
+
+- `.env.example` → `.env`: la plantilla ya apunta a la base del paso 1. El comando de Python escribe en `.env` un `JWT_SECRET` aleatorio, que es obligatorio (mínimo 32 caracteres): la API no arranca con el marcador de la plantilla. `.env` no se sube a git.
+- `alembic upgrade head` crea las tablas y el schema de analítica.
+- `python -m app.seed` carga sedes, noticias, profesionales, medicamentos, pacientes, ~12 meses de citas históricas y las cuentas demo; se puede repetir sin duplicar.
+- `uvicorn` deja la API en <http://localhost:8000> (documentación interactiva en <http://localhost:8000/docs>). Comprueba que responde: `curl http://localhost:8000/health` (PowerShell: `Invoke-RestMethod http://localhost:8000/health`) devuelve `{"status":"ok"}`.
+
 Los orígenes permitidos por CORS se configuran con `CORS_ORIGINS` (lista separada por comas; por defecto `http://localhost:4200`).
 
 ### 3. Frontend
 
+En otra terminal, desde la raíz del repositorio:
+
 ```bash
 cd frontend
-npm install
+npm ci
 npm start
 ```
 
-La aplicación queda en <http://localhost:4200>.
+La aplicación queda en <http://localhost:4200>. La URL de la API está fija en `frontend/src/environments/environment.ts` (`http://localhost:8000`); si cambias el puerto de la API, cámbiala también ahí.
+
+Para probarla entra con una de las [cuentas demo](#cuentas-demo): por ejemplo `admin@meridiana.example` / `Admin-Demo-2026` para ver el panel de administración y la analítica.
+
+### Si algo falla
+
+| Síntoma | Causa y solución |
+|---------|------------------|
+| `Bind for 0.0.0.0:55432 failed: port is already allocated` | Otro proceso usa ese puerto. Elige otro antes de levantar la base (PowerShell: `$env:POSTGRES_PORT = 55433`; bash: `export POSTGRES_PORT=55433`), ejecuta `docker compose up -d` y pon el mismo puerto en `DATABASE_URL` de `backend/.env`. Las variables `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB` funcionan igual y también deben coincidir con `DATABASE_URL`. |
+| La API no arranca y el error menciona `jwt_secret` (`Field required` o `String should have at least 32 characters`) | Falta `JWT_SECRET` en `backend/.env` o sigue el marcador de la plantilla. Repite el comando de Python del paso 2 desde `backend/`. |
+| `connection refused` o `password authentication failed` al migrar o sembrar | La base aún no está `healthy` (mira `docker compose ps`), el puerto de `DATABASE_URL` no es el de `POSTGRES_PORT`, o el volumen conserva credenciales de una ejecución anterior: `docker compose down -v` borra el volumen y vuelve a empezar (borra los datos). |
+| `Activate.ps1 cannot be loaded because running scripts is disabled` | En esa terminal: `Set-ExecutionPolicy -Scope Process Bypass` y vuelve a activar el entorno. |
+| `npm ci` o `pip install` fallan por certificados detrás de un antivirus o proxy que inspecciona HTTPS | Para Node, `NODE_OPTIONS=--use-system-ca` (PowerShell: `$env:NODE_OPTIONS = "--use-system-ca"`). No desactives la verificación SSL. |
+| El puerto 8000 o 4200 está ocupado | `uvicorn app.main:app --reload --port 8001` y `npm start -- --port 4201`; si cambias el de la API, actualiza `environment.ts` y, si cambias el del frontend, `CORS_ORIGINS`. |
 
 ## Endpoints disponibles
 
@@ -337,7 +389,7 @@ pip install -r requirements.txt
 pytest -q
 ```
 
-Las pruebas usan una base PostgreSQL aparte, `hospital_test`, en el mismo servidor que `DATABASE_URL`: se crea sola si no existe, sus tablas se generan al empezar y se vacían tras cada prueba, así que **nunca tocan los datos de desarrollo**. Si quieres otra, define `TEST_DATABASE_URL` (el nombre de la base debe terminar en `_test`). El usuario necesita permiso para crear bases de datos (el usuario de `docker-compose.yml` lo tiene).
+Las pruebas usan una base PostgreSQL aparte, `hospital_test`, en el mismo servidor que `DATABASE_URL` (el contenedor del paso 1 debe estar arriba): se crea sola si no existe, sus tablas se generan al empezar y se vacían tras cada prueba, así que **nunca tocan los datos de desarrollo**. Si quieres otra, define `TEST_DATABASE_URL` (el nombre de la base debe terminar en `_test`). El usuario necesita permiso para crear bases de datos (el usuario de `docker-compose.yml` lo tiene).
 
 ## Lint y formato
 
