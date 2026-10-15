@@ -52,6 +52,8 @@ import app.models.paciente  # noqa: F401
 import app.models.profesional  # noqa: F401
 import app.models.sede  # noqa: F401
 import app.models.usuario  # noqa: F401
+from app.analitica.sql import CREAR as CREAR_ANALITICA
+from app.analitica.sql import ELIMINAR as ELIMINAR_ANALITICA
 from app.core.database import Base, get_db
 from app.core.security import hashear
 from app.main import app as api
@@ -75,11 +77,19 @@ def _crear_base_si_falta() -> None:
 def engine():
     _crear_base_si_falta()
     eng = create_engine(TEST_URL)
+    # Las vistas de `analitica` dependen de las tablas: se borran antes que ellas
+    with eng.begin() as con:
+        for sentencia in ELIMINAR_ANALITICA:
+            con.execute(text(sentencia))
     Base.metadata.drop_all(eng)
     # Las restricciones EXCLUDE de citas necesitan btree_gist (la migración también la crea)
     with eng.begin() as con:
         con.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
     Base.metadata.create_all(eng)
+    # create_all no crea vistas materializadas: mismo SQL que la migración
+    with eng.begin() as con:
+        for sentencia in CREAR_ANALITICA:
+            con.execute(text(sentencia))
     yield eng
     eng.dispose()
 

@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import Base, SessionLocal
 from app.seed import sembrar
+from app.services.analitica import refrescar_si_existe
 
 logger = logging.getLogger("app.demo")
 
@@ -39,6 +40,9 @@ def reiniciar_demo(db: Session) -> bool:
         # Los objetos que la sesión tuviera cargados ya no existen: fuera del mapa de identidad
         db.expunge_all()
         sembrar(db)
+        # Refresco normal (no CONCURRENTLY) dentro de la misma transacción: tras vaciar y
+        # sembrar todo es lo más barato y deja datos y analítica confirmados juntos.
+        refrescar_si_existe(db, concurrently=False)
         db.commit()
     except Exception:
         db.rollback()

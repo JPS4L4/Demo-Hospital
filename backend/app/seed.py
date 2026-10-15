@@ -31,6 +31,7 @@ from app.models.profesional import Profesional
 from app.models.sede import Sede
 from app.models.usuario import Usuario
 from app.seed_historial import sembrar_historial
+from app.services.analitica import refrescar_si_existe
 from app.services.citas import TZ_CLINICA
 
 SEDES = [
@@ -534,6 +535,8 @@ def seed() -> dict[str, int]:
     db = SessionLocal()
     try:
         nuevos = sembrar(db)
+        # Mismo commit que los datos; sin vistas (base sin migrar) se omite con un aviso
+        refrescar_si_existe(db, concurrently=False)
         db.commit()
         print("Registros nuevos: " + " | ".join(f"{k}: {v}" for k, v in nuevos.items()))
         return nuevos
