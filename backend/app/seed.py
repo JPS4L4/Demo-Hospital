@@ -1,5 +1,6 @@
 """Datos de ejemplo para el demo: sedes, noticias, especialidades, profesionales,
-medicamentos, pacientes, citas y las cuentas demo (un admin y un paciente).
+medicamentos, pacientes, citas (próximas y ~12 meses de histórico sintético, ver
+`seed_historial.py`) y las cuentas demo (un admin y un paciente).
 
 Uso (desde backend/, con las migraciones aplicadas):
 
@@ -29,6 +30,7 @@ from app.models.paciente import Paciente
 from app.models.profesional import Profesional
 from app.models.sede import Sede
 from app.models.usuario import Usuario
+from app.seed_historial import sembrar_historial
 from app.services.citas import TZ_CLINICA
 
 SEDES = [
@@ -475,6 +477,13 @@ def sembrar(db: Session) -> dict[str, int]:
             )
             nuevas_citas += 1
 
+    # Histórico de ~12 meses de citas pasadas (y sus pacientes ficticios) para la analítica
+    profesionales_historial = [
+        (p.id, p.especialidad.nombre, p.sede_id)
+        for p in db.query(Profesional).order_by(Profesional.id).all()
+    ]
+    historial = sembrar_historial(db, profesionales_historial)
+
     nuevos_usuarios = 0
     if db.query(Usuario).filter(Usuario.email == ADMIN_EMAIL).first() is None:
         db.add(
@@ -517,6 +526,7 @@ def sembrar(db: Session) -> dict[str, int]:
         "pacientes": nuevos_pacientes,
         "citas": nuevas_citas,
         "usuarios": nuevos_usuarios,
+        **historial,
     }
 
 

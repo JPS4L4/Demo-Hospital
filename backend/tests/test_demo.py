@@ -21,7 +21,7 @@ def _conteos(db) -> dict[str, int]:
 def test_reinicio_deja_la_base_como_un_seed_nuevo(anon, client, crear, db, engine):
     seed()
     esperado = _conteos(db)
-    assert esperado["citas"] == 6
+    assert esperado["citas"] > 1000  # 6 próximas + el histórico sintético
     # La cuenta de administración que crea el fixture `client` no pertenece al seed y desaparece
     esperado["usuarios"] -= 1
 
