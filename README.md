@@ -15,7 +15,7 @@ Demo de un sitio web de hospital para mostrar un stack **Python + Angular**: una
 .
 ├── docker-compose.yml   # PostgreSQL para desarrollo local
 ├── backend/             # API FastAPI
-│   ├── app/             # core (config, base de datos), models, schemas, routers
+│   ├── app/             # core (config, base de datos), models, schemas, routers, services, analitica (SQL del modelo en estrella)
 │   ├── alembic/         # migraciones
 │   ├── tests/           # pytest (base hospital_test)
 │   └── .env.example     # plantilla de variables de entorno
@@ -106,6 +106,119 @@ Todos los recursos tienen `GET /recurso` (lista), `GET /recurso/{id}`, `POST /re
 - Se descartan los que se solapan con citas no canceladas del profesional y, si la fecha es hoy, los que ya pasaron.
 - Fecha anterior a hoy → `422`; profesional inexistente → `404`. **Domingos, profesional inactivo o día ya agotado → lista vacía** (no es un error).
 - Usa las mismas reglas que la reserva (`services/citas.py`): todo hueco ofrecido se puede reservar. No tiene en cuenta otras citas del mismo paciente (reservar sigue pudiendo dar `409` por solape del paciente).
+
+## Analítica: OLTP y OLAP
+
+La demo separa dos mundos dentro del **mismo PostgreSQL** (sin warehouse aparte, servidor de cubos ni ETL):
+
+| | OLTP (operativo) | OLAP (analítico) |
+|---|---|---|
+| Schema | `public` | `analitica` |
+| Para qué | Reservar, cancelar, consultar citas; datos normalizados y siempre al día | Responder preguntas agregadas ("¿cuántas citas por mes y especialidad?", "¿qué sede cancela más?") |
+| Forma | Tablas con claves foráneas y restricciones (`citas`, `pacientes`, `profesionales`...) | **Esquema en estrella**: una tabla de hechos y cinco dimensiones, como vistas materializadas |
+| Actualización | Cada petición escribe | Copia que se **refresca** (ver abajo); puede ir por detrás del OLTP |
+| Acceso | La API de siempre | `/analitica/*`, solo administración |
+
+```mermaid
+erDiagram
+    dim_fecha ||--o{ hechos_citas : fecha_key
+    dim_profesional ||--o{ hechos_citas : profesional_id
+    dim_especialidad ||--o{ hechos_citas : especialidad_id
+    dim_sede ||--o{ hechos_citas : sede_id
+    dim_paciente ||--o{ hechos_citas : paciente_id
+    hechos_citas {
+        int cita_id PK
+        int fecha_key
+        int hora
+        text franja "mañana / tarde"
+        int profesional_id
+        int especialidad_id
+        int sede_id
+        int paciente_id
+        text estado
+        bool cancelada
+        bool atendida
+        int duracion_min
+    }
+    dim_fecha {
+        int fecha_key PK "yyyymmdd"
+        date fecha
+        int anio
+        int trimestre
+        int mes
+        int semana "ISO"
+        int dia_semana "1 = lunes"
+        bool es_fin_de_semana
+    }
+    dim_paciente {
+        int paciente_id PK
+        text rango_edad "0-11, 12-17, 18-29, 30-44, 45-59, 60+"
+    }
+```
+
+- **Hechos:** `hechos_citas`, una fila por cita. **Dimensiones:** `dim_fecha` (un día por fila, sin huecos, con año/trimestre/mes/semana ISO/día de la semana en español), `dim_profesional`, `dim_especialidad`, `dim_sede` y `dim_paciente`.
+- **Privacidad:** `dim_paciente` solo guarda el rango de edad (calculado al refrescar); nunca nombres, documentos ni correos.
+- **Zona horaria:** fechas y horas se derivan en hora de Bogotá, igual que la agenda.
+- **Dónde está el SQL:** un único módulo, `backend/app/analitica/sql.py`, lo usan la migración de Alembic (`f6a5c1d8b206`) y las pruebas (`create_all` no crea vistas materializadas). Cada vista tiene un índice único, requisito de `REFRESH MATERIALIZED VIEW CONCURRENTLY`. El schema no está en los modelos de SQLAlchemy y `alembic check` lo ignora.
+- **Histórico sintético:** `python -m app.seed` genera además unos 12 meses de citas pasadas (≈4 400 citas y 320 pacientes ficticios, determinista) con lunes de más demanda, sábados flojos, pico de mañana, vacaciones de mitad y fin de año, especialidades más y menos populares y ≈12 % de cancelaciones. Las citas pasadas quedan `atendida` o `cancelada`. Se inserta directo con el ORM porque la API no permite crear citas en el pasado. El seed completo tarda un par de segundos.
+
+### Cuándo se refresca
+
+Las vistas materializadas son una copia: no se actualizan solas.
+
+1. **Tras el seed** (`python -m app.seed`) y **tras el reinicio de la demo**: refresco normal dentro de la misma transacción que la carga (o quedan datos y analítica juntos o nada). Si la base se creó sin migrar y el schema no existe, se omite con un aviso en el registro.
+2. **Bajo demanda:** `POST /analitica/refrescar` (admin) usa `REFRESH MATERIALIZED VIEW CONCURRENTLY`, que no bloquea las lecturas. Un *advisory lock* serializa refrescos simultáneos.
+3. Las citas que se crean o cancelan por la API **no** aparecen en la analítica hasta el siguiente refresco; `GET /analitica/estado` lo indica (`actualizada: false`).
+
+### Endpoints de analítica
+
+Todos exigen sesión de **administrador** (`401` sin sesión, `403` para otro rol) y responden `503` si el schema `analitica` no existe (falta `alembic upgrade head`). Los días (`desde`, `hasta`) son inclusivos y en hora de Bogotá.
+
+| Método y ruta | Descripción |
+|---|---|
+| `GET /analitica/resumen` | KPIs. Filtros: `desde`, `hasta`, `sede_id`, `especialidad_id` |
+| `GET /analitica/citas` | Consulta agregada: `agrupar` (obligatorio, 1 o 2 dimensiones separadas por coma), `medida`, y filtros `desde`, `hasta`, `sede_id`, `especialidad_id`, `profesional_id`, `estado` |
+| `GET /analitica/estado` | Último refresco y si la copia coincide con el OLTP |
+| `POST /analitica/refrescar` | Refresca el modelo en estrella |
+
+**Medidas** (`medida`, por defecto `total`): `total`, `canceladas`, `atendidas`, `tasa_cancelacion` (fracción 0-1) y `duracion_media` (minutos, solo citas no canceladas).
+
+**Dimensiones** (`agrupar`): `fecha.anio`, `fecha.trimestre` (`2026-T1`), `fecha.mes` (`2026-03`), `fecha.semana` (`2026-S10`), `fecha.dia` (`2026-03-02`), `fecha.dia_semana` (`lunes`...), `franja` (`mañana`/`tarde`), `hora`, `especialidad`, `sede`, `profesional` y `paciente.rango_edad`. Los niveles de fecha incluyen a sus padres, así que subir o bajar de nivel nunca mezcla años. Cualquier otra dimensión o medida responde `422`; el SQL se arma solo con fragmentos de una lista blanca y los filtros van como parámetros enlazados.
+
+Operaciones OLAP con estos parámetros:
+
+- **Roll-up / drill-down:** cambia el nivel de fecha (`fecha.anio` → `fecha.trimestre` → `fecha.mes` → `fecha.dia`).
+- **Slice / dice:** añade filtros (`sede_id=2`, `estado=cancelada`, `desde`/`hasta`).
+- **Pivote:** dos dimensiones (`agrupar=fecha.mes,especialidad`).
+
+```bash
+# Citas por mes y especialidad, solo de una sede
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8000/analitica/citas?agrupar=fecha.mes,especialidad&sede_id=2"
+```
+
+```json
+{"medida": "total", "agrupar": ["fecha.mes", "especialidad"],
+ "filas": [{"dimensiones": {"fecha.mes": "2026-03", "especialidad": "Cardiología"}, "valor": 31},
+           {"dimensiones": {"fecha.mes": "2026-03", "especialidad": "Pediatría"}, "valor": 44}]}
+```
+
+```bash
+# Tasa de cancelación por día de la semana
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8000/analitica/citas?agrupar=fecha.dia_semana&medida=tasa_cancelacion"
+
+# KPIs del último trimestre
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:8000/analitica/resumen?desde=2026-07-01&hasta=2026-09-30"
+```
+
+```json
+{"total": 1120, "atendidas": 985, "canceladas": 135, "programadas": 0,
+ "tasa_cancelacion": 0.1205, "duracion_media_min": 31.4, "pacientes_distintos": 298}
+```
+
+`GET /analitica/estado` → `{"refrescado_en": "2026-10-15T19:41:21Z", "citas_oltp": 4452, "citas_analitica": 4452, "actualizada": true}`. `POST /analitica/refrescar` → `{"refrescado_en": "..."}`.
 
 ## Autenticación y permisos
 
@@ -234,7 +347,7 @@ npm run format:check  # Prettier, solo comprueba
 
 ### Migraciones
 
-Las migraciones están en `backend/alembic/` (`alembic upgrade head` desde `backend/`). Tras cambiar un modelo, genera la migración con `alembic revision --autogenerate -m "..."` y revísala. `alembic check` falla si los modelos y las migraciones no coinciden. Limitación: Alembic no detecta las restricciones `EXCLUDE`, así que esas se mantienen a mano (modelo y migración).
+Las migraciones están en `backend/alembic/` (`alembic upgrade head` desde `backend/`). Tras cambiar un modelo, genera la migración con `alembic revision --autogenerate -m "..."` y revísala. `alembic check` falla si los modelos y las migraciones no coinciden. Limitación: Alembic no detecta las restricciones `EXCLUDE`, así que esas se mantienen a mano (modelo y migración). Tampoco ve el schema `analitica` (vistas materializadas): su SQL vive en `backend/app/analitica/sql.py` y lo usan la migración y las pruebas; si cambias el modelo en estrella, edita ese módulo y añade una migración nueva que lo recree (`DROP SCHEMA analitica CASCADE` y `CREAR`).
 
 GitHub Actions (`.github/workflows/ci.yml`) ejecuta todo esto en cada push a `main` y en cada pull request: en el backend `ruff check`, `ruff format --check`, `alembic upgrade head` y `alembic check` (contra un PostgreSQL 16 como servicio, para comprobar que las migraciones aplican desde cero y no hay deriva) y `pytest`; en el frontend `npm run lint`, `npm run format:check`, `npm test` y `npm run build`.
 
