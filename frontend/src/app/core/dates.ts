@@ -41,6 +41,15 @@ export function addDays(fecha: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Suma meses a una fecha YYYY-MM-DD; si el día no existe en el mes destino, usa su último día. */
+export function addMonths(fecha: string, months: number): string {
+  const [y, m, d] = fecha.split('-').map(Number);
+  const first = new Date(Date.UTC(y, m - 1 + months, 1, 12));
+  const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0, 12));
+  first.setUTCDate(Math.min(d, last.getUTCDate()));
+  return first.toISOString().slice(0, 10);
+}
+
 /** Día de la semana de una fecha YYYY-MM-DD (0 = domingo). */
 export function diaSemana(fecha: string): number {
   return new Date(`${fecha}T12:00:00Z`).getUTCDay();

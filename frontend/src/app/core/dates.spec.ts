@@ -1,5 +1,6 @@
 import {
   addDays,
+  addMonths,
   diaSemana,
   etiquetaDia,
   fechaBogota,
@@ -24,6 +25,12 @@ describe('dates (America/Bogota)', () => {
     expect(addDays('2026-10-14', -14)).toBe('2026-09-30');
     expect(diaSemana('2026-10-18')).toBe(0);
     expect(diaSemana('2026-10-14')).toBe(3);
+  });
+
+  it('adds months clamping to the last day of the target month', () => {
+    expect(addMonths('2026-10-15', -12)).toBe('2025-10-15');
+    expect(addMonths('2026-03-31', -1)).toBe('2026-02-28');
+    expect(addMonths('2026-01-15', -3)).toBe('2025-10-15');
   });
 
   it('builds an instant with the Bogota offset', () => {
