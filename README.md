@@ -220,6 +220,18 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 `GET /analitica/estado` → `{"refrescado_en": "2026-10-15T19:41:21Z", "citas_oltp": 4452, "citas_analitica": 4452, "actualizada": true}`. `POST /analitica/refrescar` → `{"refrescado_en": "..."}`.
 
+### Dashboard de analítica (frontend)
+
+El panel de administración tiene la sección **Analítica** (`/admin/analitica`, solo admin), que consume estos endpoints:
+
+- **Indicadores** (`/analitica/resumen`): citas, atendidas, tasa de cancelación, duración media y pacientes distintos.
+- **Filtros** (slice/dice): periodo (3, 6 o 12 meses, o fechas propias), sede y especialidad; cada cambio repite todas las consultas.
+- **Citas en el tiempo** con control de nivel de detalle (año → trimestre → mes → semana): es el roll-up/drill-down sobre `fecha.*`; muestra también las canceladas.
+- **Demanda y cancelación por especialidad**, **citas por sede** y **horas pico** (mapa de calor día de la semana × hora, un pivote de dos dimensiones).
+- **Frescura**: "Datos actualizados a…" con `/analitica/estado`, un aviso si la copia va por detrás del OLTP y un botón **Refrescar** (`POST /analitica/refrescar`). Si el schema `analitica` no existe (`503`) la página lo indica.
+
+Los gráficos son SVG/HTML propios, sin librería de gráficos; cada uno tiene su equivalente en texto (valores en pantalla o tabla plegable) y funciona en claro y oscuro.
+
 ## Autenticación y permisos
 
 Autenticación con **JWT** (HS256) en el encabezado `Authorization: Bearer <token>`. Las contraseñas se guardan con **Argon2id** (`pwdlib`).
