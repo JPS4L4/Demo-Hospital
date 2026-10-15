@@ -12,7 +12,11 @@ describe('AuthService', () => {
 
   function setup(): void {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
@@ -32,7 +36,10 @@ describe('AuthService', () => {
 
     const req = http.expectOne(`${API}/auth/login`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ email: 'paula.herrera@example.com', password: 'secreto-123' });
+    expect(req.request.body).toEqual({
+      email: 'paula.herrera@example.com',
+      password: 'secreto-123',
+    });
     req.flush(sesion(usuarioPaciente));
 
     expect(service.token()).toBe('tok-123');
@@ -41,7 +48,10 @@ describe('AuthService', () => {
     expect(service.isAdmin()).toBe(false);
     expect(service.nombre()).toBe('Paula Herrera');
     expect(service.iniciales()).toBe('PH');
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({ token: 'tok-123', expiresAt: 1_000_000 + 3_600_000 });
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({
+      token: 'tok-123',
+      expiresAt: 1_000_000 + 3_600_000,
+    });
   });
 
   it('identifies an admin without a patient record', () => {
@@ -87,7 +97,10 @@ describe('AuthService', () => {
   });
 
   it('rehydrates a stored token through /auth/me, sending the bearer header', async () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: 'guardado', expiresAt: Date.now() + 60_000 }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ token: 'guardado', expiresAt: Date.now() + 60_000 }),
+    );
     setup();
 
     const ready = service.whenReady();
@@ -103,7 +116,10 @@ describe('AuthService', () => {
   });
 
   it('ignores and removes an expired stored token without calling the API', async () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: 'viejo', expiresAt: Date.now() - 1 }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ token: 'viejo', expiresAt: Date.now() - 1 }),
+    );
     setup();
 
     await service.whenReady();
@@ -122,11 +138,16 @@ describe('AuthService', () => {
   });
 
   it('clears the session when /auth/me answers 401', async () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: 'revocado', expiresAt: Date.now() + 60_000 }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ token: 'revocado', expiresAt: Date.now() + 60_000 }),
+    );
     setup();
 
     const ready = service.whenReady();
-    http.expectOne(`${API}/auth/me`).flush({ detail: 'No autenticado' }, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne(`${API}/auth/me`)
+      .flush({ detail: 'No autenticado' }, { status: 401, statusText: 'Unauthorized' });
     await ready;
 
     expect(service.usuario()).toBeNull();
@@ -135,7 +156,10 @@ describe('AuthService', () => {
   });
 
   it('keeps the stored token when /auth/me fails for another reason (API down)', async () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: 'valido', expiresAt: Date.now() + 60_000 }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ token: 'valido', expiresAt: Date.now() + 60_000 }),
+    );
     setup();
 
     const ready = service.whenReady();

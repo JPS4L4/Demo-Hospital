@@ -1,6 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup } from '@angular/forms';
-import { applyProblem, documentoValido, errorMessage, nacimientoValido, parseApiError, requiredText, telefonoValido } from './forms';
+import {
+  applyProblem,
+  documentoValido,
+  errorMessage,
+  nacimientoValido,
+  parseApiError,
+  requiredText,
+  telefonoValido,
+} from './forms';
 
 const http = (status: number, error: unknown) => new HttpErrorResponse({ status, error });
 
@@ -44,7 +52,11 @@ describe('errorMessage', () => {
 
 describe('parseApiError / applyProblem', () => {
   it('reads a string detail', () => {
-    expect(parseApiError(http(409, { detail: 'Ya existe' }))).toEqual({ status: 409, detail: 'Ya existe', fields: {} });
+    expect(parseApiError(http(409, { detail: 'Ya existe' }))).toEqual({
+      status: 409,
+      detail: 'Ya existe',
+      fields: {},
+    });
   });
 
   it('reads FastAPI validation lists, keeping Spanish messages and generic-izing English ones', () => {
@@ -56,7 +68,10 @@ describe('parseApiError / applyProblem', () => {
         ],
       }),
     );
-    expect(problem.fields).toEqual({ email: 'El correo no es válido', password: 'Revisa este campo.' });
+    expect(problem.fields).toEqual({
+      email: 'El correo no es válido',
+      password: 'Revisa este campo.',
+    });
   });
 
   it('puts field errors on their controls and returns the rest as a form message', () => {
@@ -72,7 +87,11 @@ describe('parseApiError / applyProblem', () => {
 
   it('clears the server error once the user edits the field', () => {
     const form = new FormGroup({ email: new FormControl('') });
-    applyProblem(form, { status: 409, detail: 'Ya existe una cuenta con ese correo', fields: {} }, () => 'email');
+    applyProblem(
+      form,
+      { status: 409, detail: 'Ya existe una cuenta con ese correo', fields: {} },
+      () => 'email',
+    );
     expect(form.controls.email.errors).toEqual({ server: 'Ya existe una cuenta con ese correo' });
     form.controls.email.setValue('otro@correo.co');
     expect(form.controls.email.errors).toBeNull();
@@ -80,6 +99,8 @@ describe('parseApiError / applyProblem', () => {
 
   it('reports connectivity failures as a form message', () => {
     const form = new FormGroup({});
-    expect(applyProblem(form, parseApiError(new HttpErrorResponse({ status: 0 })))).toContain('No pudimos conectar');
+    expect(applyProblem(form, parseApiError(new HttpErrorResponse({ status: 0 })))).toContain(
+      'No pudimos conectar',
+    );
   });
 });

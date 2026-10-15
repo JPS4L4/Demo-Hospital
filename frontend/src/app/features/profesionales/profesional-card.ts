@@ -15,7 +15,9 @@ import { Profesional, iniciales, nombreCompleto } from './profesional.model';
         <div class="min-w-0">
           <p class="text-sm font-semibold text-accent">{{ profesional().especialidad.nombre }}</p>
           <h3 class="mt-0.5 text-xl">
-            <a [routerLink]="['/profesionales', profesional().id]" class="pro-link">{{ nombre() }}</a>
+            <a [routerLink]="['/profesionales', profesional().id]" class="pro-link">{{
+              nombre()
+            }}</a>
           </h3>
         </div>
       </div>
@@ -29,7 +31,10 @@ import { Profesional, iniciales, nombreCompleto } from './profesional.model';
           <span>Registro {{ profesional().registro_profesional }}</span>
         </li>
       </ul>
-      <span class="mt-auto inline-flex items-center gap-2 font-semibold text-brand" aria-hidden="true">
+      <span
+        class="mt-auto inline-flex items-center gap-2 font-semibold text-brand"
+        aria-hidden="true"
+      >
         Ver perfil
         <app-icon name="arrow-right" [size]="18" class="arrow" />
       </span>

@@ -122,7 +122,10 @@ describe('Registro', () => {
     await submit();
     http
       .expectOne(`${API}/auth/registro`)
-      .flush({ detail: 'Ya existe un paciente con ese tipo y número de documento' }, { status: 409, statusText: 'Conflict' });
+      .flush(
+        { detail: 'Ya existe un paciente con ese tipo y número de documento' },
+        { status: 409, statusText: 'Conflict' },
+      );
     await fixture.whenStable();
 
     expect(field('reg-documento').getAttribute('aria-invalid')).toBe('true');
@@ -134,7 +137,10 @@ describe('Registro', () => {
     await submit();
     http
       .expectOne(`${API}/auth/registro`)
-      .flush({ detail: 'Ya existe una cuenta con ese correo electrónico' }, { status: 409, statusText: 'Conflict' });
+      .flush(
+        { detail: 'Ya existe una cuenta con ese correo electrónico' },
+        { status: 409, statusText: 'Conflict' },
+      );
     await fixture.whenStable();
     expect(el.querySelector('#reg-email-error')?.textContent).toContain('correo');
   });
@@ -145,15 +151,25 @@ describe('Registro', () => {
     http.expectOne(`${API}/auth/registro`).flush(
       {
         detail: [
-          { loc: ['body', 'telefono'], msg: 'Value error, El teléfono debe tener entre 7 y 15 dígitos', type: 'value_error' },
-          { loc: ['body', 'eps'], msg: 'String should have at most 120 characters', type: 'string_too_long' },
+          {
+            loc: ['body', 'telefono'],
+            msg: 'Value error, El teléfono debe tener entre 7 y 15 dígitos',
+            type: 'value_error',
+          },
+          {
+            loc: ['body', 'eps'],
+            msg: 'String should have at most 120 characters',
+            type: 'string_too_long',
+          },
         ],
       },
       { status: 422, statusText: 'Unprocessable Entity' },
     );
     await fixture.whenStable();
 
-    expect(el.querySelector('#reg-telefono-error')?.textContent).toContain('El teléfono debe tener entre 7 y 15 dígitos');
+    expect(el.querySelector('#reg-telefono-error')?.textContent).toContain(
+      'El teléfono debe tener entre 7 y 15 dígitos',
+    );
     expect(el.querySelector('#reg-eps-error')?.textContent).toContain('Revisa este campo.');
   });
 

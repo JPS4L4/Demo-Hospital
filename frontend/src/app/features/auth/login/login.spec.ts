@@ -75,7 +75,10 @@ describe('Login', () => {
     await submit();
 
     const req = http.expectOne(`${API}/auth/login`);
-    expect(req.request.body).toEqual({ email: 'paula.herrera@example.com', password: 'Paciente-Demo-2026' });
+    expect(req.request.body).toEqual({
+      email: 'paula.herrera@example.com',
+      password: 'Paciente-Demo-2026',
+    });
     req.flush(sesion(usuarioPaciente));
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/mis-citas');
@@ -113,10 +116,15 @@ describe('Login', () => {
     await submit();
     http
       .expectOne(`${API}/auth/login`)
-      .flush({ detail: 'Correo o contraseña incorrectos' }, { status: 401, statusText: 'Unauthorized' });
+      .flush(
+        { detail: 'Correo o contraseña incorrectos' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
     await fixture.whenStable();
 
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Correo o contraseña incorrectos');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'Correo o contraseña incorrectos',
+    );
     expect(el.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(false);
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });

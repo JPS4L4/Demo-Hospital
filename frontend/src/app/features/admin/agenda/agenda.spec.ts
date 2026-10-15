@@ -16,14 +16,30 @@ const cita = (id: number, inicio: string, estado: Cita['estado'] = 'programada')
   duracion_min: 30,
   motivo: 'Control general',
   estado,
-  paciente: { id: 7, tipo_documento: 'CC', numero_documento: '1020304050', nombres: 'Paula', apellidos: 'Herrera' },
-  profesional: { id: 5, nombres: 'Sofía', apellidos: 'Beltrán', especialidad: { id: 3, nombre: 'Medicina interna' } },
+  paciente: {
+    id: 7,
+    tipo_documento: 'CC',
+    numero_documento: '1020304050',
+    nombres: 'Paula',
+    apellidos: 'Herrera',
+  },
+  profesional: {
+    id: 5,
+    nombres: 'Sofía',
+    apellidos: 'Beltrán',
+    especialidad: { id: 3, nombre: 'Medicina interna' },
+  },
   sede: { id: 1, nombre: 'Sede Chapinero', ciudad: 'Bogotá' },
 });
 
 const profesionales = {
   items: [
-    { id: 5, nombres: 'Sofía', apellidos: 'Beltrán', especialidad: { id: 3, nombre: 'Medicina interna' } },
+    {
+      id: 5,
+      nombres: 'Sofía',
+      apellidos: 'Beltrán',
+      especialidad: { id: 3, nombre: 'Medicina interna' },
+    },
     { id: 6, nombres: 'Luis', apellidos: 'Mora', especialidad: { id: 4, nombre: 'Pediatría' } },
   ],
   total: 2,
@@ -60,7 +76,9 @@ describe('AdminAgenda', () => {
 
   const citasReq = () => http.expectOne((r) => r.url === `${API}/citas`);
   const button = (text: string) =>
-    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) => b.textContent?.includes(text))!;
+    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) =>
+      b.textContent?.includes(text),
+    )!;
 
   async function load(items: Cita[]): Promise<void> {
     http.expectOne((r) => r.url === `${API}/profesionales`).flush(profesionales);
@@ -82,7 +100,10 @@ describe('AdminAgenda', () => {
   });
 
   it('lists the day with patient, professional, time and status', async () => {
-    await load([cita(1, '2026-10-14T09:00:00-05:00'), cita(2, '2026-10-14T10:00:00-05:00', 'atendida')]);
+    await load([
+      cita(1, '2026-10-14T09:00:00-05:00'),
+      cita(2, '2026-10-14T10:00:00-05:00', 'atendida'),
+    ]);
 
     const rows = el.querySelectorAll('tbody tr');
     expect(rows.length).toBe(2);
@@ -109,7 +130,9 @@ describe('AdminAgenda', () => {
 
     expect(el.querySelector('tbody tr')!.textContent).toContain('Atendida');
     expect(el.querySelectorAll('tbody tr button').length).toBe(0);
-    expect(el.querySelector('[role="status"]')?.textContent).toContain('Cita marcada como atendida.');
+    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+      'Cita marcada como atendida.',
+    );
   });
 
   it('cancels after confirmation', async () => {
@@ -122,7 +145,9 @@ describe('AdminAgenda', () => {
 
     button('Sí, cancelar cita').click();
     await settle();
-    http.expectOne(`${API}/citas/1/cancelar`).flush(cita(1, '2026-10-14T09:00:00-05:00', 'cancelada'));
+    http
+      .expectOne(`${API}/citas/1/cancelar`)
+      .flush(cita(1, '2026-10-14T09:00:00-05:00', 'cancelada'));
     await settle();
 
     expect(el.querySelector('dialog')!.hasAttribute('open')).toBe(false);
@@ -133,7 +158,9 @@ describe('AdminAgenda', () => {
     await load([cita(1, '2026-10-14T09:00:00-05:00')]);
     button('Atendida').click();
     await settle();
-    http.expectOne(`${API}/citas/1`).flush({ detail: 'No se pudo' }, { status: 500, statusText: 'Server Error' });
+    http
+      .expectOne(`${API}/citas/1`)
+      .flush({ detail: 'No se pudo' }, { status: 500, statusText: 'Server Error' });
     await settle();
 
     expect(el.querySelector('[role="alert"]')?.textContent).toContain('No se pudo');
@@ -173,6 +200,8 @@ describe('AdminAgenda', () => {
     http.expectOne((r) => r.url === `${API}/profesionales`).flush(profesionales);
     citasReq().flush({ detail: 'x' }, { status: 500, statusText: 'Server Error' });
     await settle();
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar la agenda');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar la agenda',
+    );
   });
 });

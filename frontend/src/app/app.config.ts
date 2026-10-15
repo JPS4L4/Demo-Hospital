@@ -30,5 +30,5 @@ export const appConfig: ApplicationConfig = {
       void inject(AuthService).whenReady();
     }),
     { provide: LOCALE_ID, useValue: 'es-CO' },
-  ]
+  ],
 };

@@ -25,7 +25,9 @@
                   @if (s.status === 'ready') {
                     <span class="stat-value block">{{ s.data[t.key] }}</span>
                   } @else {
-                    <span class="skeleton mt-1 block h-9 w-14" role="status"><span class="sr-only">Cargando…</span></span>
+                    <span class="skeleton mt-1 block h-9 w-14" role="status"
+                      ><span class="sr-only">Cargando…</span></span
+                    >
                   }
                 }
                 <span class="block text-sm text-muted">{{ t.hint }}</span>

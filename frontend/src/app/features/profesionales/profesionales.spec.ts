@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -37,7 +41,12 @@ const profesional = (id: number, nombres: string, apellidos: string): Profesiona
   sede: { id: 1, nombre: 'Sede Chapinero', ciudad: 'Bogotá' },
 });
 
-const page = (items: Profesional[], total = items.length, offset = 0) => ({ items, total, limit: 9, offset });
+const page = (items: Profesional[], total = items.length, offset = 0) => ({
+  items,
+  total,
+  limit: 9,
+  offset,
+});
 
 describe('Profesionales', () => {
   let harness: RouterTestingHarness;
@@ -68,7 +77,10 @@ describe('Profesionales', () => {
   }
 
   /** Abre la ruta y responde a las tres peticiones iniciales (opciones de filtro + listado). */
-  async function open(url: string, body: object = page([profesional(1, 'Ana', 'Zapata')])): Promise<void> {
+  async function open(
+    url: string,
+    body: object = page([profesional(1, 'Ana', 'Zapata')]),
+  ): Promise<void> {
     await harness.navigateByUrl(url, Profesionales);
     el = harness.routeNativeElement as HTMLElement;
     http.expectOne((r) => r.url === `${API}/especialidades`).flush(especialidades);
@@ -82,7 +94,9 @@ describe('Profesionales', () => {
     el = harness.routeNativeElement as HTMLElement;
     harness.detectChanges();
 
-    expect(el.querySelector('app-skeleton-cards [role="status"]')?.textContent).toContain('Cargando profesionales');
+    expect(el.querySelector('app-skeleton-cards [role="status"]')?.textContent).toContain(
+      'Cargando profesionales',
+    );
     http.expectOne((r) => r.url === `${API}/especialidades`).flush(especialidades);
     http.expectOne(`${API}/sedes`).flush(sedes);
     list().flush(page([]));
@@ -91,9 +105,13 @@ describe('Profesionales', () => {
   it('requests active professionals with the page size and renders cards linking to the detail', async () => {
     await open('/profesionales', page([profesional(7, 'Sofía', 'Beltrán')], 1));
 
-    const names = Array.from(el.querySelectorAll('app-profesional-card h3')).map((h) => h.textContent?.trim());
+    const names = Array.from(el.querySelectorAll('app-profesional-card h3')).map((h) =>
+      h.textContent?.trim(),
+    );
     expect(names).toEqual(['Sofía Beltrán']);
-    expect(el.querySelector('app-profesional-card h3 a')?.getAttribute('href')).toBe('/profesionales/7');
+    expect(el.querySelector('app-profesional-card h3 a')?.getAttribute('href')).toBe(
+      '/profesionales/7',
+    );
     expect(el.querySelector('app-avatar')?.textContent).toContain('SB');
     expect(el.textContent).toContain('Sede Chapinero, Bogotá');
     expect(el.textContent).toContain('Registro RM-20007');
@@ -101,15 +119,23 @@ describe('Profesionales', () => {
   });
 
   it('sends the filters found in the URL and preselects them', async () => {
-    await harness.navigateByUrl('/profesionales?q=bel&especialidad_id=3&sede_id=2&pagina=2', Profesionales);
+    await harness.navigateByUrl(
+      '/profesionales?q=bel&especialidad_id=3&sede_id=2&pagina=2',
+      Profesionales,
+    );
     el = harness.routeNativeElement as HTMLElement;
     http.expectOne((r) => r.url === `${API}/especialidades`).flush(especialidades);
     http.expectOne(`${API}/sedes`).flush(sedes);
     const req = list();
     const p = req.request.params;
-    expect([p.get('q'), p.get('especialidad_id'), p.get('sede_id'), p.get('limit'), p.get('offset'), p.get('activo')]).toEqual([
-      'bel', '3', '2', '9', '9', 'true',
-    ]);
+    expect([
+      p.get('q'),
+      p.get('especialidad_id'),
+      p.get('sede_id'),
+      p.get('limit'),
+      p.get('offset'),
+      p.get('activo'),
+    ]).toEqual(['bel', '3', '2', '9', '9', 'true']);
     req.flush(page([profesional(1, 'Ana', 'Zapata')], 12, 9));
     await settle();
 
@@ -185,7 +211,9 @@ describe('Profesionales', () => {
     await open('/profesionales', page([profesional(1, 'Ana', 'Zapata')], 12));
 
     expect(el.querySelector('nav[aria-label="Paginación"]')?.textContent).toContain('1–9');
-    const next = Array.from(el.querySelectorAll('nav button')).find((b) => b.textContent?.includes('Siguiente')) as HTMLButtonElement;
+    const next = Array.from(el.querySelectorAll('nav button')).find((b) =>
+      b.textContent?.includes('Siguiente'),
+    ) as HTMLButtonElement;
     next.click();
     await settle();
 

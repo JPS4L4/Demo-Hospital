@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, combineLatest, debounceTime, filter, map, of, switchMap } from 'rxjs';
@@ -47,14 +56,12 @@ export class Profesionales {
 
   protected readonly query = toSignal(
     this.route.queryParamMap.pipe(
-      map(
-        (p): Query => ({
-          q: (p.get('q') ?? '').trim(),
-          especialidadId: positiveInt(p.get('especialidad_id')),
-          sedeId: positiveInt(p.get('sede_id')),
-          pagina: positiveInt(p.get('pagina')) ?? 1,
-        }),
-      ),
+      map((p): Query => ({
+        q: (p.get('q') ?? '').trim(),
+        especialidadId: positiveInt(p.get('especialidad_id')),
+        sedeId: positiveInt(p.get('sede_id')),
+        pagina: positiveInt(p.get('pagina')) ?? 1,
+      })),
     ),
     { requireSync: true },
   );

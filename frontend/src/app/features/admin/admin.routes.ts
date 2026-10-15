@@ -25,7 +25,8 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'profesionales',
         title: 'Profesionales · Panel Meridiana',
-        loadComponent: () => import('./profesionales/admin-profesionales').then((m) => m.AdminProfesionales),
+        loadComponent: () =>
+          import('./profesionales/admin-profesionales').then((m) => m.AdminProfesionales),
       },
     ],
   },

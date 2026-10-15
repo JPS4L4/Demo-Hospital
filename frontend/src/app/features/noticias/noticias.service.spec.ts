@@ -16,7 +16,9 @@ describe('NoticiasService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(NoticiasService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -49,7 +51,9 @@ describe('NoticiasService', () => {
     let status = 0;
     service.obtener(9999).subscribe({ error: (e) => (status = e.status) });
 
-    http.expectOne('http://localhost:8000/noticias/9999').flush('nope', { status: 404, statusText: 'Not Found' });
+    http
+      .expectOne('http://localhost:8000/noticias/9999')
+      .flush('nope', { status: 404, statusText: 'Not Found' });
 
     expect(status).toBe(404);
   });

@@ -1,6 +1,10 @@
 import { registerLocaleData } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import localeEsCo from '@angular/common/locales/es-CO';
 import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -25,7 +29,12 @@ const medicamento = (id: number, over: Partial<Medicamento> = {}): Medicamento =
   ...over,
 });
 
-const page = (items: Medicamento[], total = items.length, offset = 0) => ({ items, total, limit: 12, offset });
+const page = (items: Medicamento[], total = items.length, offset = 0) => ({
+  items,
+  total,
+  limit: 12,
+  offset,
+});
 
 describe('Medicamentos', () => {
   let harness: RouterTestingHarness;
@@ -68,7 +77,9 @@ describe('Medicamentos', () => {
     el = harness.routeNativeElement as HTMLElement;
     harness.detectChanges();
 
-    expect(el.querySelector('app-skeleton-cards [role="status"]')?.textContent).toContain('Cargando medicamentos');
+    expect(el.querySelector('app-skeleton-cards [role="status"]')?.textContent).toContain(
+      'Cargando medicamentos',
+    );
     list().flush(page([]));
   });
 
@@ -109,7 +120,12 @@ describe('Medicamentos', () => {
     el = harness.routeNativeElement as HTMLElement;
     const req = list();
     const p = req.request.params;
-    expect([p.get('q'), p.get('requiere_formula'), p.get('limit'), p.get('offset')]).toEqual(['parac', 'false', '12', '12']);
+    expect([p.get('q'), p.get('requiere_formula'), p.get('limit'), p.get('offset')]).toEqual([
+      'parac',
+      'false',
+      '12',
+      '12',
+    ]);
     req.flush(page([medicamento(1)], 15, 12));
     await settle();
 
@@ -162,7 +178,9 @@ describe('Medicamentos', () => {
     await open('/medicamentos', page([medicamento(1)], 15));
 
     expect(el.querySelector('nav[aria-label="Paginación"]')?.textContent).toContain('1–12');
-    const next = Array.from(el.querySelectorAll('nav button')).find((b) => b.textContent?.includes('Siguiente')) as HTMLButtonElement;
+    const next = Array.from(el.querySelectorAll('nav button')).find((b) =>
+      b.textContent?.includes('Siguiente'),
+    ) as HTMLButtonElement;
     next.click();
     await settle();
 

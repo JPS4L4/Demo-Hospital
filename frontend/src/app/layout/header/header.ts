@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, effect, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
@@ -12,7 +20,7 @@ import { Logo } from '../../shared/ui/logo';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, Icon, Logo],
   templateUrl: './header.html',
-  styleUrl: './header.css'
+  styleUrl: './header.css',
 })
 export class Header {
   protected readonly themeService = inject(ThemeService);
@@ -66,7 +74,8 @@ export class Header {
     if (!this.userMenuOpen()) return;
     const target = event.target as Node;
     const inside =
-      this.userButton()?.nativeElement.contains(target) || this.userMenuPanel()?.nativeElement.contains(target);
+      this.userButton()?.nativeElement.contains(target) ||
+      this.userMenuPanel()?.nativeElement.contains(target);
     if (!inside) this.userMenuOpen.set(false);
   }
 

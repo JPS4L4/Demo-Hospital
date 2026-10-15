@@ -9,7 +9,9 @@ describe('Admin shell', () => {
   it('offers the four sections as sub-navigation and marks the current one', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'admin', component: Admin, children: [{ path: 'agenda', children: [] }] }]),
+        provideRouter([
+          { path: 'admin', component: Admin, children: [{ path: 'agenda', children: [] }] },
+        ]),
         provideHttpClient(),
         provideHttpClientTesting(),
       ],
@@ -21,7 +23,12 @@ describe('Admin shell', () => {
 
     const nav = el.querySelector('nav[aria-label="Secciones del panel"]')!;
     const links = Array.from(nav.querySelectorAll('a'));
-    expect(links.map((a) => a.textContent?.trim())).toEqual(['Resumen', 'Agenda', 'Noticias', 'Profesionales']);
+    expect(links.map((a) => a.textContent?.trim())).toEqual([
+      'Resumen',
+      'Agenda',
+      'Noticias',
+      'Profesionales',
+    ]);
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
       '/admin',
       '/admin/agenda',

@@ -37,12 +37,36 @@ export class Home {
   private readonly reloadSedes = signal(0);
 
   protected readonly especialidades: EspecialidadDestacada[] = [
-    { icon: 'heart-pulse', nombre: 'Cardiología', descripcion: 'Control de la presión, ecocardiografía y rehabilitación cardiaca.' },
-    { icon: 'smile', nombre: 'Pediatría', descripcion: 'Seguimiento del crecimiento, vacunación y urgencias infantiles.' },
-    { icon: 'activity', nombre: 'Medicina interna', descripcion: 'Una mirada integral para adultos con una o varias condiciones.' },
-    { icon: 'flask', nombre: 'Laboratorio clínico', descripcion: 'Resultados de rutina el mismo día y toma de muestras a domicilio.' },
-    { icon: 'shield-check', nombre: 'Medicina preventiva', descripcion: 'Chequeos, vacunación y programas para evitar enfermedades.' },
-    { icon: 'clock', nombre: 'Urgencias 24 horas', descripcion: 'Atención inmediata, todos los días del año, en cada sede.' },
+    {
+      icon: 'heart-pulse',
+      nombre: 'Cardiología',
+      descripcion: 'Control de la presión, ecocardiografía y rehabilitación cardiaca.',
+    },
+    {
+      icon: 'smile',
+      nombre: 'Pediatría',
+      descripcion: 'Seguimiento del crecimiento, vacunación y urgencias infantiles.',
+    },
+    {
+      icon: 'activity',
+      nombre: 'Medicina interna',
+      descripcion: 'Una mirada integral para adultos con una o varias condiciones.',
+    },
+    {
+      icon: 'flask',
+      nombre: 'Laboratorio clínico',
+      descripcion: 'Resultados de rutina el mismo día y toma de muestras a domicilio.',
+    },
+    {
+      icon: 'shield-check',
+      nombre: 'Medicina preventiva',
+      descripcion: 'Chequeos, vacunación y programas para evitar enfermedades.',
+    },
+    {
+      icon: 'clock',
+      nombre: 'Urgencias 24 horas',
+      descripcion: 'Atención inmediata, todos los días del año, en cada sede.',
+    },
   ];
 
   /** Las tres noticias más recientes (la API ya las entrega ordenadas). */

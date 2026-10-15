@@ -1,10 +1,12 @@
 <footer class="main-footer mt-auto border-t border-line bg-sunken">
   <div class="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
     <div>
-      <a routerLink="/" class="inline-flex rounded-md" aria-label="Meridiana, ir al inicio"><app-logo /></a>
+      <a routerLink="/" class="inline-flex rounded-md" aria-label="Meridiana, ir al inicio"
+        ><app-logo
+      /></a>
       <p class="mt-4 max-w-xs text-sm text-muted">
-        Una red de clínicas para cuidar de tu salud cerca de casa, con equipos médicos que te conocen y
-        te acompañan.
+        Una red de clínicas para cuidar de tu salud cerca de casa, con equipos médicos que te
+        conocen y te acompañan.
       </p>
     </div>
 
@@ -12,7 +14,9 @@
       <h2 class="footer-title">Navegación</h2>
       <ul class="footer-list">
         @for (link of links; track link.path) {
-          <li><a [routerLink]="link.path" class="footer-link">{{ link.label }}</a></li>
+          <li>
+            <a [routerLink]="link.path" class="footer-link">{{ link.label }}</a>
+          </li>
         }
       </ul>
     </nav>
@@ -21,7 +25,9 @@
       <h2 class="footer-title">Sedes</h2>
       <ul class="footer-list">
         @for (ciudad of ciudades; track ciudad) {
-          <li><a routerLink="/sedes" class="footer-link">{{ ciudad }}</a></li>
+          <li>
+            <a routerLink="/sedes" class="footer-link">{{ ciudad }}</a>
+          </li>
         }
       </ul>
     </div>
@@ -35,7 +41,9 @@
         </li>
         <li class="flex items-start gap-2.5">
           <app-icon name="mail" [size]="18" />
-          <a class="footer-link break-all" href="mailto:contacto&#64;meridiana.example">contacto&#64;meridiana.example</a>
+          <a class="footer-link break-all" href="mailto:contacto&#64;meridiana.example"
+            >contacto&#64;meridiana.example</a
+          >
         </li>
         <li class="flex items-start gap-2.5">
           <app-icon name="clock" [size]="18" />
@@ -46,7 +54,9 @@
   </div>
 
   <div class="border-t border-line">
-    <div class="container-page flex flex-col gap-2 py-5 text-sm text-muted sm:flex-row sm:justify-between">
+    <div
+      class="container-page flex flex-col gap-2 py-5 text-sm text-muted sm:flex-row sm:justify-between"
+    >
       <p>&copy; {{ anioActual }} Meridiana. Todos los derechos reservados.</p>
       <p>Sitio de demostración: la información, los datos y los contactos son ficticios.</p>
     </div>

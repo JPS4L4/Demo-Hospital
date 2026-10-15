@@ -1,4 +1,15 @@
-import { addDays, diaSemana, etiquetaDia, fechaBogota, formatFechaCorta, formatFechaLarga, formatHora, horaBogota, hoyBogota, inicioIso } from './dates';
+import {
+  addDays,
+  diaSemana,
+  etiquetaDia,
+  fechaBogota,
+  formatFechaCorta,
+  formatFechaLarga,
+  formatHora,
+  horaBogota,
+  hoyBogota,
+  inicioIso,
+} from './dates';
 
 describe('dates (America/Bogota)', () => {
   it('reads the local day and hour of an instant, not the UTC one', () => {

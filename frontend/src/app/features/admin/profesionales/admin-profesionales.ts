@@ -1,7 +1,23 @@
-import { Component, ElementRef, Injector, afterNextRender, inject, linkedSignal, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 import {
   applyProblem,
   focusFirstInvalid,
@@ -18,7 +34,11 @@ import { Pagination } from '../../../shared/ui/pagination';
 import { StateMessage } from '../../../shared/ui/state-message';
 import { EspecialidadesService } from '../../especialidades/especialidades.service';
 import { SedesService } from '../../sedes/sedes.service';
-import { Profesional, ProfesionalInput, nombreCompleto } from '../../profesionales/profesional.model';
+import {
+  Profesional,
+  ProfesionalInput,
+  nombreCompleto,
+} from '../../profesionales/profesional.model';
 import { ProfesionalesService } from '../../profesionales/profesionales.service';
 
 export const ADMIN_PAGE_SIZE = 10;
@@ -43,15 +63,29 @@ export class AdminProfesionales {
   protected readonly offset = signal(0);
   private readonly reload = signal(0);
 
-  protected readonly especialidades = toSignal(inject(EspecialidadesService).listar().pipe(catchError(() => of([]))), {
-    initialValue: [],
-  });
-  protected readonly sedes = toSignal(inject(SedesService).listar().pipe(catchError(() => of([]))), {
-    initialValue: [],
-  });
+  protected readonly especialidades = toSignal(
+    inject(EspecialidadesService)
+      .listar()
+      .pipe(catchError(() => of([]))),
+    {
+      initialValue: [],
+    },
+  );
+  protected readonly sedes = toSignal(
+    inject(SedesService)
+      .listar()
+      .pipe(catchError(() => of([]))),
+    {
+      initialValue: [],
+    },
+  );
 
   private readonly result = toSignal(
-    combineLatest([toObservable(this.q), toObservable(this.offset), toObservable(this.reload)]).pipe(
+    combineLatest([
+      toObservable(this.q),
+      toObservable(this.offset),
+      toObservable(this.reload),
+    ]).pipe(
       // `activo: null` incluye los inactivos: aquí se gestionan.
       switchMap(([q, offset]) =>
         toRemote(this.service.listar({ q, activo: null, limit: ADMIN_PAGE_SIZE, offset })),
@@ -69,7 +103,10 @@ export class AdminProfesionales {
   protected readonly actionError = signal<string | null>(null);
   protected readonly anuncio = signal('');
   /** Filas ya actualizadas por el servidor; se descartan cuando llega una lista nueva. */
-  private readonly cambios = linkedSignal<unknown, Record<number, Profesional>>({ source: this.result, computation: () => ({}) });
+  private readonly cambios = linkedSignal<unknown, Record<number, Profesional>>({
+    source: this.result,
+    computation: () => ({}),
+  });
 
   protected readonly form = inject(FormBuilder).group({
     nombres: ['', [requiredText, Validators.required, Validators.maxLength(120)]],
@@ -90,7 +127,12 @@ export class AdminProfesionales {
   constructor() {
     // La búsqueda se aplica tras una pausa al escribir y vuelve a la primera página.
     toObservable(this.search)
-      .pipe(debounceTime(300), map((t) => t.trim()), distinctUntilChanged(), takeUntilDestroyed())
+      .pipe(
+        debounceTime(300),
+        map((t) => t.trim()),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
       .subscribe((q) => {
         this.q.set(q);
         this.offset.set(0);
@@ -119,7 +161,17 @@ export class AdminProfesionales {
     this.trigger = event.currentTarget as HTMLElement;
     this.formError.set(null);
     if (edicion === 'nuevo') {
-      this.form.reset({ nombres: '', apellidos: '', especialidad_id: null, sede_id: null, registro_profesional: '', email: '', telefono: '', bio: '', activo: true });
+      this.form.reset({
+        nombres: '',
+        apellidos: '',
+        especialidad_id: null,
+        sede_id: null,
+        registro_profesional: '',
+        email: '',
+        telefono: '',
+        bio: '',
+        activo: true,
+      });
     } else {
       this.form.reset({
         nombres: edicion.nombres,
@@ -134,9 +186,12 @@ export class AdminProfesionales {
       });
     }
     this.edicion.set(edicion);
-    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('#prof-nombres')?.focus(), {
-      injector: this.injector,
-    });
+    afterNextRender(
+      () => this.host.nativeElement.querySelector<HTMLElement>('#prof-nombres')?.focus(),
+      {
+        injector: this.injector,
+      },
+    );
   }
 
   protected cerrar(): void {
@@ -170,7 +225,8 @@ export class AdminProfesionales {
       activo: !!v.activo,
     };
     this.guardando.set(true);
-    const request = edicion === 'nuevo' ? this.service.crear(datos) : this.service.actualizar(edicion.id, datos);
+    const request =
+      edicion === 'nuevo' ? this.service.crear(datos) : this.service.actualizar(edicion.id, datos);
     request.subscribe({
       next: (guardado) => {
         this.guardando.set(false);
@@ -185,7 +241,9 @@ export class AdminProfesionales {
         this.guardando.set(false);
         // 409: el registro profesional ya existe.
         this.formError.set(
-          applyProblem(this.form, parseApiError(err), (detail) => (/registro/i.test(detail) ? 'registro_profesional' : null)),
+          applyProblem(this.form, parseApiError(err), (detail) =>
+            /registro/i.test(detail) ? 'registro_profesional' : null,
+          ),
         );
         if (this.formError() === null) focusFirstInvalid(this.host.nativeElement);
       },
@@ -215,15 +273,27 @@ export class AdminProfesionales {
       },
       error: (err: unknown) => {
         this.busyId.set(null);
-        this.actionError.set(problemMessage(parseApiError(err), 'No pudimos actualizar al profesional. Inténtalo de nuevo.'));
+        this.actionError.set(
+          problemMessage(
+            parseApiError(err),
+            'No pudimos actualizar al profesional. Inténtalo de nuevo.',
+          ),
+        );
       },
     });
   }
 
   private restoreFocus(): void {
     const target = this.trigger;
-    afterNextRender(() => (target?.isConnected ? target : this.host.nativeElement.querySelector<HTMLElement>('h2'))?.focus(), {
-      injector: this.injector,
-    });
+    afterNextRender(
+      () =>
+        (target?.isConnected
+          ? target
+          : this.host.nativeElement.querySelector<HTMLElement>('h2')
+        )?.focus(),
+      {
+        injector: this.injector,
+      },
+    );
   }
 }

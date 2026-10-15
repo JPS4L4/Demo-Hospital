@@ -12,8 +12,17 @@
 <p class="sr-only" role="status">{{ anuncio() }}</p>
 
 @if (edicion(); as e) {
-  <form class="card rise mt-6 grid gap-5 p-5 md:p-6" [formGroup]="form" (ngSubmit)="guardar()" novalidate [attr.aria-busy]="guardando()" aria-labelledby="noticia-form-titulo">
-    <h3 id="noticia-form-titulo" class="text-xl">{{ esNueva(e) ? 'Nueva noticia' : 'Editar noticia' }}</h3>
+  <form
+    class="card rise mt-6 grid gap-5 p-5 md:p-6"
+    [formGroup]="form"
+    (ngSubmit)="guardar()"
+    novalidate
+    [attr.aria-busy]="guardando()"
+    aria-labelledby="noticia-form-titulo"
+  >
+    <h3 id="noticia-form-titulo" class="text-xl">
+      {{ esNueva(e) ? 'Nueva noticia' : 'Editar noticia' }}
+    </h3>
 
     @if (formError(); as error) {
       <p class="notice notice-error" role="alert">
@@ -23,18 +32,37 @@
     }
 
     <app-field for="noticia-titulo" label="Título" [control]="form.controls.titulo">
-      <input id="noticia-titulo" class="field-control" formControlName="titulo" maxlength="200" autocomplete="off" />
+      <input
+        id="noticia-titulo"
+        class="field-control"
+        formControlName="titulo"
+        maxlength="200"
+        autocomplete="off"
+      />
     </app-field>
 
-    <app-field for="noticia-contenido" label="Contenido" [control]="form.controls.contenido" hint="Separa los párrafos con una línea en blanco.">
-      <textarea id="noticia-contenido" class="field-control" rows="8" formControlName="contenido" maxlength="20000"></textarea>
+    <app-field
+      for="noticia-contenido"
+      label="Contenido"
+      [control]="form.controls.contenido"
+      hint="Separa los párrafos con una línea en blanco."
+    >
+      <textarea
+        id="noticia-contenido"
+        class="field-control"
+        rows="8"
+        formControlName="contenido"
+        maxlength="20000"
+      ></textarea>
     </app-field>
 
     <div class="flex flex-wrap gap-3">
       <button type="submit" class="btn btn-primary" [disabled]="guardando()">
         {{ guardando() ? 'Guardando…' : esNueva(e) ? 'Publicar noticia' : 'Guardar cambios' }}
       </button>
-      <button type="button" class="btn btn-secondary" [disabled]="guardando()" (click)="cerrar()">Cancelar</button>
+      <button type="button" class="btn btn-secondary" [disabled]="guardando()" (click)="cerrar()">
+        Cancelar
+      </button>
     </div>
   </form>
 }
@@ -63,11 +91,17 @@
       @if (state(); as s) {
         @if (s.status === 'ready') {
           @if (s.data.length === 0) {
-            <app-state-message icon="newspaper" title="Aún no hay noticias" message="Publica la primera con el botón «Nueva noticia»." />
+            <app-state-message
+              icon="newspaper"
+              title="Aún no hay noticias"
+              message="Publica la primera con el botón «Nueva noticia»."
+            />
           } @else {
             <div class="table-wrap">
               <table class="data-table">
-                <caption class="sr-only">Noticias publicadas</caption>
+                <caption class="sr-only">
+                  Noticias publicadas
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Título</th>
@@ -78,14 +112,24 @@
                 <tbody>
                   @for (n of s.data; track n.id) {
                     <tr>
-                      <td class="max-w-[28rem]"><span class="line-clamp-2 font-semibold">{{ n.titulo }}</span></td>
+                      <td class="max-w-[28rem]">
+                        <span class="line-clamp-2 font-semibold">{{ n.titulo }}</span>
+                      </td>
                       <td class="whitespace-nowrap text-muted">{{ fecha(n.fecha_publicacion) }}</td>
                       <td class="col-actions">
-                        <button type="button" class="btn btn-secondary btn-sm" (click)="abrir(n, $event)">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
+                          (click)="abrir(n, $event)"
+                        >
                           <app-icon name="pencil" [size]="16" />
                           Editar<span class="sr-only"> «{{ n.titulo }}»</span>
                         </button>
-                        <button type="button" class="btn btn-danger-quiet btn-sm ml-2" (click)="pedirEliminar(n, $event)">
+                        <button
+                          type="button"
+                          class="btn btn-danger-quiet btn-sm ml-2"
+                          (click)="pedirEliminar(n, $event)"
+                        >
                           <app-icon name="trash" [size]="16" />
                           Eliminar<span class="sr-only"> «{{ n.titulo }}»</span>
                         </button>
@@ -105,7 +149,13 @@
 <app-confirm-dialog
   [open]="eliminando() !== null"
   title="¿Eliminar esta noticia?"
-  [message]="eliminando() ? '«' + eliminando()!.titulo + '» dejará de mostrarse al público. Esta acción no se puede deshacer.' : ''"
+  [message]="
+    eliminando()
+      ? '«' +
+        eliminando()!.titulo +
+        '» dejará de mostrarse al público. Esta acción no se puede deshacer.'
+      : ''
+  "
   confirmLabel="Sí, eliminar"
   cancelLabel="Conservar"
   busyLabel="Eliminando…"

@@ -7,7 +7,9 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   await auth.whenReady();
-  return auth.usuario() ? true : router.createUrlTree(['/ingresar'], { queryParams: { returnUrl: state.url } });
+  return auth.usuario()
+    ? true
+    : router.createUrlTree(['/ingresar'], { queryParams: { returnUrl: state.url } });
 };
 
 /** Exige rol admin; un paciente vuelve al inicio, un visitante va a `/ingresar`. */
@@ -15,7 +17,8 @@ export const adminGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   await auth.whenReady();
-  if (!auth.usuario()) return router.createUrlTree(['/ingresar'], { queryParams: { returnUrl: state.url } });
+  if (!auth.usuario())
+    return router.createUrlTree(['/ingresar'], { queryParams: { returnUrl: state.url } });
   return auth.isAdmin() ? true : router.createUrlTree(['/']);
 };
 

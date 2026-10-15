@@ -5,18 +5,40 @@
   </div>
 </div>
 
-<form class="mt-6 grid gap-4 md:grid-cols-[auto_minmax(0,1fr)] md:items-end" (submit)="$event.preventDefault()" aria-label="Filtrar la agenda">
+<form
+  class="mt-6 grid gap-4 md:grid-cols-[auto_minmax(0,1fr)] md:items-end"
+  (submit)="$event.preventDefault()"
+  aria-label="Filtrar la agenda"
+>
   <div>
     <label class="field-label" for="agenda-fecha">Fecha</label>
     <div class="flex items-center gap-2">
-      <button type="button" class="btn btn-secondary btn-icon" (click)="mover(-1)" aria-label="Día anterior">
+      <button
+        type="button"
+        class="btn btn-secondary btn-icon"
+        (click)="mover(-1)"
+        aria-label="Día anterior"
+      >
         <app-icon name="chevron-left" [size]="18" />
       </button>
-      <input id="agenda-fecha" type="date" class="field-control min-w-0 w-full max-w-44" [value]="fecha()" (change)="onFecha($event)" />
-      <button type="button" class="btn btn-secondary btn-icon" (click)="mover(1)" aria-label="Día siguiente">
+      <input
+        id="agenda-fecha"
+        type="date"
+        class="field-control min-w-0 w-full max-w-44"
+        [value]="fecha()"
+        (change)="onFecha($event)"
+      />
+      <button
+        type="button"
+        class="btn btn-secondary btn-icon"
+        (click)="mover(1)"
+        aria-label="Día siguiente"
+      >
         <app-icon name="chevron-right" [size]="18" />
       </button>
-      <button type="button" class="btn btn-quiet" [disabled]="fecha() === hoy" (click)="irAHoy()">Hoy</button>
+      <button type="button" class="btn btn-quiet" [disabled]="fecha() === hoy" (click)="irAHoy()">
+        Hoy
+      </button>
     </div>
   </div>
 
@@ -26,10 +48,16 @@
       <select id="agenda-profesional" class="field-control" (change)="onProfesional($event)">
         <option value="" [selected]="profesionalId() === null">Todos los profesionales</option>
         @for (p of profesionales(); track p.id) {
-          <option [value]="p.id" [selected]="p.id === profesionalId()">{{ nombre(p) }} · {{ p.especialidad.nombre }}</option>
+          <option [value]="p.id" [selected]="p.id === profesionalId()">
+            {{ nombre(p) }} · {{ p.especialidad.nombre }}
+          </option>
         }
       </select>
-      <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+      <app-icon
+        name="chevron-down"
+        [size]="18"
+        class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+      />
     </div>
   </div>
 </form>
@@ -67,15 +95,25 @@
       @if (view(); as v) {
         @if (v.status === 'ready') {
           @if (items().length === 0) {
-            <app-state-message icon="calendar" title="No hay citas este día" message="Prueba con otra fecha o quita el filtro de profesional." />
+            <app-state-message
+              icon="calendar"
+              title="No hay citas este día"
+              message="Prueba con otra fecha o quita el filtro de profesional."
+            />
           } @else {
             <p class="mb-3 text-muted">
               <span class="font-semibold text-ink">{{ conteo().total }}</span>
-              {{ conteo().total === 1 ? 'cita' : 'citas' }} · {{ conteo().programadas }} por atender · {{ conteo().atendidas }} atendidas
+              {{ conteo().total === 1 ? 'cita' : 'citas' }} · {{ conteo().programadas }} por atender
+              · {{ conteo().atendidas }} atendidas
             </p>
             <div class="table-wrap" [class.table-stale]="v.stale">
               <table class="data-table">
-                <caption class="sr-only">Citas del {{ fechaLarga(fecha()) }}</caption>
+                <caption class="sr-only">
+                  Citas del
+                  {{
+                    fechaLarga(fecha())
+                  }}
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Hora</th>
@@ -91,23 +129,49 @@
                     <tr [class.row-muted]="c.estado === 'cancelada'">
                       <td class="whitespace-nowrap font-semibold">{{ hora(c.inicio) }}</td>
                       <td>
-                        <span class="block font-semibold">{{ c.paciente.nombres }} {{ c.paciente.apellidos }}</span>
-                        <span class="block text-sm text-muted">{{ c.paciente.tipo_documento }} {{ c.paciente.numero_documento }}</span>
+                        <span class="block font-semibold"
+                          >{{ c.paciente.nombres }} {{ c.paciente.apellidos }}</span
+                        >
+                        <span class="block text-sm text-muted"
+                          >{{ c.paciente.tipo_documento }} {{ c.paciente.numero_documento }}</span
+                        >
                       </td>
                       <td>
-                        <span class="block">{{ c.profesional.nombres }} {{ c.profesional.apellidos }}</span>
-                        <span class="block text-sm text-muted">{{ c.profesional.especialidad.nombre }}</span>
+                        <span class="block"
+                          >{{ c.profesional.nombres }} {{ c.profesional.apellidos }}</span
+                        >
+                        <span class="block text-sm text-muted">{{
+                          c.profesional.especialidad.nombre
+                        }}</span>
                       </td>
-                      <td class="max-w-[16rem]"><span class="line-clamp-2">{{ c.motivo }}</span></td>
+                      <td class="max-w-[16rem]">
+                        <span class="line-clamp-2">{{ c.motivo }}</span>
+                      </td>
                       <td><app-estado-badge [estado]="c.estado" /></td>
                       <td class="col-actions">
                         @if (c.estado === 'programada') {
-                          <button type="button" class="btn btn-secondary btn-sm" [disabled]="busyId() === c.id" (click)="marcarAtendida(c)">
+                          <button
+                            type="button"
+                            class="btn btn-secondary btn-sm"
+                            [disabled]="busyId() === c.id"
+                            (click)="marcarAtendida(c)"
+                          >
                             <app-icon name="check" [size]="16" />
-                            Atendida<span class="sr-only"> — {{ c.paciente.nombres }} {{ c.paciente.apellidos }}, {{ hora(c.inicio) }}</span>
+                            Atendida<span class="sr-only">
+                              — {{ c.paciente.nombres }} {{ c.paciente.apellidos }},
+                              {{ hora(c.inicio) }}</span
+                            >
                           </button>
-                          <button type="button" class="btn btn-danger-quiet btn-sm ml-2" [disabled]="busyId() === c.id" (click)="pedirCancelar(c)">
-                            Cancelar<span class="sr-only"> cita de {{ c.paciente.nombres }} {{ c.paciente.apellidos }}, {{ hora(c.inicio) }}</span>
+                          <button
+                            type="button"
+                            class="btn btn-danger-quiet btn-sm ml-2"
+                            [disabled]="busyId() === c.id"
+                            (click)="pedirCancelar(c)"
+                          >
+                            Cancelar<span class="sr-only">
+                              cita de {{ c.paciente.nombres }} {{ c.paciente.apellidos }},
+                              {{ hora(c.inicio) }}</span
+                            >
                           </button>
                         }
                       </td>

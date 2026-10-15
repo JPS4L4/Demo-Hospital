@@ -17,7 +17,9 @@ import { Sede } from './sede.model';
         @if (sede().telefono; as tel) {
           <li class="flex items-start gap-3">
             <app-icon name="phone" [size]="20" class="mt-0.5 text-brand" />
-            <a [href]="'tel:' + telefonoLimpio()" class="font-semibold hover:underline">{{ tel }}</a>
+            <a [href]="'tel:' + telefonoLimpio()" class="font-semibold hover:underline">{{
+              tel
+            }}</a>
           </li>
         }
         <li class="flex items-start gap-3">
@@ -42,7 +44,9 @@ import { Sede } from './sede.model';
 export class SedeCard {
   readonly sede = input.required<Sede>();
 
-  protected readonly telefonoLimpio = computed(() => (this.sede().telefono ?? '').replace(/[^\d+]/g, ''));
+  protected readonly telefonoLimpio = computed(() =>
+    (this.sede().telefono ?? '').replace(/[^\d+]/g, ''),
+  );
 
   protected readonly mapaUrl = computed(() => {
     const s = this.sede();

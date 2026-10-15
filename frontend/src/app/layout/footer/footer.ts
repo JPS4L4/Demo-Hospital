@@ -8,7 +8,7 @@ import { Logo } from '../../shared/ui/logo';
   standalone: true,
   imports: [RouterLink, Icon, Logo],
   templateUrl: './footer.html',
-  styleUrl: './footer.css'
+  styleUrl: './footer.css',
 })
 export class Footer {
   anioActual = new Date().getFullYear();

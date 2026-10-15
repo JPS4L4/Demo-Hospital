@@ -39,7 +39,12 @@ export class AdminResumen {
         return toRemote(
           forkJoin({
             hoy: this.citas
-              .listar({ estado: 'programada', desde: `${hoy}T00:00:00`, hasta: `${hoy}T23:59:59`, limit: 1 })
+              .listar({
+                estado: 'programada',
+                desde: `${hoy}T00:00:00`,
+                hasta: `${hoy}T23:59:59`,
+                limit: 1,
+              })
               .pipe(map(solo)),
             proximas: this.citas
               .listar({ estado: 'programada', desde: `${hoy}T${horaBogota(ahora)}:00`, limit: 1 })
@@ -53,11 +58,41 @@ export class AdminResumen {
     { initialValue: LOADING as Remote<Conteos> },
   );
 
-  protected readonly tarjetas: { key: keyof Conteos; label: string; icon: IconName; link: string; hint: string }[] = [
-    { key: 'hoy', label: 'Por atender hoy', icon: 'calendar-check', link: '/admin/agenda', hint: 'Citas programadas para hoy' },
-    { key: 'proximas', label: 'Citas próximas', icon: 'clock', link: '/admin/agenda', hint: 'Programadas desde este momento' },
-    { key: 'profesionales', label: 'Profesionales activos', icon: 'users', link: '/admin/profesionales', hint: 'Atendiendo citas' },
-    { key: 'pacientes', label: 'Pacientes', icon: 'heart-pulse', link: '/admin/agenda', hint: 'Registrados en el sistema' },
+  protected readonly tarjetas: {
+    key: keyof Conteos;
+    label: string;
+    icon: IconName;
+    link: string;
+    hint: string;
+  }[] = [
+    {
+      key: 'hoy',
+      label: 'Por atender hoy',
+      icon: 'calendar-check',
+      link: '/admin/agenda',
+      hint: 'Citas programadas para hoy',
+    },
+    {
+      key: 'proximas',
+      label: 'Citas próximas',
+      icon: 'clock',
+      link: '/admin/agenda',
+      hint: 'Programadas desde este momento',
+    },
+    {
+      key: 'profesionales',
+      label: 'Profesionales activos',
+      icon: 'users',
+      link: '/admin/profesionales',
+      hint: 'Atendiendo citas',
+    },
+    {
+      key: 'pacientes',
+      label: 'Pacientes',
+      icon: 'heart-pulse',
+      link: '/admin/agenda',
+      hint: 'Registrados en el sistema',
+    },
   ];
 
   protected retry(): void {

@@ -1,4 +1,14 @@
-import { Component, ElementRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -62,7 +72,12 @@ export class Citas {
   protected readonly duracion = DURACION_CITA_MIN;
   protected readonly dias = Array.from({ length: DIAS_VISIBLES }, (_, i) => {
     const fecha = addDays(this.hoy, i);
-    return { fecha, ...etiquetaDia(fecha), domingo: diaSemana(fecha) === 0, largo: formatFechaLarga(fecha) };
+    return {
+      fecha,
+      ...etiquetaDia(fecha),
+      domingo: diaSemana(fecha) === 0,
+      largo: formatFechaLarga(fecha),
+    };
   });
 
   private readonly reloadEspecialidades = signal(0);
@@ -91,7 +106,9 @@ export class Citas {
   );
 
   protected readonly especialidadesState = toSignal(
-    toObservable(this.reloadEspecialidades).pipe(switchMap(() => toRemote(this.especialidades.listar()))),
+    toObservable(this.reloadEspecialidades).pipe(
+      switchMap(() => toRemote(this.especialidades.listar())),
+    ),
     { initialValue: LOADING as Remote<{ id: number; nombre: string; descripcion: string }[]> },
   );
 
@@ -111,8 +128,11 @@ export class Citas {
   protected readonly profesionalProblema = computed(() => {
     const s = this.profesionalState();
     if (!s || s.status === 'loading') return null;
-    if (s.status === 'ready') return s.data.activo ? null : 'Este profesional no está atendiendo citas por el momento.';
-    return s.status === 'not-found' ? 'No encontramos a ese profesional.' : 'No pudimos cargar al profesional.';
+    if (s.status === 'ready')
+      return s.data.activo ? null : 'Este profesional no está atendiendo citas por el momento.';
+    return s.status === 'not-found'
+      ? 'No encontramos a ese profesional.'
+      : 'No pudimos cargar al profesional.';
   });
 
   /** Especialidad vigente: la de la URL o, en un enlace directo al profesional, la suya. */
@@ -131,7 +151,9 @@ export class Citas {
     combineLatest([
       toObservable(
         computed(() =>
-          this.seleccion().profesionalId === null || this.profesionalProblema() !== null ? this.especialidadId() : null,
+          this.seleccion().profesionalId === null || this.profesionalProblema() !== null
+            ? this.especialidadId()
+            : null,
         ),
       ),
       toObservable(this.reloadProfesionales),
@@ -139,7 +161,11 @@ export class Citas {
       switchMap(([especialidadId]) =>
         especialidadId === null
           ? of(null)
-          : toRemote(this.profesionalesService.listar({ especialidadId, limit: 100 }).pipe(map((page) => page.items))),
+          : toRemote(
+              this.profesionalesService
+                .listar({ especialidadId, limit: 100 })
+                .pipe(map((page) => page.items)),
+            ),
       ),
     ),
     { initialValue: null as Remote<Profesional[]> | null },
@@ -164,7 +190,10 @@ export class Citas {
   protected readonly horarios = computed(() => {
     const s = this.slotsState();
     if (s?.status !== 'ready') return null;
-    const todos = s.data.huecos.map((h) => ({ hora: horaBogota(h.inicio), etiqueta: formatHora(h.inicio) }));
+    const todos = s.data.huecos.map((h) => ({
+      hora: horaBogota(h.inicio),
+      etiqueta: formatHora(h.inicio),
+    }));
     return {
       total: todos.length,
       manana: todos.filter((h) => h.hora < '12:00'),
@@ -206,7 +235,9 @@ export class Citas {
   /** URL actual del flujo, para volver aquí tras ingresar. */
   protected readonly urlActual = computed(() => {
     const s = this.seleccion();
-    return this.router.serializeUrl(this.router.createUrlTree(['/citas'], { queryParams: this.params(s) }));
+    return this.router.serializeUrl(
+      this.router.createUrlTree(['/citas'], { queryParams: this.params(s) }),
+    );
   });
 
   protected readonly nombre = (p: Profesional) => nombreCompleto(p);
@@ -243,7 +274,8 @@ export class Citas {
         if (!this.focusPending) return;
         this.focusPending = false;
         afterNextRender(
-          () => this.host.nativeElement.querySelector<HTMLElement>('[data-paso-actual] h2')?.focus(),
+          () =>
+            this.host.nativeElement.querySelector<HTMLElement>('[data-paso-actual] h2')?.focus(),
           { injector: this.injector },
         );
       });
@@ -311,23 +343,32 @@ export class Citas {
           this.submitting.set(false);
           this.creada.set(cita);
           this.clearDraft();
-          afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('#cita-creada')?.focus(), {
-            injector: this.injector,
-          });
+          afterNextRender(
+            () => this.host.nativeElement.querySelector<HTMLElement>('#cita-creada')?.focus(),
+            {
+              injector: this.injector,
+            },
+          );
         },
         error: (err: unknown) => {
           this.submitting.set(false);
           const problem = parseApiError(err);
           if (problem.status === 401) {
             this.saveDraft();
-            void this.router.navigate(['/ingresar'], { queryParams: { returnUrl: this.urlActual(), sesion: 'expirada' } });
+            void this.router.navigate(['/ingresar'], {
+              queryParams: { returnUrl: this.urlActual(), sesion: 'expirada' },
+            });
           } else if (problem.status === 409) {
             // El hueco se ocupó o choca con otra cita del paciente: se vuelve al paso 3 con huecos frescos.
-            this.avisoHorario.set(problem.detail ?? 'Ese horario ya no está disponible. Elige otro.');
+            this.avisoHorario.set(
+              problem.detail ?? 'Ese horario ya no está disponible. Elige otro.',
+            );
             this.go({ hora: null });
             this.reloadSlots.update((n) => n + 1);
           } else {
-            this.formError.set(problemMessage(problem, 'No pudimos confirmar la cita. Inténtalo de nuevo.'));
+            this.formError.set(
+              problemMessage(problem, 'No pudimos confirmar la cita. Inténtalo de nuevo.'),
+            );
           }
         },
       });

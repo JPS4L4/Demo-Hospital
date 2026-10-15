@@ -8,8 +8,18 @@ import { Noticias } from './noticias';
 const URL = 'http://localhost:8000/noticias';
 
 const noticias: Noticia[] = [
-  { id: 2, titulo: 'Segunda noticia', contenido: 'Contenido B', fecha_publicacion: '2026-10-05T10:00:00Z' },
-  { id: 1, titulo: 'Primera noticia', contenido: 'Contenido A', fecha_publicacion: '2026-09-01T10:00:00Z' },
+  {
+    id: 2,
+    titulo: 'Segunda noticia',
+    contenido: 'Contenido B',
+    fecha_publicacion: '2026-10-05T10:00:00Z',
+  },
+  {
+    id: 1,
+    titulo: 'Primera noticia',
+    contenido: 'Contenido A',
+    fecha_publicacion: '2026-09-01T10:00:00Z',
+  },
 ];
 
 describe('Noticias', () => {

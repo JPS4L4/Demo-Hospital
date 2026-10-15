@@ -7,16 +7,29 @@ import { Icon } from './icon';
   imports: [Icon],
   template: `
     @if (total() > limit()) {
-      <nav aria-label="Paginación" class="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+      <nav
+        aria-label="Paginación"
+        class="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6"
+      >
         <p class="text-muted" aria-live="polite">
           <span class="font-semibold text-ink">{{ from() }}–{{ to() }}</span> de {{ total() }}
         </p>
         <div class="flex gap-3">
-          <button type="button" class="btn btn-secondary page-btn" [disabled]="offset() <= 0" (click)="go(offset() - limit())">
+          <button
+            type="button"
+            class="btn btn-secondary page-btn"
+            [disabled]="offset() <= 0"
+            (click)="go(offset() - limit())"
+          >
             <app-icon name="arrow-left" [size]="18" />
             Anterior
           </button>
-          <button type="button" class="btn btn-secondary page-btn" [disabled]="to() >= total()" (click)="go(offset() + limit())">
+          <button
+            type="button"
+            class="btn btn-secondary page-btn"
+            [disabled]="to() >= total()"
+            (click)="go(offset() + limit())"
+          >
             Siguiente
             <app-icon name="arrow-right" [size]="18" />
           </button>

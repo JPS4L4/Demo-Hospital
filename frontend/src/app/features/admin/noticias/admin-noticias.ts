@@ -3,7 +3,13 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { switchMap } from 'rxjs';
 import { formatFechaCorta } from '../../../core/dates';
-import { applyProblem, focusFirstInvalid, parseApiError, problemMessage, requiredText } from '../../../core/forms';
+import {
+  applyProblem,
+  focusFirstInvalid,
+  parseApiError,
+  problemMessage,
+  requiredText,
+} from '../../../core/forms';
 import { LOADING, Remote, toRemote } from '../../../core/remote';
 import { ConfirmDialog } from '../../../shared/ui/confirm-dialog';
 import { Field } from '../../../shared/ui/field';
@@ -57,12 +63,17 @@ export class AdminNoticias {
     this.trigger = event.currentTarget as HTMLElement;
     this.formError.set(null);
     this.form.reset(
-      edicion === 'nueva' ? { titulo: '', contenido: '' } : { titulo: edicion.titulo, contenido: edicion.contenido },
+      edicion === 'nueva'
+        ? { titulo: '', contenido: '' }
+        : { titulo: edicion.titulo, contenido: edicion.contenido },
     );
     this.edicion.set(edicion);
-    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('#noticia-titulo')?.focus(), {
-      injector: this.injector,
-    });
+    afterNextRender(
+      () => this.host.nativeElement.querySelector<HTMLElement>('#noticia-titulo')?.focus(),
+      {
+        injector: this.injector,
+      },
+    );
   }
 
   protected cerrar(): void {
@@ -82,7 +93,8 @@ export class AdminNoticias {
     const { titulo, contenido } = this.form.getRawValue();
     const datos = { titulo: titulo.trim(), contenido: contenido.trim() };
     this.guardando.set(true);
-    const request = edicion === 'nueva' ? this.service.crear(datos) : this.service.actualizar(edicion.id, datos);
+    const request =
+      edicion === 'nueva' ? this.service.crear(datos) : this.service.actualizar(edicion.id, datos);
     request.subscribe({
       next: () => {
         this.guardando.set(false);
@@ -122,19 +134,30 @@ export class AdminNoticias {
         this.reload.update((n) => n + 1);
         // La fila ya no existirá: el foco pasa al título de la sección.
         this.trigger = null;
-        afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('h2')?.focus(), { injector: this.injector });
+        afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('h2')?.focus(), {
+          injector: this.injector,
+        });
       },
       error: (err: unknown) => {
         this.eliminarBusy.set(false);
-        this.eliminarError.set(problemMessage(parseApiError(err), 'No pudimos eliminar la noticia. Inténtalo de nuevo.'));
+        this.eliminarError.set(
+          problemMessage(parseApiError(err), 'No pudimos eliminar la noticia. Inténtalo de nuevo.'),
+        );
       },
     });
   }
 
   private restoreFocus(): void {
     const target = this.trigger;
-    afterNextRender(() => (target?.isConnected ? target : this.host.nativeElement.querySelector<HTMLElement>('h2'))?.focus(), {
-      injector: this.injector,
-    });
+    afterNextRender(
+      () =>
+        (target?.isConnected
+          ? target
+          : this.host.nativeElement.querySelector<HTMLElement>('h2')
+        )?.focus(),
+      {
+        injector: this.injector,
+      },
+    );
   }
 }

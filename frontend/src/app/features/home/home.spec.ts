@@ -56,7 +56,9 @@ describe('Home', () => {
     http.expectOne((r) => r.url === ESPECIALIDADES);
 
     expect(el.querySelectorAll('h1').length).toBe(1);
-    const cta = Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.includes('Pedir cita'));
+    const cta = Array.from(el.querySelectorAll('a')).find((a) =>
+      a.textContent?.includes('Pedir cita'),
+    );
     expect(cta?.getAttribute('href')).toBe('/citas');
   });
 
@@ -72,13 +74,27 @@ describe('Home', () => {
   it('shows only the three latest news and every sede from the API', async () => {
     http.expectOne(NOTICIAS).flush([1, 2, 3, 4, 5].map(noticia));
     http.expectOne(SEDES).flush([
-      { id: 1, nombre: 'Sede Chapinero', direccion: 'Carrera 13 # 63-40', ciudad: 'Bogotá', telefono: null },
-      { id: 2, nombre: 'Sede El Poblado', direccion: 'Calle 10 # 34-25', ciudad: 'Medellín', telefono: '+57 604 555 0102' },
+      {
+        id: 1,
+        nombre: 'Sede Chapinero',
+        direccion: 'Carrera 13 # 63-40',
+        ciudad: 'Bogotá',
+        telefono: null,
+      },
+      {
+        id: 2,
+        nombre: 'Sede El Poblado',
+        direccion: 'Calle 10 # 34-25',
+        ciudad: 'Medellín',
+        telefono: '+57 604 555 0102',
+      },
     ]);
     http.expectOne((r) => r.url === ESPECIALIDADES).flush(catalogo);
     await settle();
 
-    const titles = Array.from(el.querySelectorAll('app-news-card h3')).map((h) => h.textContent?.trim());
+    const titles = Array.from(el.querySelectorAll('app-news-card h3')).map((h) =>
+      h.textContent?.trim(),
+    );
     expect(titles).toEqual(['Noticia 1', 'Noticia 2', 'Noticia 3']);
     expect(el.textContent).toContain('Sede Chapinero');
     expect(el.textContent).toContain('Sede El Poblado');
@@ -107,7 +123,9 @@ describe('Home', () => {
       await settle();
 
       expect(link('Cardiología').getAttribute('href')).toBe('/profesionales?especialidad_id=1');
-      expect(link('Medicina interna').getAttribute('href')).toBe('/profesionales?especialidad_id=5');
+      expect(link('Medicina interna').getAttribute('href')).toBe(
+        '/profesionales?especialidad_id=5',
+      );
       // Sin coincidencia en la API: enlaza al listado completo.
       expect(link('Pediatría').getAttribute('href')).toBe('/profesionales');
     });
@@ -118,7 +136,9 @@ describe('Home', () => {
       http.expectOne((r) => r.url === ESPECIALIDADES).flush(catalogo);
       await settle();
 
-      const stat = Array.from(el.querySelectorAll('dl div')).find((d) => d.textContent?.includes('Especialidades'));
+      const stat = Array.from(el.querySelectorAll('dl div')).find((d) =>
+        d.textContent?.includes('Especialidades'),
+      );
       expect(stat?.querySelector('dd')?.textContent?.trim()).toBe('3');
     });
 
@@ -129,7 +149,9 @@ describe('Home', () => {
       await settle();
 
       expect(link('Cardiología').getAttribute('href')).toBe('/profesionales');
-      const stat = Array.from(el.querySelectorAll('dl div')).find((d) => d.textContent?.includes('Especialidades'));
+      const stat = Array.from(el.querySelectorAll('dl div')).find((d) =>
+        d.textContent?.includes('Especialidades'),
+      );
       expect(stat?.querySelector('dd')?.textContent?.trim()).toBe('6+');
     });
   });

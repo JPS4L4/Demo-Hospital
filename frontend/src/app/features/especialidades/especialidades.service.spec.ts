@@ -9,7 +9,9 @@ describe('EspecialidadesService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(EspecialidadesService);
     http = TestBed.inject(HttpTestingController);
   });

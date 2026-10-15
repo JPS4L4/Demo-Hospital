@@ -22,12 +22,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((err: unknown) => {
       // Un 401 de /auth/login es "credenciales incorrectas", no una sesión vencida.
       const sessionRejected =
-        err instanceof HttpErrorResponse && err.status === 401 && !!token && !req.url.endsWith('/auth/login');
+        err instanceof HttpErrorResponse &&
+        err.status === 401 &&
+        !!token &&
+        !req.url.endsWith('/auth/login');
       if (sessionRejected) {
         auth.clear();
         const current = router.url;
         if (isProtectedUrl(current)) {
-          void router.navigate(['/ingresar'], { queryParams: { returnUrl: current, sesion: 'expirada' } });
+          void router.navigate(['/ingresar'], {
+            queryParams: { returnUrl: current, sesion: 'expirada' },
+          });
         }
       }
       return throwError(() => err);

@@ -16,7 +16,11 @@ export function toRemote<T>(source: Observable<T>): Observable<Remote<T>> {
     map((data): Remote<T> => ({ status: 'ready', data })),
     startWith(LOADING as Remote<T>),
     catchError((err: unknown) =>
-      of<Remote<T>>(err instanceof HttpErrorResponse && err.status === 404 ? { status: 'not-found' } : { status: 'error' }),
+      of<Remote<T>>(
+        err instanceof HttpErrorResponse && err.status === 404
+          ? { status: 'not-found' }
+          : { status: 'error' },
+      ),
     ),
   );
 }

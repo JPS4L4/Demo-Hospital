@@ -43,12 +43,15 @@ export class Login {
     this.submitting.set(true);
     this.auth.login(email.trim(), password).subscribe({
       next: (usuario) => {
-        const destino = safeReturnUrl(this.returnUrl()) ?? (usuario.rol === 'admin' ? '/admin' : '/mis-citas');
+        const destino =
+          safeReturnUrl(this.returnUrl()) ?? (usuario.rol === 'admin' ? '/admin' : '/mis-citas');
         void this.router.navigateByUrl(destino);
       },
       error: (err: unknown) => {
         this.submitting.set(false);
-        this.formError.set(problemMessage(parseApiError(err), 'No pudimos iniciar sesión. Inténtalo de nuevo.'));
+        this.formError.set(
+          problemMessage(parseApiError(err), 'No pudimos iniciar sesión. Inténtalo de nuevo.'),
+        );
       },
     });
   }

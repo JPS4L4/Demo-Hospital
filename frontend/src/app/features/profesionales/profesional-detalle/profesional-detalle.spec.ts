@@ -57,11 +57,15 @@ describe('ProfesionalDetalle', () => {
     expect(el.textContent).toContain('RM-20003');
 
     const links = Array.from(el.querySelectorAll('a'));
-    expect(links.find((a) => a.textContent?.includes('Sede Chapinero'))?.getAttribute('href')).toBe('/sedes');
+    expect(links.find((a) => a.textContent?.includes('Sede Chapinero'))?.getAttribute('href')).toBe(
+      '/sedes',
+    );
     expect(links.find((a) => a.textContent?.includes('sofia.beltran'))?.getAttribute('href')).toBe(
       'mailto:sofia.beltran@example.com',
     );
-    expect(links.find((a) => a.textContent?.includes('555 0103'))?.getAttribute('href')).toBe('tel:+576015550103');
+    expect(links.find((a) => a.textContent?.includes('555 0103'))?.getAttribute('href')).toBe(
+      'tel:+576015550103',
+    );
     // Deep link: the booking flow opens with this professional and specialty preselected.
     expect(links.find((a) => a.textContent?.includes('Pedir cita'))?.getAttribute('href')).toBe(
       '/citas?profesional_id=3&especialidad_id=3',
@@ -74,7 +78,9 @@ describe('ProfesionalDetalle', () => {
 
     expect(el.querySelector('a[href^="tel:"]')).toBeNull();
     expect(el.textContent).toContain('No está atendiendo citas');
-    expect(Array.from(el.querySelectorAll('a')).some((a) => a.textContent?.includes('Pedir cita'))).toBe(false);
+    expect(
+      Array.from(el.querySelectorAll('a')).some((a) => a.textContent?.includes('Pedir cita')),
+    ).toBe(false);
   });
 
   it('shows a loading status while the request is pending', () => {
@@ -83,7 +89,9 @@ describe('ProfesionalDetalle', () => {
   });
 
   it('shows a not-found message when the API answers 404', async () => {
-    http.expectOne(URL).flush({ detail: 'Profesional no encontrado' }, { status: 404, statusText: 'Not Found' });
+    http
+      .expectOne(URL)
+      .flush({ detail: 'Profesional no encontrado' }, { status: 404, statusText: 'Not Found' });
     await settle();
 
     expect(el.textContent).toContain('No encontramos a este profesional');
@@ -95,7 +103,9 @@ describe('ProfesionalDetalle', () => {
     http.expectOne(URL).error(new ProgressEvent('error'));
     await settle();
 
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar el perfil');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar el perfil',
+    );
     (el.querySelector('[role="alert"] button') as HTMLButtonElement).click();
     await settle();
 

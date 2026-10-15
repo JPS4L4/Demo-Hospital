@@ -12,7 +12,9 @@ import { PageHeader } from './page-header';
     <section class="container-page section">
       <div class="grid gap-10 md:grid-cols-[1.1fr_1fr] md:items-start">
         <div class="card p-6 md:p-8">
-          <p class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent">
+          <p
+            class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent"
+          >
             <app-icon name="clock" [size]="16" />
             Próximamente
           </p>

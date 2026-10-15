@@ -65,7 +65,12 @@ export function formatFechaLarga(value: string): string {
 export function formatFechaCorta(value: string): string {
   const date = value.length === 10 ? atNoon(value) : new Date(value);
   const p = Object.fromEntries(
-    new Intl.DateTimeFormat(LOCALE, { timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric' })
+    new Intl.DateTimeFormat(LOCALE, {
+      timeZone: TZ,
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
       .formatToParts(date)
       .map((part) => [part.type, part.value]),
   );
@@ -74,9 +79,12 @@ export function formatFechaCorta(value: string): string {
 
 /** "9:00 a. m." */
 export function formatHora(value: string): string {
-  return new Intl.DateTimeFormat(LOCALE, { timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: true }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat(LOCALE, {
+    timeZone: TZ,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(new Date(value));
 }
 
 /** Etiquetas de un día para el selector: { semana: 'jue', dia: '15', mes: 'oct' }. */
@@ -84,5 +92,9 @@ export function etiquetaDia(fecha: string): { semana: string; dia: string; mes: 
   const d = atNoon(fecha);
   const f = (options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat(LOCALE, { timeZone: TZ, ...options }).format(d).replace(/\./g, '');
-  return { semana: f({ weekday: 'short' }), dia: f({ day: 'numeric' }), mes: f({ month: 'short' }) };
+  return {
+    semana: f({ weekday: 'short' }),
+    dia: f({ day: 'numeric' }),
+    mes: f({ month: 'short' }),
+  };
 }

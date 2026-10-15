@@ -11,7 +11,9 @@ describe('ProfesionalesService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(ProfesionalesService);
     http = TestBed.inject(HttpTestingController);
   });

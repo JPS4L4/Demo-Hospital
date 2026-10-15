@@ -55,7 +55,9 @@
                 </div>
 
                 @if (!s.data.activo) {
-                  <p class="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent">
+                  <p
+                    class="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent"
+                  >
                     <app-icon name="info" [size]="16" />
                     No está atendiendo citas por el momento
                   </p>
@@ -74,7 +76,11 @@
                   <li class="flex items-start gap-3">
                     <app-icon name="map-pin" [size]="20" class="mt-0.5 text-brand" />
                     <span>
-                      <a routerLink="/sedes" class="font-semibold underline-offset-4 hover:underline">{{ s.data.sede.nombre }}</a>
+                      <a
+                        routerLink="/sedes"
+                        class="font-semibold underline-offset-4 hover:underline"
+                        >{{ s.data.sede.nombre }}</a
+                      >
                       <br />
                       <span class="text-muted">{{ s.data.sede.ciudad }}</span>
                     </span>
@@ -88,19 +94,30 @@
                   </li>
                   <li class="flex items-start gap-3">
                     <app-icon name="mail" [size]="20" class="mt-0.5 text-brand" />
-                    <a [href]="'mailto:' + s.data.email" class="min-w-0 break-words font-semibold underline-offset-4 hover:underline">{{ s.data.email }}</a>
+                    <a
+                      [href]="'mailto:' + s.data.email"
+                      class="min-w-0 break-words font-semibold underline-offset-4 hover:underline"
+                      >{{ s.data.email }}</a
+                    >
                   </li>
                   @if (s.data.telefono) {
                     <li class="flex items-start gap-3">
                       <app-icon name="phone" [size]="20" class="mt-0.5 text-brand" />
-                      <a [href]="'tel:' + telefonoLimpio(s.data)" class="font-semibold underline-offset-4 hover:underline">{{ s.data.telefono }}</a>
+                      <a
+                        [href]="'tel:' + telefonoLimpio(s.data)"
+                        class="font-semibold underline-offset-4 hover:underline"
+                        >{{ s.data.telefono }}</a
+                      >
                     </li>
                   }
                 </ul>
                 @if (s.data.activo) {
                   <a
                     routerLink="/citas"
-                    [queryParams]="{ profesional_id: s.data.id, especialidad_id: s.data.especialidad_id }"
+                    [queryParams]="{
+                      profesional_id: s.data.id,
+                      especialidad_id: s.data.especialidad_id,
+                    }"
                     class="btn btn-primary mt-6 w-full"
                   >
                     <app-icon name="calendar" [size]="18" />

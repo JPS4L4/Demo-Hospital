@@ -20,8 +20,21 @@ import { errorMessage } from '../../core/forms';
       <p class="mt-1.5 text-sm text-muted" [id]="for() + '-hint'">{{ hint() }}</p>
     }
     @if (message(); as text) {
-      <p class="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-danger" [id]="for() + '-error'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" class="mt-0.5 flex-none">
+      <p
+        class="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-danger"
+        [id]="for() + '-error'"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+          class="mt-0.5 flex-none"
+        >
           <circle cx="12" cy="12" r="10" />
           <path d="M12 8v4M12 16h.01" />
         </svg>
@@ -51,7 +64,10 @@ export class Field implements AfterContentChecked {
     const error = this.message() !== null;
     if (error) target.setAttribute('aria-invalid', 'true');
     else target.removeAttribute('aria-invalid');
-    const ids = [this.hint() ? `${this.for()}-hint` : null, error ? `${this.for()}-error` : null].filter(Boolean);
+    const ids = [
+      this.hint() ? `${this.for()}-hint` : null,
+      error ? `${this.for()}-error` : null,
+    ].filter(Boolean);
     if (ids.length) target.setAttribute('aria-describedby', ids.join(' '));
     else target.removeAttribute('aria-describedby');
   }

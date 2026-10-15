@@ -17,7 +17,10 @@ import { Noticia } from './noticia.model';
         <a [routerLink]="['/noticias', noticia().id]" class="news-link">{{ noticia().titulo }}</a>
       </h3>
       <p class="mt-3 text-muted" [class.md:text-lg]="featured()">{{ resumen() }}</p>
-      <span class="mt-auto inline-flex items-center gap-2 pt-5 font-semibold text-brand" aria-hidden="true">
+      <span
+        class="mt-auto inline-flex items-center gap-2 pt-5 font-semibold text-brand"
+        aria-hidden="true"
+      >
         Leer noticia
         <app-icon name="arrow-right" [size]="18" class="arrow" />
       </span>

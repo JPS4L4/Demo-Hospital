@@ -9,7 +9,9 @@ export interface Page<T> {
 }
 
 /** Arma los query params omitiendo los valores vacíos (`null`, `undefined` o texto en blanco). */
-export function toHttpParams(values: Record<string, string | number | boolean | null | undefined>): HttpParams {
+export function toHttpParams(
+  values: Record<string, string | number | boolean | null | undefined>,
+): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(values)) {
     if (value === null || value === undefined) continue;

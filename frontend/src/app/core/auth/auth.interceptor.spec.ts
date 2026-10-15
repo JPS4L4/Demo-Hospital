@@ -47,15 +47,21 @@ describe('authInterceptor', () => {
   it('adds the bearer token to requests for the API', () => {
     logIn();
     client.get(`${API}/citas`).subscribe();
-    expect(http.expectOne(`${API}/citas`).request.headers.get('Authorization')).toBe('Bearer tok-123');
+    expect(http.expectOne(`${API}/citas`).request.headers.get('Authorization')).toBe(
+      'Bearer tok-123',
+    );
   });
 
   it('never leaks the token to other origins (including look-alike hosts)', () => {
     logIn();
     client.get('https://example.org/api').subscribe();
     client.get('http://localhost:8000.evil.example/x').subscribe();
-    expect(http.expectOne('https://example.org/api').request.headers.has('Authorization')).toBe(false);
-    expect(http.expectOne('http://localhost:8000.evil.example/x').request.headers.has('Authorization')).toBe(false);
+    expect(http.expectOne('https://example.org/api').request.headers.has('Authorization')).toBe(
+      false,
+    );
+    expect(
+      http.expectOne('http://localhost:8000.evil.example/x').request.headers.has('Authorization'),
+    ).toBe(false);
   });
 
   it('on 401 clears the session and goes to /ingresar with returnUrl when on a protected page', async () => {
@@ -63,7 +69,9 @@ describe('authInterceptor', () => {
     await router.navigateByUrl('/mis-citas');
 
     client.get(`${API}/citas`).subscribe({ error: () => undefined });
-    http.expectOne(`${API}/citas`).flush({ detail: 'Sesión vencida' }, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne(`${API}/citas`)
+      .flush({ detail: 'Sesión vencida' }, { status: 401, statusText: 'Unauthorized' });
     await tick();
 
     expect(auth.token()).toBeNull();
@@ -76,7 +84,9 @@ describe('authInterceptor', () => {
     await router.navigateByUrl('/citas?profesional_id=3');
 
     client.post(`${API}/citas`, {}).subscribe({ error: () => undefined });
-    http.expectOne(`${API}/citas`).flush({ detail: 'x' }, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne(`${API}/citas`)
+      .flush({ detail: 'x' }, { status: 401, statusText: 'Unauthorized' });
     await tick();
 
     expect(auth.usuario()).toBeNull();
@@ -88,7 +98,10 @@ describe('authInterceptor', () => {
     auth.login('a@b.co', 'mala').subscribe({ error: () => undefined });
     http
       .expectOne(`${API}/auth/login`)
-      .flush({ detail: 'Correo o contraseña incorrectos' }, { status: 401, statusText: 'Unauthorized' });
+      .flush(
+        { detail: 'Correo o contraseña incorrectos' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
     await tick();
     expect(router.url).toBe('/mis-citas');
   });

@@ -47,9 +47,16 @@ export class CitasService {
     return this.http.put<Cita>(`${this.baseUrl}/${id}`, { estado: 'atendida' });
   }
 
-  disponibilidad(profesionalId: number, fecha: string, duracion = DURACION_CITA_MIN): Observable<Disponibilidad> {
-    return this.http.get<Disponibilidad>(`${this.profesionalesUrl}/${profesionalId}/disponibilidad`, {
-      params: toHttpParams({ fecha, duracion }),
-    });
+  disponibilidad(
+    profesionalId: number,
+    fecha: string,
+    duracion = DURACION_CITA_MIN,
+  ): Observable<Disponibilidad> {
+    return this.http.get<Disponibilidad>(
+      `${this.profesionalesUrl}/${profesionalId}/disponibilidad`,
+      {
+        params: toHttpParams({ fecha, duracion }),
+      },
+    );
   }
 }

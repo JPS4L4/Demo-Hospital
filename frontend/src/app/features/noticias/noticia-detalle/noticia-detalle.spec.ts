@@ -46,7 +46,9 @@ describe('NoticiaDetalle', () => {
   });
 
   it('shows a not-found message when the API answers 404', async () => {
-    http.expectOne(URL).flush({ detail: 'Noticia no encontrada' }, { status: 404, statusText: 'Not Found' });
+    http
+      .expectOne(URL)
+      .flush({ detail: 'Noticia no encontrada' }, { status: 404, statusText: 'Not Found' });
     await settle();
 
     expect(el.textContent).toContain('No encontramos esta noticia');
@@ -57,7 +59,9 @@ describe('NoticiaDetalle', () => {
     http.expectOne(URL).error(new ProgressEvent('error'));
     await settle();
 
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar la noticia');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar la noticia',
+    );
     expect(el.querySelector('[role="alert"] button')).toBeTruthy();
   });
 });

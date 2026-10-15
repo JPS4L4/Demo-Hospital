@@ -14,7 +14,13 @@
         </p>
       }
 
-      <form class="card rise grid gap-5 p-6 md:p-8" [formGroup]="form" (ngSubmit)="submit()" novalidate [attr.aria-busy]="submitting()">
+      <form
+        class="card rise grid gap-5 p-6 md:p-8"
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        novalidate
+        [attr.aria-busy]="submitting()"
+      >
         @if (formError(); as error) {
           <p class="notice notice-error" role="alert">
             <app-icon name="alert" [size]="18" class="mt-0.5" />
@@ -35,7 +41,11 @@
           />
         </app-field>
 
-        <app-password-field inputId="login-password" [control]="form.controls.password" autocomplete="current-password" />
+        <app-password-field
+          inputId="login-password"
+          [control]="form.controls.password"
+          autocomplete="current-password"
+        />
 
         <button type="submit" class="btn btn-primary" [disabled]="submitting()">
           {{ submitting() ? 'Ingresando…' : 'Ingresar' }}
@@ -44,11 +54,19 @@
 
       <p class="mt-6 text-center text-muted">
         ¿Aún no tienes cuenta?
-        <a routerLink="/registro" [queryParams]="{ returnUrl: returnUrl() || null }" class="font-semibold text-brand underline underline-offset-4">Regístrate</a>
+        <a
+          routerLink="/registro"
+          [queryParams]="{ returnUrl: returnUrl() || null }"
+          class="font-semibold text-brand underline underline-offset-4"
+          >Regístrate</a
+        >
       </p>
     </div>
 
-    <aside class="demo h-fit rounded-xl border border-dashed border-line bg-sunken p-5 md:p-6" aria-labelledby="demo-title">
+    <aside
+      class="demo h-fit rounded-xl border border-dashed border-line bg-sunken p-5 md:p-6"
+      aria-labelledby="demo-title"
+    >
       <h2 id="demo-title" class="text-lg">Cuentas de demostración</h2>
       <p class="mt-2 text-[0.9375rem] text-muted">
         Este es un sitio de demostración. Usa una de estas cuentas para explorarlo sin registrarte.

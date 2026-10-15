@@ -13,8 +13,19 @@ export interface Cita {
   duracion_min: number;
   motivo: string;
   estado: EstadoCita;
-  paciente: { id: number; tipo_documento: string; numero_documento: string; nombres: string; apellidos: string };
-  profesional: { id: number; nombres: string; apellidos: string; especialidad: { id: number; nombre: string } };
+  paciente: {
+    id: number;
+    tipo_documento: string;
+    numero_documento: string;
+    nombres: string;
+    apellidos: string;
+  };
+  profesional: {
+    id: number;
+    nombres: string;
+    apellidos: string;
+    especialidad: { id: number; nombre: string };
+  };
   sede: { id: number; nombre: string; ciudad: string };
 }
 

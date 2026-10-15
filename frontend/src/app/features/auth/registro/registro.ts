@@ -82,7 +82,11 @@ export class Registro {
           this.submitting.set(false);
           // 409: la API explica qué dato está repetido; se asigna a su campo.
           const message = applyProblem(this.form, parseApiError(err), (detail) =>
-            /documento/i.test(detail) ? 'numero_documento' : /correo/i.test(detail) ? 'email' : null,
+            /documento/i.test(detail)
+              ? 'numero_documento'
+              : /correo/i.test(detail)
+                ? 'email'
+                : null,
           );
           this.formError.set(message);
           if (message === null) focusFirstInvalid(this.host.nativeElement);

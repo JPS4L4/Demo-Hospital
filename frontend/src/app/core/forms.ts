@@ -18,7 +18,9 @@ export const telefonoValido: ValidatorFn = (control) => {
 export const documentoValido: ValidatorFn = (control) => {
   const value = String(control.value ?? '').trim();
   if (!value) return null;
-  return /^[A-Za-z0-9]{4,30}$/.test(value) ? null : { message: 'Usa entre 4 y 30 letras o dígitos, sin espacios.' };
+  return /^[A-Za-z0-9]{4,30}$/.test(value)
+    ? null
+    : { message: 'Usa entre 4 y 30 letras o dígitos, sin espacios.' };
 };
 
 /** Fecha de nacimiento (YYYY-MM-DD) anterior a hoy y desde 1900. */
@@ -68,15 +70,20 @@ export function parseApiError(err: unknown): ApiProblem {
       const msg = item.msg ?? '';
       // Los validadores propios de la API traen su texto en español tras "Value error, ".
       const clean = msg.replace(/^Value error, /, '');
-      fields[field] = clean !== msg || /[áéíóúñ]|^(El|La|Los|Las|Ya) /.test(clean) ? clean : 'Revisa este campo.';
+      fields[field] =
+        clean !== msg || /[áéíóúñ]|^(El|La|Los|Las|Ya) /.test(clean) ? clean : 'Revisa este campo.';
     }
   }
   return { status: err.status, detail: null, fields };
 }
 
 /** Texto general para mostrar cuando un error no se asigna a un campo. */
-export function problemMessage(problem: ApiProblem, fallback = 'Algo salió mal. Inténtalo de nuevo.'): string {
-  if (problem.status === 0) return 'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+export function problemMessage(
+  problem: ApiProblem,
+  fallback = 'Algo salió mal. Inténtalo de nuevo.',
+): string {
+  if (problem.status === 0)
+    return 'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
   return problem.detail ?? fallback;
 }
 

@@ -39,11 +39,20 @@ export class AdminAgenda {
   );
 
   private readonly result = toSignal(
-    combineLatest([toObservable(this.fecha), toObservable(this.profesionalId), toObservable(this.reload)]).pipe(
+    combineLatest([
+      toObservable(this.fecha),
+      toObservable(this.profesionalId),
+      toObservable(this.reload),
+    ]).pipe(
       switchMap(([fecha, profesionalId]) =>
         toRemote(
           // Sin zona: la API interpreta los límites en hora de Bogotá.
-          this.citas.listar({ desde: `${fecha}T00:00:00`, hasta: `${fecha}T23:59:59`, profesionalId, limit: 100 }),
+          this.citas.listar({
+            desde: `${fecha}T00:00:00`,
+            hasta: `${fecha}T23:59:59`,
+            profesionalId,
+            limit: 100,
+          }),
         ),
       ),
     ),
@@ -116,7 +125,9 @@ export class AdminAgenda {
       },
       error: (err: unknown) => {
         this.busyId.set(null);
-        this.actionError.set(problemMessage(parseApiError(err), 'No pudimos actualizar la cita. Inténtalo de nuevo.'));
+        this.actionError.set(
+          problemMessage(parseApiError(err), 'No pudimos actualizar la cita. Inténtalo de nuevo.'),
+        );
       },
     });
   }
@@ -144,7 +155,9 @@ export class AdminAgenda {
       },
       error: (err: unknown) => {
         this.busyId.set(null);
-        this.cancelError.set(problemMessage(parseApiError(err), 'No pudimos cancelar la cita. Inténtalo de nuevo.'));
+        this.cancelError.set(
+          problemMessage(parseApiError(err), 'No pudimos cancelar la cita. Inténtalo de nuevo.'),
+        );
       },
     });
   }

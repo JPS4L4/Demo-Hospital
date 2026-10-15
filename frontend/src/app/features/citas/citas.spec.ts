@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -54,8 +58,19 @@ const citaCreada = {
   duracion_min: 30,
   motivo: 'Control general',
   estado: 'programada',
-  paciente: { id: 7, tipo_documento: 'CC', numero_documento: '1020304050', nombres: 'Paula', apellidos: 'Herrera' },
-  profesional: { id: 5, nombres: 'Sofía', apellidos: 'Beltrán Pardo', especialidad: { id: 3, nombre: 'Medicina interna' } },
+  paciente: {
+    id: 7,
+    tipo_documento: 'CC',
+    numero_documento: '1020304050',
+    nombres: 'Paula',
+    apellidos: 'Herrera',
+  },
+  profesional: {
+    id: 5,
+    nombres: 'Sofía',
+    apellidos: 'Beltrán Pardo',
+    especialidad: { id: 3, nombre: 'Medicina interna' },
+  },
   sede: { id: 1, nombre: 'Sede Chapinero', ciudad: 'Bogotá' },
 };
 
@@ -109,7 +124,8 @@ describe('Citas (booking flow)', () => {
 
   const especialidadesReq = () => http.expectOne((r) => r.url === `${API}/especialidades`);
   const profesionalesReq = () => http.expectOne((r) => r.url === `${API}/profesionales`);
-  const slotsReq = (id = 5) => http.expectOne((r) => r.url === `${API}/profesionales/${id}/disponibilidad`);
+  const slotsReq = (id = 5) =>
+    http.expectOne((r) => r.url === `${API}/profesionales/${id}/disponibilidad`);
 
   async function logIn(user = usuarioPaciente): Promise<void> {
     TestBed.inject(AuthService).login('a@b.co', 'x').subscribe();
@@ -118,7 +134,9 @@ describe('Citas (booking flow)', () => {
   }
 
   const click = async (selector: string, text?: string) => {
-    const target = Array.from(el.querySelectorAll<HTMLElement>(selector)).find((n) => !text || n.textContent?.includes(text));
+    const target = Array.from(el.querySelectorAll<HTMLElement>(selector)).find(
+      (n) => !text || n.textContent?.includes(text),
+    );
     expect(target, `${selector} ${text ?? ''}`).toBeTruthy();
     target!.click();
     await settle();
@@ -151,7 +169,9 @@ describe('Citas (booking flow)', () => {
     const days = Array.from(el.querySelectorAll<HTMLButtonElement>('.day'));
     expect(days.length).toBe(14);
     expect(days[0].getAttribute('aria-label')).toContain('miércoles, 14 de octubre de 2026');
-    const sunday = days.find((d) => d.getAttribute('aria-label')?.includes('domingo, 18 de octubre'))!;
+    const sunday = days.find((d) =>
+      d.getAttribute('aria-label')?.includes('domingo, 18 de octubre'),
+    )!;
     expect(sunday.disabled).toBe(true);
     expect(sunday.getAttribute('aria-label')).toContain('sin atención');
     expect(days.filter((d) => d.disabled).length).toBe(2);
@@ -165,11 +185,11 @@ describe('Citas (booking flow)', () => {
     await settle();
 
     expect(el.textContent).toContain('3 horarios libres');
-    expect(Array.from(el.querySelectorAll('.slot')).map((s) => s.textContent?.trim().replace(/\s/g, ' '))).toEqual([
-      '9:00 a. m.',
-      '10:30 a. m.',
-      '2:00 p. m.',
-    ]);
+    expect(
+      Array.from(el.querySelectorAll('.slot')).map((s) =>
+        s.textContent?.trim().replace(/\s/g, ' '),
+      ),
+    ).toEqual(['9:00 a. m.', '10:30 a. m.', '2:00 p. m.']);
 
     await click('.slot', '10:30');
     expect(router.url).toContain('hora=10:30');
@@ -213,7 +233,9 @@ describe('Citas (booking flow)', () => {
 
     expect(stepTitle()).toBe('Día y hora');
     expect(router.url).not.toContain('hora=');
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Ese horario ya no está disponible');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'Ese horario ya no está disponible',
+    );
   });
 
   it('ignores a Sunday or out-of-range date in the URL', async () => {
@@ -251,14 +273,20 @@ describe('Citas (booking flow)', () => {
     await atConfirmStep();
 
     expect(el.textContent).toContain('Para confirmar necesitas ingresar');
-    expect(Array.from(el.querySelectorAll('button')).some((b) => b.textContent?.includes('Confirmar cita'))).toBe(false);
+    expect(
+      Array.from(el.querySelectorAll('button')).some((b) =>
+        b.textContent?.includes('Confirmar cita'),
+      ),
+    ).toBe(false);
 
     const motivo = el.querySelector<HTMLTextAreaElement>('#cita-motivo')!;
     motivo.value = 'Dolor de cabeza';
     motivo.dispatchEvent(new Event('input'));
     await settle();
 
-    const login = Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.includes('Ingresar para confirmar'))!;
+    const login = Array.from(el.querySelectorAll('a')).find((a) =>
+      a.textContent?.includes('Ingresar para confirmar'),
+    )!;
     const href = new URL(login.getAttribute('href')!, 'http://x');
     expect(href.pathname).toBe('/ingresar');
     const back = href.searchParams.get('returnUrl')!;
@@ -284,7 +312,9 @@ describe('Citas (booking flow)', () => {
 
     await click('button[type="submit"]');
     http.expectNone(`${API}/citas`);
-    expect(el.querySelector('#cita-motivo-error')?.textContent).toContain('Este campo es obligatorio.');
+    expect(el.querySelector('#cita-motivo-error')?.textContent).toContain(
+      'Este campo es obligatorio.',
+    );
   });
 
   it('confirms the appointment and shows the summary with a link to Mis citas', async () => {
@@ -323,11 +353,16 @@ describe('Citas (booking flow)', () => {
 
     http
       .expectOne(`${API}/citas`)
-      .flush({ detail: 'El profesional ya tiene una cita en ese horario' }, { status: 409, statusText: 'Conflict' });
+      .flush(
+        { detail: 'El profesional ya tiene una cita en ese horario' },
+        { status: 409, statusText: 'Conflict' },
+      );
     await settle();
 
     expect(stepTitle()).toBe('Día y hora');
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('El profesional ya tiene una cita en ese horario');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'El profesional ya tiene una cita en ese horario',
+    );
     expect(router.url).not.toContain('hora=');
     const refreshed = slotsReq();
     refreshed.flush({ ...disponibilidad, huecos: [hueco('10:30')] });
@@ -344,11 +379,15 @@ describe('Citas (booking flow)', () => {
     motivo.dispatchEvent(new Event('input'));
     await click('button[type="submit"]');
 
-    http.expectOne(`${API}/citas`).flush({ detail: 'x' }, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne(`${API}/citas`)
+      .flush({ detail: 'x' }, { status: 401, statusText: 'Unauthorized' });
     await settle();
 
     const call = navigate.mock.calls.find((c) => (c[0] as string[])[0] === '/ingresar')!;
-    expect((call[1] as { queryParams: { returnUrl: string } }).queryParams.returnUrl).toContain('profesional_id=5');
+    expect((call[1] as { queryParams: { returnUrl: string } }).queryParams.returnUrl).toContain(
+      'profesional_id=5',
+    );
     expect(sessionStorage.getItem('meridiana.cita-borrador')).toBe('Control');
   });
 

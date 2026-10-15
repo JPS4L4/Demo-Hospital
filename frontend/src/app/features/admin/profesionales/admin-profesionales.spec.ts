@@ -50,8 +50,20 @@ describe('AdminProfesionales', () => {
   async function load(items: Profesional[]): Promise<void> {
     http
       .expectOne((r) => r.url === `${API}/especialidades`)
-      .flush({ items: [{ id: 3, nombre: 'Medicina interna', descripcion: '' }, { id: 4, nombre: 'Pediatría', descripcion: '' }], total: 2, limit: 100, offset: 0 });
-    http.expectOne(`${API}/sedes`).flush([{ id: 1, nombre: 'Sede Chapinero', direccion: 'x', ciudad: 'Bogotá', telefono: null }]);
+      .flush({
+        items: [
+          { id: 3, nombre: 'Medicina interna', descripcion: '' },
+          { id: 4, nombre: 'Pediatría', descripcion: '' },
+        ],
+        total: 2,
+        limit: 100,
+        offset: 0,
+      });
+    http
+      .expectOne(`${API}/sedes`)
+      .flush([
+        { id: 1, nombre: 'Sede Chapinero', direccion: 'x', ciudad: 'Bogotá', telefono: null },
+      ]);
     const req = listReq();
     // Inactive professionals are managed here too.
     expect(req.request.params.has('activo')).toBe(false);
@@ -60,10 +72,14 @@ describe('AdminProfesionales', () => {
   }
 
   const button = (text: string) =>
-    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) => b.textContent?.includes(text))!;
+    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) =>
+      b.textContent?.includes(text),
+    )!;
 
   async function fill(id: string, value: string): Promise<void> {
-    const field = el.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`#${id}`)!;
+    const field = el.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+      `#${id}`,
+    )!;
     field.value = value;
     field.dispatchEvent(new Event(field.tagName === 'SELECT' ? 'change' : 'input'));
     await settle();
@@ -155,7 +171,10 @@ describe('AdminProfesionales', () => {
     await settle();
     http
       .expectOne(`${API}/profesionales/1`)
-      .flush({ detail: 'Ya existe un profesional con ese registro profesional' }, { status: 409, statusText: 'Conflict' });
+      .flush(
+        { detail: 'Ya existe un profesional con ese registro profesional' },
+        { status: 409, statusText: 'Conflict' },
+      );
     await settle();
 
     expect(el.querySelector('#prof-registro-error')?.textContent).toContain('registro profesional');

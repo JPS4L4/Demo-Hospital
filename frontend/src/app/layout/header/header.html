@@ -4,7 +4,10 @@
       <app-icon name="clock" [size]="16" />
       Urgencias abiertas las 24 horas
     </p>
-    <a class="flex items-center gap-2 font-semibold text-ink hover:underline" href="tel:+576015550100">
+    <a
+      class="flex items-center gap-2 font-semibold text-ink hover:underline"
+      href="tel:+576015550100"
+    >
       <app-icon name="phone" [size]="16" />
       Línea de atención +57 601 555 0100
     </a>
@@ -25,7 +28,8 @@
           ariaCurrentWhenActive="page"
           [routerLinkActiveOptions]="{ exact: link.path === '/' }"
           class="nav-link"
-        >{{ link.label }}</a>
+          >{{ link.label }}</a
+        >
       }
     </nav>
 
@@ -33,7 +37,9 @@
       type="button"
       class="theme-toggle"
       (click)="themeService.toggle()"
-      [attr.aria-label]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      [attr.aria-label]="
+        themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
+      "
     >
       <app-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" [size]="20" />
     </button>
@@ -62,16 +68,24 @@
                   <span class="block break-all text-sm text-muted">{{ usuario.email }}</span>
                 </p>
                 @if (auth.isAdmin()) {
-                  <a routerLink="/admin" class="user-item"><app-icon name="layout-dashboard" [size]="18" />Panel</a>
+                  <a routerLink="/admin" class="user-item"
+                    ><app-icon name="layout-dashboard" [size]="18" />Panel</a
+                  >
                 } @else {
-                  <a routerLink="/mis-citas" class="user-item"><app-icon name="calendar-check" [size]="18" />Mis citas</a>
+                  <a routerLink="/mis-citas" class="user-item"
+                    ><app-icon name="calendar-check" [size]="18" />Mis citas</a
+                  >
                 }
-                <button type="button" class="user-item" (click)="logout()"><app-icon name="log-out" [size]="18" />Cerrar sesión</button>
+                <button type="button" class="user-item" (click)="logout()">
+                  <app-icon name="log-out" [size]="18" />Cerrar sesión
+                </button>
               </div>
             }
           </div>
         } @else {
-          <a routerLink="/ingresar" class="account-link"><app-icon name="user" [size]="18" />Ingresar</a>
+          <a routerLink="/ingresar" class="account-link"
+            ><app-icon name="user" [size]="18" />Ingresar</a
+          >
         }
       </div>
     }
@@ -94,7 +108,11 @@
   </div>
 
   @if (menuOpen()) {
-    <nav id="menu-movil" class="mobile-menu border-t border-line bg-paper lg:hidden" aria-label="Principal (móvil)">
+    <nav
+      id="menu-movil"
+      class="mobile-menu border-t border-line bg-paper lg:hidden"
+      aria-label="Principal (móvil)"
+    >
       <div class="container-page flex flex-col py-3">
         @for (link of navLinks; track link.path) {
           <a
@@ -103,7 +121,8 @@
             ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="{ exact: link.path === '/' }"
             class="mobile-link"
-          >{{ link.label }}</a>
+            >{{ link.label }}</a
+          >
         }
         <a routerLink="/citas" class="btn btn-primary mt-3 sm:hidden">
           <app-icon name="calendar" [size]="18" />
@@ -121,7 +140,9 @@
             } @else {
               <a routerLink="/mis-citas" class="mobile-link">Mis citas</a>
             }
-            <button type="button" class="mobile-link mobile-link--button" (click)="logout()">Cerrar sesión</button>
+            <button type="button" class="mobile-link mobile-link--button" (click)="logout()">
+              Cerrar sesión
+            </button>
           } @else {
             <a routerLink="/ingresar" class="mobile-link">Ingresar</a>
             <a routerLink="/registro" class="mobile-link">Crear cuenta</a>

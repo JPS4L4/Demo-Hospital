@@ -6,7 +6,13 @@
 
 <section class="container-page section">
   <div class="mx-auto max-w-3xl">
-    <form class="card rise grid gap-5 p-6 sm:grid-cols-2 md:p-8" [formGroup]="form" (ngSubmit)="submit()" novalidate [attr.aria-busy]="submitting()">
+    <form
+      class="card rise grid gap-5 p-6 sm:grid-cols-2 md:p-8"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      novalidate
+      [attr.aria-busy]="submitting()"
+    >
       @if (formError(); as error) {
         <p class="notice notice-error sm:col-span-2" role="alert">
           <app-icon name="alert" [size]="18" class="mt-0.5" />
@@ -21,32 +27,95 @@
               <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
-          <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <app-icon
+            name="chevron-down"
+            [size]="18"
+            class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+          />
         </div>
       </app-field>
 
-      <app-field for="reg-documento" label="Número de documento" [control]="form.controls.numero_documento">
-        <input id="reg-documento" class="field-control" formControlName="numero_documento" autocomplete="off" inputmode="text" autocapitalize="characters" />
+      <app-field
+        for="reg-documento"
+        label="Número de documento"
+        [control]="form.controls.numero_documento"
+      >
+        <input
+          id="reg-documento"
+          class="field-control"
+          formControlName="numero_documento"
+          autocomplete="off"
+          inputmode="text"
+          autocapitalize="characters"
+        />
       </app-field>
 
       <app-field for="reg-nombres" label="Nombres" [control]="form.controls.nombres">
-        <input id="reg-nombres" class="field-control" formControlName="nombres" autocomplete="given-name" />
+        <input
+          id="reg-nombres"
+          class="field-control"
+          formControlName="nombres"
+          autocomplete="given-name"
+        />
       </app-field>
 
       <app-field for="reg-apellidos" label="Apellidos" [control]="form.controls.apellidos">
-        <input id="reg-apellidos" class="field-control" formControlName="apellidos" autocomplete="family-name" />
+        <input
+          id="reg-apellidos"
+          class="field-control"
+          formControlName="apellidos"
+          autocomplete="family-name"
+        />
       </app-field>
 
-      <app-field for="reg-nacimiento" label="Fecha de nacimiento" [control]="form.controls.fecha_nacimiento">
-        <input id="reg-nacimiento" type="date" class="field-control" formControlName="fecha_nacimiento" min="1900-01-01" [max]="maxNacimiento" autocomplete="bday" />
+      <app-field
+        for="reg-nacimiento"
+        label="Fecha de nacimiento"
+        [control]="form.controls.fecha_nacimiento"
+      >
+        <input
+          id="reg-nacimiento"
+          type="date"
+          class="field-control"
+          formControlName="fecha_nacimiento"
+          min="1900-01-01"
+          [max]="maxNacimiento"
+          autocomplete="bday"
+        />
       </app-field>
 
-      <app-field for="reg-telefono" label="Teléfono" [control]="form.controls.telefono" hint="Con o sin indicativo, por ejemplo 300 123 4567.">
-        <input id="reg-telefono" type="tel" class="field-control" formControlName="telefono" autocomplete="tel" inputmode="tel" />
+      <app-field
+        for="reg-telefono"
+        label="Teléfono"
+        [control]="form.controls.telefono"
+        hint="Con o sin indicativo, por ejemplo 300 123 4567."
+      >
+        <input
+          id="reg-telefono"
+          type="tel"
+          class="field-control"
+          formControlName="telefono"
+          autocomplete="tel"
+          inputmode="tel"
+        />
       </app-field>
 
-      <app-field for="reg-email" label="Correo electrónico" [control]="form.controls.email" hint="Lo usarás para iniciar sesión.">
-        <input id="reg-email" type="email" class="field-control" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" />
+      <app-field
+        for="reg-email"
+        label="Correo electrónico"
+        [control]="form.controls.email"
+        hint="Lo usarás para iniciar sesión."
+      >
+        <input
+          id="reg-email"
+          type="email"
+          class="field-control"
+          formControlName="email"
+          autocomplete="email"
+          inputmode="email"
+          autocapitalize="none"
+          spellcheck="false"
+        />
       </app-field>
 
       <app-field for="reg-eps" label="EPS" [control]="form.controls.eps" [optional]="true">
@@ -67,7 +136,12 @@
         </button>
         <p class="text-muted">
           ¿Ya tienes cuenta?
-          <a routerLink="/ingresar" [queryParams]="{ returnUrl: returnUrl() || null }" class="font-semibold text-brand underline underline-offset-4">Ingresa</a>
+          <a
+            routerLink="/ingresar"
+            [queryParams]="{ returnUrl: returnUrl() || null }"
+            class="font-semibold text-brand underline underline-offset-4"
+            >Ingresa</a
+          >
         </p>
       </div>
     </form>

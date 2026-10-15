@@ -42,7 +42,9 @@ describe('AdminNoticias', () => {
   }
 
   const button = (text: string) =>
-    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) => b.textContent?.includes(text))!;
+    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) =>
+      b.textContent?.includes(text),
+    )!;
 
   async function fill(id: string, value: string): Promise<void> {
     const field = el.querySelector<HTMLInputElement | HTMLTextAreaElement>(`#${id}`)!;
@@ -79,12 +81,17 @@ describe('AdminNoticias', () => {
 
     const post = http.expectOne(`${API}/noticias`);
     expect(post.request.method).toBe('POST');
-    expect(post.request.body).toEqual({ titulo: 'Jornada de vacunación', contenido: 'Este sábado en todas las sedes.' });
+    expect(post.request.body).toEqual({
+      titulo: 'Jornada de vacunación',
+      contenido: 'Este sábado en todas las sedes.',
+    });
     post.flush(noticia(3, 'Jornada de vacunación'), { status: 201, statusText: 'Created' });
     await settle();
 
     expect(el.querySelector('form')).toBeNull();
-    http.expectOne(`${API}/noticias`).flush([noticia(3, 'Jornada de vacunación'), noticia(1), noticia(2)]);
+    http
+      .expectOne(`${API}/noticias`)
+      .flush([noticia(3, 'Jornada de vacunación'), noticia(1), noticia(2)]);
     await settle();
     expect(el.querySelectorAll('tbody tr').length).toBe(3);
     expect(el.querySelector('[role="status"]')?.textContent).toContain('Noticia publicada.');
@@ -114,7 +121,10 @@ describe('AdminNoticias', () => {
 
     const put = http.expectOne(`${API}/noticias/2`);
     expect(put.request.method).toBe('PUT');
-    expect(put.request.body).toEqual({ titulo: 'Noticia 2 corregida', contenido: 'Contenido de la noticia' });
+    expect(put.request.body).toEqual({
+      titulo: 'Noticia 2 corregida',
+      contenido: 'Contenido de la noticia',
+    });
     put.flush(noticia(2, 'Noticia 2 corregida'));
     await settle();
     http.expectOne(`${API}/noticias`).flush([noticia(1), noticia(2, 'Noticia 2 corregida')]);
@@ -129,7 +139,15 @@ describe('AdminNoticias', () => {
     el.querySelector('form')!.dispatchEvent(new Event('submit'));
     await settle();
     http.expectOne(`${API}/noticias`).flush(
-      { detail: [{ loc: ['body', 'titulo'], msg: 'Value error, El título ya existe', type: 'value_error' }] },
+      {
+        detail: [
+          {
+            loc: ['body', 'titulo'],
+            msg: 'Value error, El título ya existe',
+            type: 'value_error',
+          },
+        ],
+      },
       { status: 422, statusText: 'Unprocessable Entity' },
     );
     await settle();

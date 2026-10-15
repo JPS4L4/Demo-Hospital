@@ -1,4 +1,12 @@
-import { Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
@@ -35,9 +43,7 @@ export class MisCitas {
   private readonly actualizadas = signal<Record<number, Cita>>({});
 
   protected readonly state = toSignal(
-    toObservable(this.reload).pipe(
-      switchMap(() => toRemote(this.citas.listar({ limit: 100 }))),
-    ),
+    toObservable(this.reload).pipe(switchMap(() => toRemote(this.citas.listar({ limit: 100 })))),
     { initialValue: LOADING as Remote<Page<Cita>> },
   );
 
@@ -49,10 +55,16 @@ export class MisCitas {
     if (s.status !== 'ready') return null;
     const ahora = Date.now();
     const todas = s.data.items.map((c) => this.actualizadas()[c.id] ?? c);
-    const porInicio = (a: Cita, b: Cita) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime();
-    const proximas = todas.filter((c) => c.estado === 'programada' && new Date(c.fin).getTime() > ahora);
+    const porInicio = (a: Cita, b: Cita) =>
+      new Date(a.inicio).getTime() - new Date(b.inicio).getTime();
+    const proximas = todas.filter(
+      (c) => c.estado === 'programada' && new Date(c.fin).getTime() > ahora,
+    );
     const anteriores = todas.filter((c) => !proximas.includes(c));
-    return { proximas: proximas.sort(porInicio), anteriores: anteriores.sort((a, b) => porInicio(b, a)) };
+    return {
+      proximas: proximas.sort(porInicio),
+      anteriores: anteriores.sort((a, b) => porInicio(b, a)),
+    };
   });
 
   protected readonly visibles = computed(() => this.grupos()?.[this.vista()] ?? []);
@@ -105,14 +117,19 @@ export class MisCitas {
         this.cancelBusy.set(false);
         this.cancelando.set(null);
         this.anuncio.set('Cita cancelada.');
-        afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('#resultados')?.focus(), {
-          injector: this.injector,
-        });
+        afterNextRender(
+          () => this.host.nativeElement.querySelector<HTMLElement>('#resultados')?.focus(),
+          {
+            injector: this.injector,
+          },
+        );
       },
       error: (err: unknown) => {
         this.cancelBusy.set(false);
         const problem = parseApiError(err);
-        this.cancelError.set(problemMessage(problem, 'No pudimos cancelar la cita. Inténtalo de nuevo.'));
+        this.cancelError.set(
+          problemMessage(problem, 'No pudimos cancelar la cita. Inténtalo de nuevo.'),
+        );
         // Si el servidor ya la tenía cancelada o atendida, se refresca la lista.
         if (problem.status === 409) this.reload.update((n) => n + 1);
       },

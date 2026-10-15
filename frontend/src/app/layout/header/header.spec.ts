@@ -42,8 +42,12 @@ describe('Header', () => {
 
   it('links to the main sections and has a "Pedir cita" call to action', () => {
     const hrefs = Array.from(el.querySelectorAll('nav a')).map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(expect.arrayContaining(['/', '/noticias', '/sedes', '/profesionales', '/medicamentos']));
-    const cta = Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.includes('Pedir cita'));
+    expect(hrefs).toEqual(
+      expect.arrayContaining(['/', '/noticias', '/sedes', '/profesionales', '/medicamentos']),
+    );
+    const cta = Array.from(el.querySelectorAll('a')).find((a) =>
+      a.textContent?.includes('Pedir cita'),
+    );
     expect(cta?.getAttribute('href')).toBe('/citas');
   });
 
@@ -73,7 +77,8 @@ describe('Header', () => {
   });
 
   describe('account', () => {
-    const link = (text: string) => Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.trim() === text);
+    const link = (text: string) =>
+      Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.trim() === text);
 
     it('offers "Ingresar" (desktop and mobile menu) while logged out', async () => {
       expect(link('Ingresar')?.getAttribute('href')).toBe('/ingresar');
@@ -81,7 +86,9 @@ describe('Header', () => {
 
       (el.querySelector('button[aria-controls="menu-movil"]') as HTMLButtonElement).click();
       await fixture.whenStable();
-      const mobile = Array.from(el.querySelectorAll('#menu-movil a')).map((a) => a.textContent?.trim());
+      const mobile = Array.from(el.querySelectorAll('#menu-movil a')).map((a) =>
+        a.textContent?.trim(),
+      );
       expect(mobile).toEqual(expect.arrayContaining(['Ingresar', 'Crear cuenta']));
     });
 

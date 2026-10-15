@@ -52,9 +52,13 @@ describe('AdminResumen', () => {
 
   it('offers a retry when a count fails', async () => {
     // One failing request cancels the rest of the group.
-    http.match((r) => r.url === `${API}/citas`)[0].flush({ detail: 'x' }, { status: 500, statusText: 'Error' });
+    http
+      .match((r) => r.url === `${API}/citas`)[0]
+      .flush({ detail: 'x' }, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar el resumen');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar el resumen',
+    );
   });
 });

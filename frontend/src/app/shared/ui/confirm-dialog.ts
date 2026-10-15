@@ -18,7 +18,11 @@ import { Icon } from './icon';
       (click)="onBackdrop($event)"
     >
       <div class="confirm-body">
-        <span class="icon-tile" [style.background]="danger() ? 'var(--danger-soft)' : null" [style.color]="danger() ? 'var(--danger)' : null">
+        <span
+          class="icon-tile"
+          [style.background]="danger() ? 'var(--danger-soft)' : null"
+          [style.color]="danger() ? 'var(--danger)' : null"
+        >
           <app-icon [name]="danger() ? 'alert' : 'info'" [size]="22" />
         </span>
         <h2 id="confirm-title" class="mt-4 text-xl">{{ title() }}</h2>
@@ -33,7 +37,12 @@ import { Icon } from './icon';
           </p>
         }
         <div class="mt-6 flex flex-wrap justify-end gap-3">
-          <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="cancelled.emit()">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            [disabled]="busy()"
+            (click)="cancelled.emit()"
+          >
             {{ cancelLabel() }}
           </button>
           <button

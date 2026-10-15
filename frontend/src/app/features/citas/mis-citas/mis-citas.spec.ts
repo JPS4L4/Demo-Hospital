@@ -7,7 +7,12 @@ import { API, sesion, usuarioAdmin, usuarioPaciente } from '../../../core/auth/a
 import { Cita } from '../cita.model';
 import { MisCitas } from './mis-citas';
 
-const cita = (id: number, inicio: string, estado: Cita['estado'] = 'programada', extra: Partial<Cita> = {}): Cita => ({
+const cita = (
+  id: number,
+  inicio: string,
+  estado: Cita['estado'] = 'programada',
+  extra: Partial<Cita> = {},
+): Cita => ({
   id,
   paciente_id: 7,
   profesional_id: 5,
@@ -17,8 +22,19 @@ const cita = (id: number, inicio: string, estado: Cita['estado'] = 'programada',
   duracion_min: 30,
   motivo: 'Control general',
   estado,
-  paciente: { id: 7, tipo_documento: 'CC', numero_documento: '1020304050', nombres: 'Paula', apellidos: 'Herrera' },
-  profesional: { id: 5, nombres: 'Sofía', apellidos: 'Beltrán Pardo', especialidad: { id: 3, nombre: 'Medicina interna' } },
+  paciente: {
+    id: 7,
+    tipo_documento: 'CC',
+    numero_documento: '1020304050',
+    nombres: 'Paula',
+    apellidos: 'Herrera',
+  },
+  profesional: {
+    id: 5,
+    nombres: 'Sofía',
+    apellidos: 'Beltrán Pardo',
+    especialidad: { id: 3, nombre: 'Medicina interna' },
+  },
   sede: { id: 1, nombre: 'Sede Chapinero', ciudad: 'Bogotá' },
   ...extra,
 });
@@ -70,7 +86,9 @@ describe('MisCitas', () => {
   const listReq = () => http.expectOne((r) => r.url === `${API}/citas`);
   const cards = () => Array.from(el.querySelectorAll('li.cita'));
   const button = (text: string) =>
-    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) => b.textContent?.includes(text))!;
+    Array.from(el.querySelectorAll<HTMLButtonElement>('button')).find((b) =>
+      b.textContent?.includes(text),
+    )!;
 
   it('separates upcoming from past and shows date, time, professional, specialty, venue and status', async () => {
     await create();
@@ -192,7 +210,9 @@ describe('MisCitas', () => {
     await create();
     listReq().flush({ detail: 'x' }, { status: 500, statusText: 'Server Error' });
     await settle();
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar tus citas');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar tus citas',
+    );
 
     button('Reintentar').click();
     await settle();

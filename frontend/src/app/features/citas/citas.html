@@ -10,8 +10,11 @@
       <p class="notice notice-info mb-6" role="status">
         <app-icon name="info" [size]="18" class="mt-0.5" />
         <span>
-          Estás con una cuenta de administración: las citas en línea son para pacientes.
-          Para agendar a un paciente usa la <a routerLink="/admin/agenda" class="font-semibold underline underline-offset-4">agenda del panel</a>.
+          Estás con una cuenta de administración: las citas en línea son para pacientes. Para
+          agendar a un paciente usa la
+          <a routerLink="/admin/agenda" class="font-semibold underline underline-offset-4"
+            >agenda del panel</a
+          >.
         </span>
       </p>
     }
@@ -19,7 +22,9 @@
     @if (creada(); as cita) {
       <article class="card rise p-6 md:p-8" aria-labelledby="cita-creada">
         <span class="icon-tile"><app-icon name="check-circle" [size]="24" /></span>
-        <h2 id="cita-creada" tabindex="-1" class="mt-5 text-2xl md:text-3xl">Tu cita quedó confirmada</h2>
+        <h2 id="cita-creada" tabindex="-1" class="mt-5 text-2xl md:text-3xl">
+          Tu cita quedó confirmada
+        </h2>
         <p class="mt-2 text-muted">Puedes verla o cancelarla cuando quieras desde «Mis citas».</p>
         <dl class="summary mt-6">
           <dt>Profesional</dt>
@@ -40,16 +45,28 @@
             <app-icon name="calendar-check" [size]="18" />
             Ver mis citas
           </a>
-          <button type="button" class="btn btn-secondary" (click)="nuevaCita()">Pedir otra cita</button>
+          <button type="button" class="btn btn-secondary" (click)="nuevaCita()">
+            Pedir otra cita
+          </button>
         </div>
       </article>
     } @else {
       <ol class="grid gap-4" aria-label="Pasos para pedir la cita">
         <!-- Paso 1: especialidad -->
-        <li class="step card" [class.step-current]="paso() === 1" [class.step-done]="paso() > 1" [attr.aria-current]="paso() === 1 ? 'step' : null" [attr.data-paso-actual]="paso() === 1 ? '' : null">
+        <li
+          class="step card"
+          [class.step-current]="paso() === 1"
+          [class.step-done]="paso() > 1"
+          [attr.aria-current]="paso() === 1 ? 'step' : null"
+          [attr.data-paso-actual]="paso() === 1 ? '' : null"
+        >
           <div class="step-head">
             <span class="step-num" aria-hidden="true">
-              @if (paso() > 1) { <app-icon name="check" [size]="16" /> } @else { 1 }
+              @if (paso() > 1) {
+                <app-icon name="check" [size]="16" />
+              } @else {
+                1
+              }
             </span>
             <div class="min-w-0 flex-1">
               <h2 tabindex="-1" class="step-title">Especialidad</h2>
@@ -58,7 +75,9 @@
               }
             </div>
             @if (paso() > 1) {
-              <button type="button" class="btn btn-quiet" (click)="irAPaso(1)">Cambiar<span class="sr-only"> especialidad</span></button>
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(1)">
+                Cambiar<span class="sr-only"> especialidad</span>
+              </button>
             }
           </div>
 
@@ -107,10 +126,20 @@
         </li>
 
         <!-- Paso 2: profesional -->
-        <li class="step card" [class.step-current]="paso() === 2" [class.step-done]="paso() > 2" [attr.aria-current]="paso() === 2 ? 'step' : null" [attr.data-paso-actual]="paso() === 2 ? '' : null">
+        <li
+          class="step card"
+          [class.step-current]="paso() === 2"
+          [class.step-done]="paso() > 2"
+          [attr.aria-current]="paso() === 2 ? 'step' : null"
+          [attr.data-paso-actual]="paso() === 2 ? '' : null"
+        >
           <div class="step-head">
             <span class="step-num" aria-hidden="true">
-              @if (paso() > 2) { <app-icon name="check" [size]="16" /> } @else { 2 }
+              @if (paso() > 2) {
+                <app-icon name="check" [size]="16" />
+              } @else {
+                2
+              }
             </span>
             <div class="min-w-0 flex-1">
               <h2 tabindex="-1" class="step-title">Profesional</h2>
@@ -118,12 +147,16 @@
                 @if (profesional(); as p) {
                   <p class="step-summary">{{ nombre(p) }} · {{ p.sede.nombre }}</p>
                 } @else {
-                  <p class="step-summary"><span class="skeleton inline-block h-4 w-40 align-middle"></span></p>
+                  <p class="step-summary">
+                    <span class="skeleton inline-block h-4 w-40 align-middle"></span>
+                  </p>
                 }
               }
             </div>
             @if (paso() > 2) {
-              <button type="button" class="btn btn-quiet" (click)="irAPaso(2)">Cambiar<span class="sr-only"> profesional</span></button>
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(2)">
+                Cambiar<span class="sr-only"> profesional</span>
+              </button>
             }
           </div>
 
@@ -136,7 +169,9 @@
                 </p>
               }
               @if (especialidadId() === null) {
-                <button type="button" class="btn btn-secondary" (click)="irAPaso(1)">Elegir una especialidad</button>
+                <button type="button" class="btn btn-secondary" (click)="irAPaso(1)">
+                  Elegir una especialidad
+                </button>
               } @else {
                 @switch (profesionalesList()?.status ?? 'loading') {
                   @case ('loading') {
@@ -173,11 +208,20 @@
                           <ul class="grid gap-3 sm:grid-cols-2">
                             @for (p of lista.data; track p.id) {
                               <li>
-                                <button type="button" class="choice choice-person" (click)="elegirProfesional(p)">
-                                  <app-avatar [initials]="iniciales(p)" style="--avatar-size: 2.75rem" />
+                                <button
+                                  type="button"
+                                  class="choice choice-person"
+                                  (click)="elegirProfesional(p)"
+                                >
+                                  <app-avatar
+                                    [initials]="iniciales(p)"
+                                    style="--avatar-size: 2.75rem"
+                                  />
                                   <span class="min-w-0">
                                     <span class="choice-title block">{{ nombre(p) }}</span>
-                                    <span class="choice-sub block">{{ p.sede.nombre }}, {{ p.sede.ciudad }}</span>
+                                    <span class="choice-sub block"
+                                      >{{ p.sede.nombre }}, {{ p.sede.ciudad }}</span
+                                    >
                                   </span>
                                 </button>
                               </li>
@@ -194,19 +238,36 @@
         </li>
 
         <!-- Paso 3: día y hora -->
-        <li class="step card" [class.step-current]="paso() === 3" [class.step-done]="paso() > 3" [attr.aria-current]="paso() === 3 ? 'step' : null" [attr.data-paso-actual]="paso() === 3 ? '' : null">
+        <li
+          class="step card"
+          [class.step-current]="paso() === 3"
+          [class.step-done]="paso() > 3"
+          [attr.aria-current]="paso() === 3 ? 'step' : null"
+          [attr.data-paso-actual]="paso() === 3 ? '' : null"
+        >
           <div class="step-head">
             <span class="step-num" aria-hidden="true">
-              @if (paso() > 3) { <app-icon name="check" [size]="16" /> } @else { 3 }
+              @if (paso() > 3) {
+                <app-icon name="check" [size]="16" />
+              } @else {
+                3
+              }
             </span>
             <div class="min-w-0 flex-1">
               <h2 tabindex="-1" class="step-title">Día y hora</h2>
               @if (paso() > 3) {
-                <p class="step-summary"><span class="capitalize-first inline-block">{{ fechaLarga(seleccion().fecha!) }}</span> · {{ horaElegida()?.etiqueta }}</p>
+                <p class="step-summary">
+                  <span class="capitalize-first inline-block">{{
+                    fechaLarga(seleccion().fecha!)
+                  }}</span>
+                  · {{ horaElegida()?.etiqueta }}
+                </p>
               }
             </div>
             @if (paso() > 3) {
-              <button type="button" class="btn btn-quiet" (click)="irAPaso(3)">Cambiar<span class="sr-only"> día y hora</span></button>
+              <button type="button" class="btn btn-quiet" (click)="irAPaso(3)">
+                Cambiar<span class="sr-only"> día y hora</span>
+              </button>
             }
           </div>
 
@@ -272,13 +333,18 @@
                         } @else {
                           <p class="mb-4 text-muted" role="status">
                             <span class="font-semibold text-ink">{{ h.total }}</span>
-                            {{ h.total === 1 ? 'horario libre' : 'horarios libres' }} · citas de {{ duracion }} minutos
+                            {{ h.total === 1 ? 'horario libre' : 'horarios libres' }} · citas de
+                            {{ duracion }} minutos
                           </p>
                           @if (h.manana.length) {
                             <h3 class="slots-title">Mañana</h3>
                             <ul class="slots">
                               @for (s of h.manana; track s.hora) {
-                                <li><button type="button" class="slot" (click)="elegirHora(s.hora)">{{ s.etiqueta }}</button></li>
+                                <li>
+                                  <button type="button" class="slot" (click)="elegirHora(s.hora)">
+                                    {{ s.etiqueta }}
+                                  </button>
+                                </li>
                               }
                             </ul>
                           }
@@ -286,7 +352,11 @@
                             <h3 class="slots-title">Tarde</h3>
                             <ul class="slots">
                               @for (s of h.tarde; track s.hora) {
-                                <li><button type="button" class="slot" (click)="elegirHora(s.hora)">{{ s.etiqueta }}</button></li>
+                                <li>
+                                  <button type="button" class="slot" (click)="elegirHora(s.hora)">
+                                    {{ s.etiqueta }}
+                                  </button>
+                                </li>
                               }
                             </ul>
                           }
@@ -301,7 +371,12 @@
         </li>
 
         <!-- Paso 4: motivo y confirmación -->
-        <li class="step card" [class.step-current]="paso() === 4" [attr.aria-current]="paso() === 4 ? 'step' : null" [attr.data-paso-actual]="paso() === 4 ? '' : null">
+        <li
+          class="step card"
+          [class.step-current]="paso() === 4"
+          [attr.aria-current]="paso() === 4 ? 'step' : null"
+          [attr.data-paso-actual]="paso() === 4 ? '' : null"
+        >
           <div class="step-head">
             <span class="step-num" aria-hidden="true">4</span>
             <div class="min-w-0 flex-1">
@@ -336,20 +411,53 @@
               } @else if (!auth.usuario()) {
                 <div class="mt-6 rounded-lg border border-dashed border-line bg-sunken p-4">
                   <p class="font-semibold">Para confirmar necesitas ingresar</p>
-                  <p class="mt-1 text-[0.9375rem] text-muted">Guardamos tu selección: al volver estarás en este mismo paso.</p>
+                  <p class="mt-1 text-[0.9375rem] text-muted">
+                    Guardamos tu selección: al volver estarás en este mismo paso.
+                  </p>
                   <div class="mt-4 flex flex-wrap gap-3">
-                    <a routerLink="/ingresar" [queryParams]="{ returnUrl: urlActual() }" class="btn btn-primary" (click)="saveDraft()">Ingresar para confirmar</a>
-                    <a routerLink="/registro" [queryParams]="{ returnUrl: urlActual() }" class="btn btn-secondary" (click)="saveDraft()">Crear cuenta</a>
+                    <a
+                      routerLink="/ingresar"
+                      [queryParams]="{ returnUrl: urlActual() }"
+                      class="btn btn-primary"
+                      (click)="saveDraft()"
+                      >Ingresar para confirmar</a
+                    >
+                    <a
+                      routerLink="/registro"
+                      [queryParams]="{ returnUrl: urlActual() }"
+                      class="btn btn-secondary"
+                      (click)="saveDraft()"
+                      >Crear cuenta</a
+                    >
                   </div>
                 </div>
               }
 
               @if (!auth.restoring() && !auth.isAdmin()) {
-                <form class="mt-6 grid gap-4" [formGroup]="form" (ngSubmit)="confirmar()" novalidate [attr.aria-busy]="submitting()">
-                  <app-field for="cita-motivo" label="Motivo de la consulta" [control]="form.controls.motivo" hint="Cuéntanos en pocas palabras por qué pides la cita (máximo 500 caracteres).">
-                    <textarea id="cita-motivo" class="field-control" rows="4" maxlength="500" formControlName="motivo"></textarea>
+                <form
+                  class="mt-6 grid gap-4"
+                  [formGroup]="form"
+                  (ngSubmit)="confirmar()"
+                  novalidate
+                  [attr.aria-busy]="submitting()"
+                >
+                  <app-field
+                    for="cita-motivo"
+                    label="Motivo de la consulta"
+                    [control]="form.controls.motivo"
+                    hint="Cuéntanos en pocas palabras por qué pides la cita (máximo 500 caracteres)."
+                  >
+                    <textarea
+                      id="cita-motivo"
+                      class="field-control"
+                      rows="4"
+                      maxlength="500"
+                      formControlName="motivo"
+                    ></textarea>
                   </app-field>
-                  <p class="-mt-2 text-right text-sm text-muted" aria-hidden="true">{{ form.controls.motivo.value.length }}/500</p>
+                  <p class="-mt-2 text-right text-sm text-muted" aria-hidden="true">
+                    {{ form.controls.motivo.value.length }}/500
+                  </p>
 
                   @if (formError(); as error) {
                     <p class="notice notice-error" role="alert">

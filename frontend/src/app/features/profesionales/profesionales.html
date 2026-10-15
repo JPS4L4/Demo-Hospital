@@ -14,7 +14,11 @@
     <div>
       <label class="field-label" for="filtro-q">Buscar por nombre</label>
       <div class="relative">
-        <app-icon name="search" [size]="18" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <app-icon
+          name="search"
+          [size]="18"
+          class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
         <input
           id="filtro-q"
           type="search"
@@ -31,12 +35,20 @@
       <label class="field-label" for="filtro-especialidad">Especialidad</label>
       <div class="relative">
         <select id="filtro-especialidad" class="field-control" (change)="onEspecialidad($event)">
-          <option value="" [selected]="query().especialidadId === null">Todas las especialidades</option>
+          <option value="" [selected]="query().especialidadId === null">
+            Todas las especialidades
+          </option>
           @for (e of especialidades(); track e.id) {
-            <option [value]="e.id" [selected]="e.id === query().especialidadId">{{ e.nombre }}</option>
+            <option [value]="e.id" [selected]="e.id === query().especialidadId">
+              {{ e.nombre }}
+            </option>
           }
         </select>
-        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <app-icon
+          name="chevron-down"
+          [size]="18"
+          class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
       </div>
     </div>
 
@@ -46,10 +58,16 @@
         <select id="filtro-sede" class="field-control" (change)="onSede($event)">
           <option value="" [selected]="query().sedeId === null">Todas las sedes</option>
           @for (s of sedes(); track s.id) {
-            <option [value]="s.id" [selected]="s.id === query().sedeId">{{ s.nombre }} · {{ s.ciudad }}</option>
+            <option [value]="s.id" [selected]="s.id === query().sedeId">
+              {{ s.nombre }} · {{ s.ciudad }}
+            </option>
           }
         </select>
-        <app-icon name="chevron-down" [size]="18" class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <app-icon
+          name="chevron-down"
+          [size]="18"
+          class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted"
+        />
       </div>
     </div>
   </form>

@@ -32,7 +32,13 @@ describe('Sedes', () => {
 
   it('renders a card per sede with a dialable phone and a map link', async () => {
     http.expectOne(URL).flush([
-      { id: 1, nombre: 'Sede Chapinero', direccion: 'Carrera 13 # 63-40', ciudad: 'Bogotá', telefono: '+57 601 555 0101' },
+      {
+        id: 1,
+        nombre: 'Sede Chapinero',
+        direccion: 'Carrera 13 # 63-40',
+        ciudad: 'Bogotá',
+        telefono: '+57 601 555 0101',
+      },
       { id: 2, nombre: 'Sede Sin Teléfono', direccion: 'Calle 1', ciudad: 'Cali', telefono: null },
     ]);
     await settle();
@@ -57,6 +63,8 @@ describe('Sedes', () => {
     http.expectOne(URL).error(new ProgressEvent('error'));
     await settle();
 
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar las sedes');
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar las sedes',
+    );
   });
 });

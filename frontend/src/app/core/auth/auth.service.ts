@@ -71,7 +71,9 @@ export class AuthService {
   }
 
   registro(datos: RegistroPayload): Observable<Usuario> {
-    return this.http.post<SesionResponse>(`${this.baseUrl}/registro`, datos).pipe(this.openSession());
+    return this.http
+      .post<SesionResponse>(`${this.baseUrl}/registro`, datos)
+      .pipe(this.openSession());
   }
 
   logout(): void {
@@ -92,7 +94,10 @@ export class AuthService {
           this.restored ??= Promise.resolve();
           this.tokenState.set(res.access_token);
           this.usuarioState.set(res.usuario);
-          this.writeStorage({ token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 });
+          this.writeStorage({
+            token: res.access_token,
+            expiresAt: Date.now() + res.expires_in * 1000,
+          });
         }),
         map((res) => res.usuario),
       );
@@ -119,7 +124,11 @@ export class AuthService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as Partial<StoredSession>;
-      if (typeof parsed.token === 'string' && typeof parsed.expiresAt === 'number' && parsed.expiresAt > Date.now()) {
+      if (
+        typeof parsed.token === 'string' &&
+        typeof parsed.expiresAt === 'number' &&
+        parsed.expiresAt > Date.now()
+      ) {
         return { token: parsed.token, expiresAt: parsed.expiresAt };
       }
     } catch {
