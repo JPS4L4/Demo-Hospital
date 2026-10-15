@@ -28,12 +28,8 @@
                 [checked]="vista() === v.value"
                 (change)="vista.set(v.value)"
               />
-              <span
-                >{{ v.label }}
-                @if (grupos(); as g) {
-                  ({{ g[v.value].length }})
-                }
-              </span>
+              <!-- prettier-ignore -->
+              <span>{{ v.label }}@if (grupos(); as g) { ({{ g[v.value].length }}) }</span>
             </label>
           }
         </div>
