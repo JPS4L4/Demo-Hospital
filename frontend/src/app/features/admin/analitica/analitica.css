@@ -70,6 +70,12 @@
 .kpi-label {
   white-space: nowrap;
 }
+/* Dos columnas: el quinto indicador ocupa la fila entera en vez de quedar solo. */
+@media (max-width: 39.99rem) {
+  .kpis > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
 @media (min-width: 40rem) {
   .kpis {
     grid-template-columns: repeat(6, minmax(0, 1fr));

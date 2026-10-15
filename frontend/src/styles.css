@@ -334,7 +334,8 @@
     flex: 1;
     display: grid;
     place-items: center;
-    padding-inline: 0.75rem;
+    /* Se estrecha en móvil para que cuatro opciones quepan sin recortarse. */
+    padding-inline: clamp(0.4rem, 2.2vw, 0.75rem);
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--muted);
