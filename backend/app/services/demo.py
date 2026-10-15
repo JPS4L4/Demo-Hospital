@@ -5,12 +5,13 @@ datos. Esta función devuelve la base al estado del seed en una sola transacció
 como un seed recién hecho o no cambia nada.
 """
 
+import asyncio
 import logging
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.core.database import Base
+from app.core.database import Base, SessionLocal
 from app.seed import sembrar
 
 logger = logging.getLogger("app.demo")
@@ -43,3 +44,23 @@ def reiniciar_demo(db: Session) -> bool:
         db.rollback()
         raise
     return True
+
+
+def reiniciar_demo_en_sesion_propia() -> bool:
+    """Abre su propia sesión (se ejecuta en un hilo, fuera del bucle de eventos) y reinicia."""
+    with SessionLocal() as db:
+        return reiniciar_demo(db)
+
+
+async def bucle_reinicio(intervalo_horas: float, reiniciar=reiniciar_demo_en_sesion_propia) -> None:
+    """Reinicia la demo cada `intervalo_horas`; el primer reinicio llega tras un intervalo, no al
+    arrancar. Un error se registra y el bucle sigue; solo la cancelación (apagado) lo detiene."""
+    while True:
+        await asyncio.sleep(intervalo_horas * 3600)
+        try:
+            if await asyncio.to_thread(reiniciar):
+                logger.info("Reinicio de la demo: hecho")
+            else:
+                logger.info("Reinicio de la demo: omitido (otro proceso ya lo está haciendo)")
+        except Exception:
+            logger.exception("Reinicio de la demo: falló; se reintentará en el siguiente intervalo")

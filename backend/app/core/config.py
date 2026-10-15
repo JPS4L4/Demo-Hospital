@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     demo_admin_password: str = Field("Admin-Demo-2026", min_length=8)
     demo_patient_password: str = Field("Paciente-Demo-2026", min_length=8)
 
+    # Reinicio periódico de la demo (variable DEMO_RESET_ENABLED): vacía la base y vuelve a sembrarla
+    # cada DEMO_RESET_INTERVAL_HORAS horas. Desactivado por defecto: borra TODOS los datos.
+    demo_reset_enabled: bool = False
+    demo_reset_interval_horas: float = Field(6, gt=0)
+
     class Config:
         env_file = ".env"
 

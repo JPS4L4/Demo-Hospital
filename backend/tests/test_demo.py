@@ -99,3 +99,87 @@ def test_si_el_seed_falla_no_se_pierde_nada(db, monkeypatch):
     else:
         raise AssertionError("debía propagar el error")
     assert _conteos(db) == antes
+
+
+# --- programación periódica ----------------------------------------------------------------
+
+
+def test_ajustes_por_defecto():
+    from app.core.config import Settings
+
+    ajustes = Settings(_env_file=None)
+    assert ajustes.demo_reset_enabled is False
+    assert ajustes.demo_reset_interval_horas == 6
+
+
+def test_intervalo_debe_ser_positivo():
+    import pytest
+    from pydantic import ValidationError
+
+    from app.core.config import Settings
+
+    for valor in (0, -1):
+        with pytest.raises(ValidationError):
+            Settings(_env_file=None, demo_reset_interval_horas=valor)
+
+
+def test_bucle_llama_al_reinicio_y_sobrevive_a_un_error():
+    import asyncio
+
+    from app.services.demo import bucle_reinicio
+
+    llamadas = []
+
+    def reiniciar():
+        llamadas.append(1)
+        if len(llamadas) == 1:
+            raise RuntimeError("fallo")
+        return len(llamadas) % 2 == 0
+
+    async def probar():
+        tarea = asyncio.create_task(bucle_reinicio(0.00001, reiniciar))
+        while len(llamadas) < 3:
+            await asyncio.sleep(0.01)
+        tarea.cancel()
+        await asyncio.gather(tarea, return_exceptions=True)
+        assert tarea.cancelled()
+
+    asyncio.run(asyncio.wait_for(probar(), timeout=10))
+    assert len(llamadas) >= 3
+
+
+def test_lifespan_no_lanza_tarea_si_esta_desactivado(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.main import app as api
+
+    creadas = []
+    monkeypatch.setattr("app.main.bucle_reinicio", lambda *a, **k: creadas.append(a))
+    with TestClient(api):
+        pass
+    assert creadas == []
+
+
+def test_lifespan_lanza_y_cancela_la_tarea_si_esta_activado(monkeypatch):
+    import asyncio
+
+    from fastapi.testclient import TestClient
+
+    from app.main import app as api
+
+    estado = {"intervalo": None, "cancelada": False}
+
+    async def falso_bucle(intervalo):
+        estado["intervalo"] = intervalo
+        try:
+            await asyncio.sleep(3600)
+        except asyncio.CancelledError:
+            estado["cancelada"] = True
+            raise
+
+    monkeypatch.setattr("app.main.bucle_reinicio", falso_bucle)
+    monkeypatch.setattr("app.main.settings.demo_reset_enabled", True)
+    monkeypatch.setattr("app.main.settings.demo_reset_interval_horas", 2)
+    with TestClient(api):
+        pass
+    assert estado == {"intervalo": 2, "cancelada": True}

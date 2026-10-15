@@ -1,4 +1,6 @@
+import asyncio
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,11 +23,30 @@ from app.routers import (
     profesionales,
     sedes,
 )
+from app.services.demo import bucle_reinicio
 
 configurar_logging()
 logger = logging.getLogger("app")
 
-app = FastAPI(title="Hospital API")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Si DEMO_RESET_ENABLED está activo, lanza el reinicio periódico de la demo y lo cancela al apagar."""
+    tarea = None
+    if settings.demo_reset_enabled:
+        tarea = asyncio.create_task(bucle_reinicio(settings.demo_reset_interval_horas))
+        logger.info(
+            "Reinicio periódico de la demo activado: cada %s h", settings.demo_reset_interval_horas
+        )
+    try:
+        yield
+    finally:
+        if tarea is not None:
+            tarea.cancel()
+            await asyncio.gather(tarea, return_exceptions=True)
+
+
+app = FastAPI(title="Hospital API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
