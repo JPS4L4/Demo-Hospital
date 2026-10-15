@@ -1,5 +1,7 @@
 # Demo Hospital
 
+[![CI](https://github.com/JPS4L4/Demo-Hospital/actions/workflows/ci.yml/badge.svg)](https://github.com/JPS4L4/Demo-Hospital/actions/workflows/ci.yml)
+
 Demo de un sitio web de hospital para mostrar un stack **Python + Angular**: una API REST en FastAPI con PostgreSQL y un frontend en Angular. Es un proyecto de demostración en construcción, no un sistema clínico real.
 
 ## Stack
@@ -180,9 +182,28 @@ pytest -q
 
 Las pruebas usan una base PostgreSQL aparte, `hospital_test`, en el mismo servidor que `DATABASE_URL`: se crea sola si no existe, sus tablas se generan al empezar y se vacían tras cada prueba, así que **nunca tocan los datos de desarrollo**. Si quieres otra, define `TEST_DATABASE_URL` (el nombre de la base debe terminar en `_test`). El usuario necesita permiso para crear bases de datos (el usuario de `docker-compose.yml` lo tiene).
 
+## Lint y formato
+
+Backend (desde `backend/`, con el entorno virtual activo; usa [ruff](https://docs.astral.sh/ruff/), configurado en `backend/pyproject.toml`):
+
+```bash
+ruff check .          # lint (añade --fix para corregir lo automático)
+ruff format .         # formatea
+ruff format --check . # solo comprueba el formato
+```
+
+Frontend (desde `frontend/`; ESLint con angular-eslint y Prettier):
+
+```bash
+npm run lint          # ESLint
+npm run format        # Prettier, reescribe los archivos
+npm run format:check  # Prettier, solo comprueba
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) ejecuta todo esto en cada push a `main` y en cada pull request: en el backend `ruff check`, `ruff format --check` y `pytest` (con un PostgreSQL 16 como servicio); en el frontend `npm run lint`, `npm run format:check`, `npm test` y `npm run build`.
+
 ## Hoja de ruta
 
 - Páginas de profesionales y medicamentos en el frontend
 - Login, reserva de citas y panel de administración en el frontend
-- CI
 - Despliegue
