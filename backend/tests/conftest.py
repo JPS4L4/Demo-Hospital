@@ -74,6 +74,9 @@ def engine():
     _crear_base_si_falta()
     eng = create_engine(TEST_URL)
     Base.metadata.drop_all(eng)
+    # Las restricciones EXCLUDE de citas necesitan btree_gist (la migración también la crea)
+    with eng.begin() as con:
+        con.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
     Base.metadata.create_all(eng)
     yield eng
     eng.dispose()

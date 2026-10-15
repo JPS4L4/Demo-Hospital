@@ -6,6 +6,19 @@ from alembic import context
 from app.core.config import settings
 from app.core.database import Base
 
+# Registrar todos los modelos en Base.metadata: sin esto, autogenerate y `alembic check`
+# verían un esquema vacío.
+from app.models import (  # noqa: F401
+    cita,
+    especialidad,
+    medicamento,
+    noticia,
+    paciente,
+    profesional,
+    sede,
+    usuario,
+)
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

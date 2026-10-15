@@ -7,7 +7,9 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    text,
 )
+from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -19,6 +21,23 @@ class Cita(Base):
         CheckConstraint("estado IN ('programada','cancelada','atendida')", name="ck_citas_estado"),
         CheckConstraint("duracion_min IN (20,30,40,60)", name="ck_citas_duracion"),
         CheckConstraint("fin > inicio", name="ck_citas_fin"),
+        # Última defensa contra la doble reserva (validar_agenda ya la evita con FOR UPDATE):
+        # la base rechaza dos citas no canceladas que se solapen para el mismo profesional o
+        # paciente. El rango es [inicio, fin), así que citas contiguas no chocan.
+        ExcludeConstraint(
+            ("profesional_id", "="),
+            (text("tstzrange(inicio, fin)"), "&&"),
+            where=text("estado <> 'cancelada'"),
+            using="gist",
+            name="ex_citas_profesional_solape",
+        ),
+        ExcludeConstraint(
+            ("paciente_id", "="),
+            (text("tstzrange(inicio, fin)"), "&&"),
+            where=text("estado <> 'cancelada'"),
+            using="gist",
+            name="ex_citas_paciente_solape",
+        ),
     )
 
     id = Column(Integer, Identity(always=False), primary_key=True, index=True)
