@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (ruff + pytest)
+    name: Backend (ruff + migrations + pytest)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -36,6 +36,8 @@ jobs:
     env:
       # conftest cambia el nombre de la base a hospital_test y la crea si falta
       DATABASE_URL: postgresql://hospital:hospital@localhost:5432/hospital_db
+      # La configuración exige un secreto; este solo vale para el job (alembic importa la app)
+      JWT_SECRET: ci-only-secret-0123456789abcdefghijklmnop
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,6 +51,10 @@ jobs:
         run: ruff check .
       - name: Format check
         run: ruff format --check .
+      - name: Migrations apply on an empty database
+        run: alembic upgrade head
+      - name: Models and migrations are in sync
+        run: alembic check
       - name: Tests
         run: pytest -q
 
