@@ -38,6 +38,8 @@ os.environ["DATABASE_URL"] = TEST_URL
 # Secreto propio de las pruebas (nunca el de un entorno real)
 os.environ["JWT_SECRET"] = "secreto-solo-para-pruebas-0123456789abcdef"
 os.environ["JWT_EXPIRE_MINUTES"] = "60"
+# Las pruebas hacen muchos logins seguidos: el límite se activa solo en test_ratelimit.py
+os.environ["RATE_LIMIT_ENABLED"] = "false"
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
