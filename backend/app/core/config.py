@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     # Orígenes permitidos por CORS, separados por comas (variable CORS_ORIGINS)
     cors_origins: str = "http://localhost:4200"
 
+    # Nivel de registro de la aplicación: DEBUG, INFO, WARNING, ERROR (variable LOG_LEVEL)
+    log_level: str = "INFO"
+
     # Firma de los tokens JWT (variable JWT_SECRET). Obligatoria, mínimo 32 caracteres;
     # no tiene valor por defecto a propósito. Genera uno con: python -c "import secrets; print(secrets.token_urlsafe(48))"
     jwt_secret: str = Field(min_length=32)
