@@ -71,6 +71,10 @@
       <p class="mt-2 text-[0.9375rem] text-muted">
         Este es un sitio de demostración. Usa una de estas cuentas para explorarlo sin registrarte.
       </p>
+      <p class="notice notice-info mt-4 text-[0.9375rem]" data-testid="demo-reset-notice">
+        <app-icon name="info" [size]="18" class="mt-0.5" />
+        Los datos de la demo se reinician cada pocas horas: lo que crees o borres no es permanente.
+      </p>
       <ul class="mt-4 grid gap-3">
         @for (account of demoAccounts; track account.email) {
           <li class="rounded-lg border border-line bg-surface p-4">

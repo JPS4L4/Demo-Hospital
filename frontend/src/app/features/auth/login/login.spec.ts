@@ -154,6 +154,11 @@ describe('Login', () => {
     expect(input('login-password').value).toBe('Paciente-Demo-2026');
   });
 
+  it('warns that the demo data is reset periodically', () => {
+    const notice = el.querySelector('aside [data-testid="demo-reset-notice"]');
+    expect(notice?.textContent).toContain('Los datos de la demo se reinician');
+  });
+
   it('explains a session that expired', async () => {
     fixture.componentRef.setInput('sesion', 'expirada');
     await fixture.whenStable();
