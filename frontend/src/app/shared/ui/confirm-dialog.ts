@@ -9,6 +9,8 @@ import { Icon } from './icon';
   selector: 'app-confirm-dialog',
   imports: [Icon],
   template: `
+    <!-- Clic en el fondo es solo un atajo de ratón; con teclado se cierra con Esc (cancel nativo). -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <dialog
       #dialog
       class="confirm"
