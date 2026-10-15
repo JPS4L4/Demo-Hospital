@@ -31,8 +31,12 @@ def listar_citas(
     paciente_id: int | None = None,
     profesional_id: int | None = None,
     estado: EstadoCita | None = None,
-    desde: datetime | None = Query(None, description="Citas que empiezan desde este instante (sin zona = hora de Bogotá)"),
-    hasta: datetime | None = Query(None, description="Citas que empiezan hasta este instante (inclusive)"),
+    desde: datetime | None = Query(
+        None, description="Citas que empiezan desde este instante (sin zona = hora de Bogotá)"
+    ),
+    hasta: datetime | None = Query(
+        None, description="Citas que empiezan hasta este instante (inclusive)"
+    ),
     params: PageParams = Depends(),
     usuario: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -57,12 +61,16 @@ def listar_citas(
 
 
 @router.get("/{cita_id}", response_model=CitaOut)
-def obtener_cita(cita_id: int, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+def obtener_cita(
+    cita_id: int, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)
+):
     return _cita_visible(db, usuario, cita_id)
 
 
 @router.post("", response_model=CitaOut, status_code=201)
-def crear_cita(datos: CitaCreate, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+def crear_cita(
+    datos: CitaCreate, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)
+):
     if usuario.rol == "admin":
         if datos.paciente_id is None:
             raise HTTPException(422, "Indica el paciente de la cita")
@@ -96,7 +104,9 @@ def actualizar_cita(cita_id: int, datos: CitaUpdate, db: Session = Depends(get_d
     """Reprograma o edita una cita programada. Solo se aplican los campos enviados."""
     cita = obtener_o_404(db, Cita, cita_id, NO_ENCONTRADA)
     if cita.estado != "programada":
-        raise HTTPException(409, f"Solo se pueden modificar citas programadas (esta está {cita.estado})")
+        raise HTTPException(
+            409, f"Solo se pueden modificar citas programadas (esta está {cita.estado})"
+        )
 
     cambios = datos.model_dump(exclude_unset=True)
     nuevo = {
@@ -125,7 +135,9 @@ def actualizar_cita(cita_id: int, datos: CitaUpdate, db: Session = Depends(get_d
 
 
 @router.post("/{cita_id}/cancelar", response_model=CitaOut)
-def cancelar_cita(cita_id: int, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+def cancelar_cita(
+    cita_id: int, usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Cancela la cita y libera el horario. Cancelar una cita ya cancelada no cambia nada.
     El admin cancela cualquiera; el paciente solo las suyas."""
     cita = _cita_visible(db, usuario, cita_id)

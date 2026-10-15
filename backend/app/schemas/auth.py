@@ -10,7 +10,9 @@ Contrasena = Annotated[str, StringConstraints(min_length=8, max_length=128)]
 
 
 class LoginIn(OrmModel):
-    email: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, min_length=1, max_length=254)]
+    email: Annotated[
+        str, StringConstraints(strip_whitespace=True, to_lower=True, min_length=1, max_length=254)
+    ]
     password: Annotated[str, StringConstraints(min_length=1, max_length=128)]
 
 

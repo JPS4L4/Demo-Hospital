@@ -40,7 +40,9 @@ def obtener_medicamento(medicamento_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Medicamento, medicamento_id, NO_ENCONTRADO)
 
 
-@router.post("", response_model=MedicamentoOut, status_code=201, dependencies=[Depends(require_admin)])
+@router.post(
+    "", response_model=MedicamentoOut, status_code=201, dependencies=[Depends(require_admin)]
+)
 def crear_medicamento(datos: MedicamentoBase, db: Session = Depends(get_db)):
     nuevo = Medicamento(**datos.model_dump())
     db.add(nuevo)
@@ -49,8 +51,12 @@ def crear_medicamento(datos: MedicamentoBase, db: Session = Depends(get_db)):
     return nuevo
 
 
-@router.put("/{medicamento_id}", response_model=MedicamentoOut, dependencies=[Depends(require_admin)])
-def actualizar_medicamento(medicamento_id: int, datos: MedicamentoBase, db: Session = Depends(get_db)):
+@router.put(
+    "/{medicamento_id}", response_model=MedicamentoOut, dependencies=[Depends(require_admin)]
+)
+def actualizar_medicamento(
+    medicamento_id: int, datos: MedicamentoBase, db: Session = Depends(get_db)
+):
     medicamento = obtener_o_404(db, Medicamento, medicamento_id, NO_ENCONTRADO)
     for campo, valor in datos.model_dump().items():
         setattr(medicamento, campo, valor)

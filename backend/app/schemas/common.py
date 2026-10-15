@@ -2,7 +2,14 @@ import re
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, PlainSerializer, StringConstraints
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    PlainSerializer,
+    StringConstraints,
+)
 
 
 class OrmModel(BaseModel):
@@ -10,7 +17,9 @@ class OrmModel(BaseModel):
 
 
 def texto(max_length: int = 200):
-    return Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=max_length)]
+    return Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=max_length)
+    ]
 
 
 def _normalizar_telefono(valor: str) -> str:

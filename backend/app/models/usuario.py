@@ -1,4 +1,16 @@
-from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, ForeignKey, Identity, Integer, String, UniqueConstraint, func, true
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+    true,
+)
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -10,7 +22,9 @@ class Usuario(Base):
         UniqueConstraint("paciente_id", name="uq_usuarios_paciente"),
         CheckConstraint("rol IN ('paciente','admin')", name="ck_usuarios_rol"),
         CheckConstraint("email = lower(email)", name="ck_usuarios_email_minusculas"),
-        CheckConstraint("rol <> 'paciente' OR paciente_id IS NOT NULL", name="ck_usuarios_paciente_requerido"),
+        CheckConstraint(
+            "rol <> 'paciente' OR paciente_id IS NOT NULL", name="ck_usuarios_paciente_requerido"
+        ),
     )
 
     id = Column(Integer, Identity(always=False), primary_key=True, index=True)

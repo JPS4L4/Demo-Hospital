@@ -1,4 +1,14 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Identity, Integer, String, Text, UniqueConstraint, true
+from sqlalchemy import (
+    Boolean,
+    Column,
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    true,
+)
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 

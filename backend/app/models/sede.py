@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer,Identity, String
+from sqlalchemy import Column, Integer, Identity, String
 from app.core.database import Base
+
 
 class Sede(Base):
     __tablename__ = "sedes"

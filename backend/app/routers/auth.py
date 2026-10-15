@@ -21,7 +21,12 @@ CREDENCIALES_INVALIDAS = "Correo o contraseña incorrectos"
 
 def _respuesta_token(usuario: Usuario) -> dict:
     token, expira_en = crear_token(usuario.id)
-    return {"access_token": token, "token_type": "bearer", "expires_in": expira_en, "usuario": usuario}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": expira_en,
+        "usuario": usuario,
+    }
 
 
 @router.post("/registro", response_model=TokenOut, status_code=201)

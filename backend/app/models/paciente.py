@@ -7,7 +7,9 @@ class Paciente(Base):
     __table_args__ = (
         UniqueConstraint("tipo_documento", "numero_documento", name="uq_pacientes_documento"),
         UniqueConstraint("email", name="uq_pacientes_email"),
-        CheckConstraint("tipo_documento IN ('CC','TI','CE','PA')", name="ck_pacientes_tipo_documento"),
+        CheckConstraint(
+            "tipo_documento IN ('CC','TI','CE','PA')", name="ck_pacientes_tipo_documento"
+        ),
     )
 
     id = Column(Integer, Identity(always=False), primary_key=True, index=True)

@@ -9,6 +9,7 @@
 `huecos_libres` aplica estas mismas reglas (constantes, horario, solapes) para ofrecer solo
 horarios que `validar_agenda` aceptaría, de modo que la reserva y la disponibilidad no discrepen.
 """
+
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -51,11 +52,14 @@ def validar_horario(inicio: datetime, fin: datetime) -> None:
         raise HTTPException(409, "No hay atención los domingos: elige un día de lunes a sábado")
     if ini.date() != fi.date() or ini.time() < APERTURA or fi.time() > CIERRE:
         raise HTTPException(
-            409, "La cita debe estar dentro del horario de atención: lunes a sábado, de 7:00 a. m. a 7:00 p. m."
+            409,
+            "La cita debe estar dentro del horario de atención: lunes a sábado, de 7:00 a. m. a 7:00 p. m.",
         )
 
 
-def _hay_solape(db: Session, columna, valor: int, inicio: datetime, fin: datetime, excluir_id: int | None) -> bool:
+def _hay_solape(
+    db: Session, columna, valor: int, inicio: datetime, fin: datetime, excluir_id: int | None
+) -> bool:
     stmt = select(Cita.id).where(
         columna == valor,
         Cita.estado != "cancelada",
@@ -101,7 +105,11 @@ def validar_sede(profesional: Profesional, sede_id: int | None) -> int:
 
 
 def huecos_libres(
-    db: Session, profesional: Profesional, dia: date, duracion_min: int, ahora: datetime | None = None
+    db: Session,
+    profesional: Profesional,
+    dia: date,
+    duracion_min: int,
+    ahora: datetime | None = None,
 ) -> list[tuple[datetime, datetime]]:
     """Huecos (inicio, fin) libres del profesional en `dia` (hora de Bogotá), uno cada `duracion_min` minutos.
 

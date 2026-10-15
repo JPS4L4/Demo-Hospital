@@ -11,7 +11,9 @@ TipoDocumento = Literal["CC", "TI", "CE", "PA"]
 def _validar_documento(valor: str) -> str:
     valor = valor.strip().upper()
     if not valor.isalnum() or not 4 <= len(valor) <= 30 or not valor.isascii():
-        raise ValueError("El número de documento debe tener entre 4 y 30 letras o dígitos, sin espacios")
+        raise ValueError(
+            "El número de documento debe tener entre 4 y 30 letras o dígitos, sin espacios"
+        )
     return valor
 
 

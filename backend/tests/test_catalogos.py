@@ -7,6 +7,7 @@ def test_health(client):
 
 # --- sedes y noticias: listas simples + CRUD ---------------------------------------------------
 
+
 def test_sedes_lista_sigue_siendo_array_con_limit_offset_opcionales(client, crear):
     for _ in range(3):
         crear.sede()
@@ -20,21 +21,31 @@ def test_sedes_lista_sigue_siendo_array_con_limit_offset_opcionales(client, crea
 
 
 def test_sede_crud_completo(client):
-    r = client.post("/sedes", json={"nombre": " Sede Norte ", "direccion": "Av 1", "ciudad": "Cali"})
+    r = client.post(
+        "/sedes", json={"nombre": " Sede Norte ", "direccion": "Av 1", "ciudad": "Cali"}
+    )
     assert r.status_code == 201
     sede = r.json()
     assert sede["nombre"] == "Sede Norte" and sede["telefono"] is None
-    r = client.put(f"/sedes/{sede['id']}", json={"nombre": "Sede Sur", "direccion": "Av 2", "ciudad": "Cali"})
+    r = client.put(
+        f"/sedes/{sede['id']}", json={"nombre": "Sede Sur", "direccion": "Av 2", "ciudad": "Cali"}
+    )
     assert r.status_code == 200 and r.json()["nombre"] == "Sede Sur"
     assert client.get(f"/sedes/{sede['id']}").json()["direccion"] == "Av 2"
     assert client.delete(f"/sedes/{sede['id']}").status_code == 204
     assert client.get(f"/sedes/{sede['id']}").status_code == 404
-    assert client.put("/sedes/999", json={"nombre": "x", "direccion": "x", "ciudad": "x"}).status_code == 404
+    assert (
+        client.put("/sedes/999", json={"nombre": "x", "direccion": "x", "ciudad": "x"}).status_code
+        == 404
+    )
     assert client.delete("/sedes/999").status_code == 404
 
 
 def test_sede_validacion_422(client):
-    assert client.post("/sedes", json={"nombre": "  ", "direccion": "x", "ciudad": "x"}).status_code == 422
+    assert (
+        client.post("/sedes", json={"nombre": "  ", "direccion": "x", "ciudad": "x"}).status_code
+        == 422
+    )
     assert client.post("/sedes", json={"nombre": "x"}).status_code == 422
 
 
@@ -63,6 +74,7 @@ def test_noticias_lista_array_orden_y_crud(client):
 
 
 # --- especialidades -----------------------------------------------------------------------------
+
 
 def test_especialidades_crud_y_unicidad(client):
     r = client.post("/especialidades", json={"nombre": "Cardiología", "descripcion": "Corazón"})
@@ -102,10 +114,13 @@ def test_especialidad_con_profesionales_no_se_elimina(client, crear):
 
 # --- profesionales ------------------------------------------------------------------------------
 
+
 def test_profesional_detalle_incluye_especialidad_y_sede(client, crear):
     esp = crear.especialidad(nombre="Cardiología")
     sede = crear.sede(nombre="Sede Chapinero", ciudad="Bogotá")
-    prof = crear.profesional(especialidad_id=esp["id"], sede_id=sede["id"], bio="Bio corta", telefono="+57 300 123 4567")
+    prof = crear.profesional(
+        especialidad_id=esp["id"], sede_id=sede["id"], bio="Bio corta", telefono="+57 300 123 4567"
+    )
     det = client.get(f"/profesionales/{prof['id']}").json()
     assert det["especialidad"] == {"id": esp["id"], "nombre": "Cardiología"}
     assert det["sede"] == {"id": sede["id"], "nombre": "Sede Chapinero", "ciudad": "Bogotá"}
@@ -123,11 +138,17 @@ def test_profesionales_filtros_y_paginacion(client, crear):
 
     todos = client.get("/profesionales").json()
     assert todos["total"] == 3 and todos["limit"] == 20 and len(todos["items"]) == 3
-    assert client.get("/profesionales", params={"especialidad_id": cardio["id"]}).json()["total"] == 2
+    assert (
+        client.get("/profesionales", params={"especialidad_id": cardio["id"]}).json()["total"] == 2
+    )
     assert client.get("/profesionales", params={"sede_id": s1["id"]}).json()["total"] == 2
-    ambos = client.get("/profesionales", params={"especialidad_id": cardio["id"], "sede_id": s1["id"]}).json()
+    ambos = client.get(
+        "/profesionales", params={"especialidad_id": cardio["id"], "sede_id": s1["id"]}
+    ).json()
     assert [p["apellidos"] for p in ambos["items"]] == ["Zapata"]
-    assert [p["apellidos"] for p in client.get("/profesionales", params={"q": "mar"}).json()["items"]] == ["Rojas"]
+    assert [
+        p["apellidos"] for p in client.get("/profesionales", params={"q": "mar"}).json()["items"]
+    ] == ["Rojas"]
     assert client.get("/profesionales", params={"q": "ana zap"}).json()["total"] == 1
     assert client.get("/profesionales", params={"q": "100%"}).json()["total"] == 0
     pag = client.get("/profesionales", params={"limit": 1, "offset": 1}).json()
@@ -138,26 +159,64 @@ def test_profesionales_filtros_y_paginacion(client, crear):
 
 def test_profesional_registro_unico_y_validaciones(client, crear):
     prof = crear.profesional(registro_profesional="RM-1")
-    base = {k: prof[k] for k in ("nombres", "apellidos", "especialidad_id", "sede_id", "registro_profesional", "email")}
+    base = {
+        k: prof[k]
+        for k in (
+            "nombres",
+            "apellidos",
+            "especialidad_id",
+            "sede_id",
+            "registro_profesional",
+            "email",
+        )
+    }
     dup = client.post("/profesionales", json=base)
     assert dup.status_code == 409 and "registro" in dup.json()["detail"]
-    assert client.post("/profesionales", json=base | {"registro_profesional": "RM-2", "email": "no-es-email"}).status_code == 422
-    assert client.post("/profesionales", json=base | {"registro_profesional": "RM-2", "telefono": "abc"}).status_code == 422
-    assert client.post("/profesionales", json=base | {"registro_profesional": "RM-2", "especialidad_id": 999}).status_code == 422
-    assert client.post("/profesionales", json=base | {"registro_profesional": "RM-2", "sede_id": 999}).status_code == 422
+    assert (
+        client.post(
+            "/profesionales", json=base | {"registro_profesional": "RM-2", "email": "no-es-email"}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/profesionales", json=base | {"registro_profesional": "RM-2", "telefono": "abc"}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/profesionales", json=base | {"registro_profesional": "RM-2", "especialidad_id": 999}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/profesionales", json=base | {"registro_profesional": "RM-2", "sede_id": 999}
+        ).status_code
+        == 422
+    )
     assert client.post("/profesionales", json={"nombres": "x"}).status_code == 422
 
 
 def test_profesional_actualizar_y_eliminar(client, crear):
     prof = crear.profesional()
     cambios = {
-        "nombres": "Nuevo", "apellidos": prof["apellidos"], "especialidad_id": prof["especialidad_id"],
-        "sede_id": prof["sede_id"], "registro_profesional": prof["registro_profesional"],
-        "email": "NUEVO@Example.com", "activo": False,
+        "nombres": "Nuevo",
+        "apellidos": prof["apellidos"],
+        "especialidad_id": prof["especialidad_id"],
+        "sede_id": prof["sede_id"],
+        "registro_profesional": prof["registro_profesional"],
+        "email": "NUEVO@Example.com",
+        "activo": False,
     }
     r = client.put(f"/profesionales/{prof['id']}", json=cambios)
     assert r.status_code == 200
-    assert r.json()["nombres"] == "Nuevo" and r.json()["activo"] is False and r.json()["email"] == "nuevo@example.com"
+    assert (
+        r.json()["nombres"] == "Nuevo"
+        and r.json()["activo"] is False
+        and r.json()["email"] == "nuevo@example.com"
+    )
     assert client.put("/profesionales/999", json=cambios).status_code == 404
     assert client.get("/profesionales", params={"activo": "true"}).json()["total"] == 0
     assert client.delete(f"/profesionales/{prof['id']}").status_code == 204

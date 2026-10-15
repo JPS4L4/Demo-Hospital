@@ -1,4 +1,5 @@
 """Medicamentos (tarea D2)."""
+
 import pytest
 
 BASE = {
@@ -21,8 +22,16 @@ def crear(client, **kw):
 def test_crud_y_forma_de_respuesta(client):
     med = crear(client)
     assert med["precio"] == 8500.5 and isinstance(med["precio"], float)
-    assert {"id", "nombre", "principio_activo", "presentacion", "concentracion",
-            "requiere_formula", "stock", "precio"} == set(med)
+    assert {
+        "id",
+        "nombre",
+        "principio_activo",
+        "presentacion",
+        "concentracion",
+        "requiere_formula",
+        "stock",
+        "precio",
+    } == set(med)
     assert client.get(f"/medicamentos/{med['id']}").json() == med
     r = client.put(f"/medicamentos/{med['id']}", json=BASE | {"stock": 7, "requiere_formula": True})
     assert r.status_code == 200 and r.json()["stock"] == 7 and r.json()["requiere_formula"] is True
@@ -53,7 +62,10 @@ def test_campos_requeridos(client):
 
 
 def test_defaults(client):
-    minimo = {k: BASE[k] for k in ("nombre", "principio_activo", "presentacion", "concentracion", "precio")}
+    minimo = {
+        k: BASE[k]
+        for k in ("nombre", "principio_activo", "presentacion", "concentracion", "precio")
+    }
     r = client.post("/medicamentos", json=minimo)
     assert r.status_code == 201
     assert r.json()["stock"] == 0 and r.json()["requiere_formula"] is False
@@ -62,7 +74,12 @@ def test_defaults(client):
 def test_busqueda_filtro_y_paginacion(client):
     crear(client, nombre="Acetaminofén", principio_activo="Paracetamol")
     crear(client, nombre="Ibuprofeno", principio_activo="Ibuprofeno")
-    crear(client, nombre="Amoxicilina", principio_activo="Amoxicilina trihidrato", requiere_formula=True)
+    crear(
+        client,
+        nombre="Amoxicilina",
+        principio_activo="Amoxicilina trihidrato",
+        requiere_formula=True,
+    )
     crear(client, nombre="Dolex", principio_activo="Paracetamol")
 
     todos = client.get("/medicamentos").json()
@@ -78,7 +95,9 @@ def test_busqueda_filtro_y_paginacion(client):
     con_formula = client.get("/medicamentos", params={"requiere_formula": "true"}).json()
     assert [m["nombre"] for m in con_formula["items"]] == ["Amoxicilina"]
     assert client.get("/medicamentos", params={"requiere_formula": "false"}).json()["total"] == 3
-    combinado = client.get("/medicamentos", params={"requiere_formula": "false", "q": "paracetamol"}).json()
+    combinado = client.get(
+        "/medicamentos", params={"requiere_formula": "false", "q": "paracetamol"}
+    ).json()
     assert combinado["total"] == 2
 
     pag = client.get("/medicamentos", params={"limit": 2, "offset": 2}).json()

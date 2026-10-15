@@ -1,4 +1,5 @@
 """Matriz de autorización: 401 sin sesión, 403 con el rol equivocado, 404 para lo ajeno."""
+
 from datetime import timedelta
 
 import pytest
@@ -9,8 +10,17 @@ from conftest import CONTRASENA
 LUNES = 0
 
 PUBLICAS = [
-    "/health", "/sedes", "/sedes/1", "/noticias", "/noticias/1", "/especialidades", "/especialidades/1",
-    "/profesionales", "/profesionales/1", "/profesionales/1/disponibilidad?fecha=2999-01-04", "/medicamentos",
+    "/health",
+    "/sedes",
+    "/sedes/1",
+    "/noticias",
+    "/noticias/1",
+    "/especialidades",
+    "/especialidades/1",
+    "/profesionales",
+    "/profesionales/1",
+    "/profesionales/1/disponibilidad?fecha=2999-01-04",
+    "/medicamentos",
     "/medicamentos/1",
 ]
 ESCRITURAS_ADMIN = [
@@ -19,13 +29,27 @@ ESCRITURAS_ADMIN = [
     for m in ("POST", "PUT", "DELETE")
 ]
 SOLO_ADMIN = [
-    ("GET", "/pacientes"), ("POST", "/pacientes"), ("DELETE", "/pacientes/1"),
-    ("PUT", "/citas/1"), ("DELETE", "/citas/1"),
+    ("GET", "/pacientes"),
+    ("POST", "/pacientes"),
+    ("DELETE", "/pacientes/1"),
+    ("PUT", "/citas/1"),
+    ("DELETE", "/citas/1"),
 ]
-PROTEGIDAS = ESCRITURAS_ADMIN + SOLO_ADMIN + [
-    ("GET", "/pacientes/1"), ("PUT", "/pacientes/1"), ("GET", "/pacientes/me"), ("PUT", "/pacientes/me"),
-    ("GET", "/citas"), ("GET", "/citas/1"), ("POST", "/citas"), ("POST", "/citas/1/cancelar"), ("GET", "/auth/me"),
-]
+PROTEGIDAS = (
+    ESCRITURAS_ADMIN
+    + SOLO_ADMIN
+    + [
+        ("GET", "/pacientes/1"),
+        ("PUT", "/pacientes/1"),
+        ("GET", "/pacientes/me"),
+        ("PUT", "/pacientes/me"),
+        ("GET", "/citas"),
+        ("GET", "/citas/1"),
+        ("POST", "/citas"),
+        ("POST", "/citas/1/cancelar"),
+        ("GET", "/auth/me"),
+    ]
+)
 
 
 def con_cuerpo(metodo):
@@ -58,11 +82,17 @@ def test_admin_escribe_catalogo(client):
 
 # --- pacientes ---------------------------------------------------------------------------------
 
+
 def ficha_de(usuario):
     p = usuario.paciente
     return {
-        "tipo_documento": p.tipo_documento, "numero_documento": p.numero_documento, "nombres": p.nombres,
-        "apellidos": p.apellidos, "fecha_nacimiento": "1992-03-04", "email": p.email, "telefono": p.telefono,
+        "tipo_documento": p.tipo_documento,
+        "numero_documento": p.numero_documento,
+        "nombres": p.nombres,
+        "apellidos": p.apellidos,
+        "fecha_nacimiento": "1992-03-04",
+        "email": p.email,
+        "telefono": p.telefono,
     }
 
 
@@ -76,14 +106,20 @@ def test_paciente_ve_y_edita_solo_su_ficha(cuenta_paciente, cliente_de):
 
     r = c.put("/pacientes/me", json=ficha_de(yo) | {"nombres": "Renombrada", "eps": "EPS Ficticia"})
     assert r.status_code == 200 and r.json()["nombres"] == "Renombrada"
-    assert c.put(f"/pacientes/{yo.paciente_id}", json=ficha_de(yo) | {"eps": None}).json()["eps"] is None
+    assert (
+        c.put(f"/pacientes/{yo.paciente_id}", json=ficha_de(yo) | {"eps": None}).json()["eps"]
+        is None
+    )
 
 
 def test_cambiar_el_correo_de_la_ficha_cambia_el_de_acceso(anon, cuenta_paciente, cliente_de):
     yo, otro = cuenta_paciente(), cuenta_paciente()
     c = cliente_de(yo)
     assert c.put("/pacientes/me", json=ficha_de(yo) | {"email": otro.email}).status_code == 409
-    assert c.put("/pacientes/me", json=ficha_de(yo) | {"email": "Nuevo@Example.com"}).status_code == 200
+    assert (
+        c.put("/pacientes/me", json=ficha_de(yo) | {"email": "Nuevo@Example.com"}).status_code
+        == 200
+    )
     login = anon.post("/auth/login", json={"email": "nuevo@example.com", "password": CONTRASENA})
     assert login.status_code == 200 and login.json()["usuario"]["email"] == "nuevo@example.com"
 
@@ -97,10 +133,14 @@ def test_admin_gestiona_pacientes_y_borrar_la_ficha_borra_la_cuenta(client, cuen
     assert client.get("/pacientes").json()["total"] == 1
     assert client.get(f"/pacientes/{usuario.paciente_id}").status_code == 200
     assert client.delete(f"/pacientes/{usuario.paciente_id}").status_code == 204
-    assert anon.post("/auth/login", json={"email": usuario.email, "password": CONTRASENA}).status_code == 401
+    assert (
+        anon.post("/auth/login", json={"email": usuario.email, "password": CONTRASENA}).status_code
+        == 401
+    )
 
 
 # --- citas -------------------------------------------------------------------------------------
+
 
 @pytest.fixture
 def agenda(client, crear):
@@ -130,7 +170,12 @@ def test_paciente_no_reserva_para_otro_403(cuenta_paciente, cliente_de, agenda):
 def test_admin_debe_indicar_el_paciente(client, agenda, cuenta_paciente):
     assert client.post("/citas", json=cuerpo(agenda, dia_futuro(LUNES, 10))).status_code == 422
     pid = cuenta_paciente().paciente_id
-    assert client.post("/citas", json=cuerpo(agenda, dia_futuro(LUNES, 10), paciente_id=pid)).status_code == 201
+    assert (
+        client.post(
+            "/citas", json=cuerpo(agenda, dia_futuro(LUNES, 10), paciente_id=pid)
+        ).status_code
+        == 201
+    )
 
 
 def test_paciente_solo_ve_sus_citas(client, cuenta_paciente, cliente_de, agenda):
@@ -166,7 +211,10 @@ def test_paciente_no_marca_atendida_ni_edita_ni_borra(client, cuenta_paciente, c
     assert c.put(f"/citas/{cita['id']}", json={"estado": "atendida"}).status_code == 403
     assert c.put(f"/citas/{cita['id']}", json={"motivo": "otro"}).status_code == 403
     assert c.delete(f"/citas/{cita['id']}").status_code == 403
-    assert client.put(f"/citas/{cita['id']}", json={"estado": "atendida"}).json()["estado"] == "atendida"
+    assert (
+        client.put(f"/citas/{cita['id']}", json={"estado": "atendida"}).json()["estado"]
+        == "atendida"
+    )
     assert c.post(f"/citas/{cita['id']}/cancelar").status_code == 409  # atendida: no se cancela
 
 

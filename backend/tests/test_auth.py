@@ -1,4 +1,5 @@
 """Registro, inicio de sesión y /auth/me."""
+
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -54,7 +55,10 @@ def test_registro_guarda_hash_no_la_contrasena(anon, db):
 
 def test_login_tras_registro_no_distingue_mayusculas_del_correo(anon):
     anon.post("/auth/registro", json=REGISTRO)
-    r = anon.post("/auth/login", json={"email": "  LUCIA.MENDOZA@example.com ", "password": REGISTRO["password"]})
+    r = anon.post(
+        "/auth/login",
+        json={"email": "  LUCIA.MENDOZA@example.com ", "password": REGISTRO["password"]},
+    )
     assert r.status_code == 200 and r.json()["usuario"]["rol"] == "paciente"
 
 
@@ -94,7 +98,9 @@ def test_login_correcto_y_mismo_error_generico_para_todo_fallo(anon, cuenta_paci
     assert ok.status_code == 200 and ok.json()["usuario"]["id"] == usuario.id
 
     mala = anon.post("/auth/login", json={"email": usuario.email, "password": "equivocada-123"})
-    inexistente = anon.post("/auth/login", json={"email": "nadie@example.com", "password": CONTRASENA})
+    inexistente = anon.post(
+        "/auth/login", json={"email": "nadie@example.com", "password": CONTRASENA}
+    )
     usuario.activo = False
     db.commit()
     inactiva = anon.post("/auth/login", json={"email": usuario.email, "password": CONTRASENA})
@@ -111,7 +117,13 @@ def test_login_sin_cuerpo_valido_422(anon):
 def test_me_de_admin_no_tiene_ficha(client, admin):
     r = client.get("/auth/me")
     assert r.status_code == 200
-    assert r.json() == {"id": admin.id, "email": admin.email, "rol": "admin", "activo": True, "paciente": None}
+    assert r.json() == {
+        "id": admin.id,
+        "email": admin.email,
+        "rol": "admin",
+        "activo": True,
+        "paciente": None,
+    }
 
 
 def test_me_de_paciente_incluye_ficha(cuenta_paciente, cliente_de):
@@ -132,7 +144,9 @@ def test_me_rechaza_tokens_invalidos(anon, cuenta_paciente, db):
     invalidos = {
         "basura": "esto-no-es-un-jwt",
         "expirado": token_para(usuario.id, exp=ahora - timedelta(minutes=1)),
-        "otra_firma": jwt.encode({"sub": str(usuario.id), "exp": futuro}, "x" * 40, algorithm="HS256"),
+        "otra_firma": jwt.encode(
+            {"sub": str(usuario.id), "exp": futuro}, "x" * 40, algorithm="HS256"
+        ),
         "sin_firma": jwt.encode({"sub": str(usuario.id), "exp": futuro}, None, algorithm="none"),
         "sin_exp": jwt.encode({"sub": str(usuario.id)}, settings.jwt_secret, algorithm="HS256"),
         "sub_no_numerico": token_para("abc"),

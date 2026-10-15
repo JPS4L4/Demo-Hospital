@@ -33,7 +33,9 @@ def obtener_especialidad(especialidad_id: int, db: Session = Depends(get_db)):
     return obtener_o_404(db, Especialidad, especialidad_id, NO_ENCONTRADA)
 
 
-@router.post("", response_model=EspecialidadOut, status_code=201, dependencies=[Depends(require_admin)])
+@router.post(
+    "", response_model=EspecialidadOut, status_code=201, dependencies=[Depends(require_admin)]
+)
 def crear_especialidad(datos: EspecialidadBase, db: Session = Depends(get_db)):
     nueva = Especialidad(**datos.model_dump())
     db.add(nueva)
@@ -42,8 +44,12 @@ def crear_especialidad(datos: EspecialidadBase, db: Session = Depends(get_db)):
     return nueva
 
 
-@router.put("/{especialidad_id}", response_model=EspecialidadOut, dependencies=[Depends(require_admin)])
-def actualizar_especialidad(especialidad_id: int, datos: EspecialidadBase, db: Session = Depends(get_db)):
+@router.put(
+    "/{especialidad_id}", response_model=EspecialidadOut, dependencies=[Depends(require_admin)]
+)
+def actualizar_especialidad(
+    especialidad_id: int, datos: EspecialidadBase, db: Session = Depends(get_db)
+):
     especialidad = obtener_o_404(db, Especialidad, especialidad_id, NO_ENCONTRADA)
     for campo, valor in datos.model_dump().items():
         setattr(especialidad, campo, valor)

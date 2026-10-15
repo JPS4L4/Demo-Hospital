@@ -1,4 +1,5 @@
 """GET /profesionales/{id}/disponibilidad y su coherencia con las reglas de reserva."""
+
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
@@ -16,18 +17,29 @@ def prof(crear):
 
 
 def consultar(c, prof, dia, **params):
-    return c.get(f"/profesionales/{prof['id']}/disponibilidad", params={"fecha": dia.date().isoformat(), **params})
+    return c.get(
+        f"/profesionales/{prof['id']}/disponibilidad",
+        params={"fecha": dia.date().isoformat(), **params},
+    )
 
 
 def horas(r):
-    return [datetime.fromisoformat(h["inicio"]).astimezone(BOGOTA).strftime("%H:%M") for h in r.json()["huecos"]]
+    return [
+        datetime.fromisoformat(h["inicio"]).astimezone(BOGOTA).strftime("%H:%M")
+        for h in r.json()["huecos"]
+    ]
 
 
 def reservar(c, prof, paciente_id, inicio, duracion=30, motivo="Control"):
     return c.post(
         "/citas",
-        json={"paciente_id": paciente_id, "profesional_id": prof["id"], "inicio": iso(inicio),
-              "duracion_min": duracion, "motivo": motivo},
+        json={
+            "paciente_id": paciente_id,
+            "profesional_id": prof["id"],
+            "inicio": iso(inicio),
+            "duracion_min": duracion,
+            "motivo": motivo,
+        },
     )
 
 
@@ -41,9 +53,12 @@ def test_dia_libre_cubre_todo_el_horario_y_es_publico(anon, prof):
 
 
 @pytest.mark.parametrize(
-    "duracion,cantidad,ultimo", [(20, 36, "18:40"), (30, 24, "18:30"), (40, 18, "18:20"), (60, 12, "18:00")]
+    "duracion,cantidad,ultimo",
+    [(20, 36, "18:40"), (30, 24, "18:30"), (40, 18, "18:20"), (60, 12, "18:00")],
 )
-def test_el_paso_es_la_duracion_y_la_cita_cabe_antes_de_las_7pm(client, prof, duracion, cantidad, ultimo):
+def test_el_paso_es_la_duracion_y_la_cita_cabe_antes_de_las_7pm(
+    client, prof, duracion, cantidad, ultimo
+):
     r = consultar(client, prof, dia_futuro(LUNES), duracion=duracion)
     assert len(r.json()["huecos"]) == cantidad and horas(r)[-1] == ultimo
     fin = datetime.fromisoformat(r.json()["huecos"][-1]["fin"]).astimezone(BOGOTA)
@@ -63,7 +78,10 @@ def test_fecha_pasada_422_y_parametros_invalidos(client, prof):
     assert client.get(base).status_code == 422
     assert client.get(base, params={"fecha": "no-es-fecha"}).status_code == 422
     assert client.get(base, params={"fecha": "2999-01-04", "duracion": 25}).status_code == 422
-    assert client.get("/profesionales/999/disponibilidad", params={"fecha": "2999-01-04"}).status_code == 404
+    assert (
+        client.get("/profesionales/999/disponibilidad", params={"fecha": "2999-01-04"}).status_code
+        == 404
+    )
 
 
 def test_profesional_inactivo_sin_huecos(client, prof):
@@ -91,7 +109,9 @@ def test_hueco_reservado_desaparece_y_al_cancelar_vuelve(client, prof, paciente)
     dia = dia_futuro(LUNES)
     cita = reservar(client, prof, paciente()["id"], dia_futuro(LUNES, 10)).json()
     ocupado = horas(consultar(client, prof, dia))
-    assert "10:00" not in ocupado and "09:30" in ocupado and "10:30" in ocupado and len(ocupado) == 23
+    assert (
+        "10:00" not in ocupado and "09:30" in ocupado and "10:30" in ocupado and len(ocupado) == 23
+    )
     sesenta = horas(consultar(client, prof, dia, duracion=60))
     assert "10:00" not in sesenta and "09:00" in sesenta and "11:00" in sesenta
 
@@ -111,13 +131,22 @@ def test_citas_de_otro_profesional_no_ocupan_y_las_atendidas_si(client, crear, p
 def test_disponibilidad_y_reserva_nunca_discrepan(client, prof, paciente, duracion):
     """Cada hueco de la rejilla se reserva (201) si y solo si la disponibilidad lo ofrece (si no, 409)."""
     dia = dia_futuro(LUNES)
-    assert reservar(client, prof, paciente()["id"], dia_futuro(LUNES, 10, 10), motivo="Bloqueo").status_code == 201
+    assert (
+        reservar(
+            client, prof, paciente()["id"], dia_futuro(LUNES, 10, 10), motivo="Bloqueo"
+        ).status_code
+        == 201
+    )
     ofrecidos = set(horas(consultar(client, prof, dia, duracion=duracion)))
     inicio = dia.replace(hour=7, minute=0)
     rejilla = [inicio + timedelta(minutes=duracion * i) for i in range(12 * 60 // duracion + 1)]
     pid = paciente()["id"]
     for h in rejilla:
         r = reservar(client, prof, pid, h, duracion, "Prueba")
-        assert (r.status_code == 201) == (h.strftime("%H:%M") in ofrecidos), (h, r.status_code, r.text)
+        assert (r.status_code == 201) == (h.strftime("%H:%M") in ofrecidos), (
+            h,
+            r.status_code,
+            r.text,
+        )
         if r.status_code == 201:
             client.post(f"/citas/{r.json()['id']}/cancelar")

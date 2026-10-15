@@ -1,4 +1,5 @@
 """Pacientes (tarea D3)."""
+
 from datetime import date, timedelta
 
 import pytest
@@ -22,7 +23,9 @@ def test_crud_basico(client):
     assert pac["telefono"] == "+573105550199" and pac["email"] == "camila.rios@example.com"
     assert client.get(f"/pacientes/{pac['id']}").json() == pac
     r = client.put(f"/pacientes/{pac['id']}", json=BASE | {"eps": None, "nombres": "Camila Andrea"})
-    assert r.status_code == 200 and r.json()["eps"] is None and r.json()["nombres"] == "Camila Andrea"
+    assert (
+        r.status_code == 200 and r.json()["eps"] is None and r.json()["nombres"] == "Camila Andrea"
+    )
     assert client.get("/pacientes/999").status_code == 404
     assert client.put("/pacientes/999", json=BASE).status_code == 404
     assert client.delete(f"/pacientes/{pac['id']}").status_code == 204
@@ -39,15 +42,24 @@ def test_documento_unico_por_tipo(client):
 
 
 def test_documento_se_normaliza_a_mayusculas(client):
-    r = client.post("/pacientes", json=BASE | {"tipo_documento": "PA", "numero_documento": "ab123456"})
+    r = client.post(
+        "/pacientes", json=BASE | {"tipo_documento": "PA", "numero_documento": "ab123456"}
+    )
     assert r.status_code == 201 and r.json()["numero_documento"] == "AB123456"
-    dup = client.post("/pacientes", json=BASE | {"tipo_documento": "PA", "numero_documento": "AB123456", "email": "x@example.com"})
+    dup = client.post(
+        "/pacientes",
+        json=BASE
+        | {"tipo_documento": "PA", "numero_documento": "AB123456", "email": "x@example.com"},
+    )
     assert dup.status_code == 409
 
 
 def test_email_unico_sin_distinguir_mayusculas(client):
     assert client.post("/pacientes", json=BASE).status_code == 201
-    dup = client.post("/pacientes", json=BASE | {"numero_documento": "999999999", "email": "CAMILA.RIOS@Example.com"})
+    dup = client.post(
+        "/pacientes",
+        json=BASE | {"numero_documento": "999999999", "email": "CAMILA.RIOS@Example.com"},
+    )
     assert dup.status_code == 409 and "correo" in dup.json()["detail"]
 
 
@@ -86,7 +98,9 @@ def test_eps_es_opcional(client):
 def test_lista_paginada_y_busqueda(client, paciente):
     paciente(nombres="Ana", apellidos="Gómez", numero_documento="111111111")
     paciente(nombres="Luis", apellidos="Gómez", numero_documento="222222222")
-    paciente(nombres="Marta", apellidos="Rojas", numero_documento="333333333", email="marta@example.com")
+    paciente(
+        nombres="Marta", apellidos="Rojas", numero_documento="333333333", email="marta@example.com"
+    )
     page = client.get("/pacientes").json()
     assert set(page) == {"items", "total", "limit", "offset"} and page["total"] == 3
     assert client.get("/pacientes", params={"q": "gómez"}).json()["total"] == 2

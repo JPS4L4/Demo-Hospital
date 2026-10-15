@@ -13,6 +13,7 @@ Cuentas demo (solo para el demo público; contraseñas en DEMO_ADMIN_PASSWORD y 
 con valores por defecto documentados en el README): `admin@meridiana.example` y el correo de la
 primera paciente del seed. Si la cuenta ya existe no se toca (no se restablece su contraseña).
 """
+
 from datetime import date, datetime, timedelta, timezone
 
 from app.core.config import settings
@@ -130,30 +131,114 @@ ESPECIALIDADES = [
 
 # (nombres, apellidos, especialidad, sede, registro, teléfono, bio)
 PROFESIONALES = [
-    ("Valentina", "Cárdenas Ruiz", "Cardiología", "Sede Chapinero", "RM-20001", "+573105550201",
-     "Cardióloga con enfoque en insuficiencia cardiaca y telemonitoreo de pacientes crónicos."),
-    ("Andrés", "Mejía Londoño", "Pediatría", "Sede Chapinero", "RM-20002", "+573105550202",
-     "Pediatra general. Le interesa el acompañamiento a familias en los primeros años de vida."),
-    ("Sofía", "Beltrán Pardo", "Medicina interna", "Sede Chapinero", "RM-20003", None,
-     "Internista dedicada al seguimiento de hipertensión, diabetes y enfermedades crónicas."),
-    ("Camilo", "Restrepo Zuluaga", "Urgencias 24 horas", "Sede El Poblado", "RM-20004", "+573105550204",
-     "Médico de urgencias con experiencia en reanimación y atención de trauma."),
-    ("Isabela", "Giraldo Arango", "Pediatría", "Sede El Poblado", "RM-20005", "+573105550205",
-     "Pediatra de urgencias y consulta general. Atiende también controles de vacunación."),
-    ("Mateo", "Ospina Duque", "Dermatología", "Sede El Poblado", "RM-20006", None,
-     "Dermatólogo clínico: acné, dermatitis y revisión de lunares."),
-    ("Daniela", "Quintero Valencia", "Ginecología y obstetricia", "Sede San Fernando", "RM-20007", "+573105550207",
-     "Ginecóloga y obstetra. Control prenatal de bajo riesgo y planificación familiar."),
-    ("Santiago", "Lozano Henao", "Cardiología", "Sede San Fernando", "RM-20008", "+573105550208",
-     "Cardiólogo clínico. Realiza ecocardiografía y pruebas de esfuerzo."),
-    ("Laura", "Castaño Ibarra", "Laboratorio clínico", "Sede San Fernando", "RM-20009", None,
-     "Bacterióloga y responsable de la toma de muestras y entrega de resultados."),
-    ("Julián", "Polo Barrios", "Medicina preventiva", "Sede Alto Prado", "RM-20010", "+573105550210",
-     "Médico preventivista: chequeos ejecutivos, vacunación y programas de riesgo cardiovascular."),
-    ("Natalia", "Sarmiento Vega", "Medicina interna", "Sede Alto Prado", "RM-20011", "+573105550211",
-     "Internista. Coordina el programa de acompañamiento a pacientes con diabetes."),
-    ("Esteban", "Navarro Cortés", "Dermatología", "Sede Alto Prado", "RM-20012", None,
-     "Dermatólogo con interés en fotoprotección y prevención del cáncer de piel."),
+    (
+        "Valentina",
+        "Cárdenas Ruiz",
+        "Cardiología",
+        "Sede Chapinero",
+        "RM-20001",
+        "+573105550201",
+        "Cardióloga con enfoque en insuficiencia cardiaca y telemonitoreo de pacientes crónicos.",
+    ),
+    (
+        "Andrés",
+        "Mejía Londoño",
+        "Pediatría",
+        "Sede Chapinero",
+        "RM-20002",
+        "+573105550202",
+        "Pediatra general. Le interesa el acompañamiento a familias en los primeros años de vida.",
+    ),
+    (
+        "Sofía",
+        "Beltrán Pardo",
+        "Medicina interna",
+        "Sede Chapinero",
+        "RM-20003",
+        None,
+        "Internista dedicada al seguimiento de hipertensión, diabetes y enfermedades crónicas.",
+    ),
+    (
+        "Camilo",
+        "Restrepo Zuluaga",
+        "Urgencias 24 horas",
+        "Sede El Poblado",
+        "RM-20004",
+        "+573105550204",
+        "Médico de urgencias con experiencia en reanimación y atención de trauma.",
+    ),
+    (
+        "Isabela",
+        "Giraldo Arango",
+        "Pediatría",
+        "Sede El Poblado",
+        "RM-20005",
+        "+573105550205",
+        "Pediatra de urgencias y consulta general. Atiende también controles de vacunación.",
+    ),
+    (
+        "Mateo",
+        "Ospina Duque",
+        "Dermatología",
+        "Sede El Poblado",
+        "RM-20006",
+        None,
+        "Dermatólogo clínico: acné, dermatitis y revisión de lunares.",
+    ),
+    (
+        "Daniela",
+        "Quintero Valencia",
+        "Ginecología y obstetricia",
+        "Sede San Fernando",
+        "RM-20007",
+        "+573105550207",
+        "Ginecóloga y obstetra. Control prenatal de bajo riesgo y planificación familiar.",
+    ),
+    (
+        "Santiago",
+        "Lozano Henao",
+        "Cardiología",
+        "Sede San Fernando",
+        "RM-20008",
+        "+573105550208",
+        "Cardiólogo clínico. Realiza ecocardiografía y pruebas de esfuerzo.",
+    ),
+    (
+        "Laura",
+        "Castaño Ibarra",
+        "Laboratorio clínico",
+        "Sede San Fernando",
+        "RM-20009",
+        None,
+        "Bacterióloga y responsable de la toma de muestras y entrega de resultados.",
+    ),
+    (
+        "Julián",
+        "Polo Barrios",
+        "Medicina preventiva",
+        "Sede Alto Prado",
+        "RM-20010",
+        "+573105550210",
+        "Médico preventivista: chequeos ejecutivos, vacunación y programas de riesgo cardiovascular.",
+    ),
+    (
+        "Natalia",
+        "Sarmiento Vega",
+        "Medicina interna",
+        "Sede Alto Prado",
+        "RM-20011",
+        "+573105550211",
+        "Internista. Coordina el programa de acompañamiento a pacientes con diabetes.",
+    ),
+    (
+        "Esteban",
+        "Navarro Cortés",
+        "Dermatología",
+        "Sede Alto Prado",
+        "RM-20012",
+        None,
+        "Dermatólogo con interés en fotoprotección y prevención del cáncer de piel.",
+    ),
 ]
 
 # (nombre, principio activo, presentación, concentración, requiere fórmula, stock, precio)
@@ -177,11 +262,56 @@ MEDICAMENTOS = [
 
 # (tipo, documento, nombres, apellidos, nacimiento, email, teléfono, eps)
 PACIENTES = [
-    ("CC", "1000100101", "Paula", "Herrera Montoya", date(1988, 4, 12), "paula.herrera@example.com", "+573205550301", "EPS Ficticia Norte"),
-    ("CC", "1000100102", "Ricardo", "Salazar Peña", date(1975, 11, 3), "ricardo.salazar@example.com", "+573205550302", "EPS Ficticia Sur"),
-    ("TI", "1000100103", "Emilia", "Torres Gil", date(2012, 7, 21), "emilia.torres@example.com", "+573205550303", None),
-    ("CE", "9000100104", "Marco", "Bianchi", date(1990, 1, 30), "marco.bianchi@example.com", "+573205550304", "EPS Ficticia Norte"),
-    ("PA", "AB1234567", "Hannah", "Müller", date(1983, 9, 9), "hannah.muller@example.com", "+573205550305", None),
+    (
+        "CC",
+        "1000100101",
+        "Paula",
+        "Herrera Montoya",
+        date(1988, 4, 12),
+        "paula.herrera@example.com",
+        "+573205550301",
+        "EPS Ficticia Norte",
+    ),
+    (
+        "CC",
+        "1000100102",
+        "Ricardo",
+        "Salazar Peña",
+        date(1975, 11, 3),
+        "ricardo.salazar@example.com",
+        "+573205550302",
+        "EPS Ficticia Sur",
+    ),
+    (
+        "TI",
+        "1000100103",
+        "Emilia",
+        "Torres Gil",
+        date(2012, 7, 21),
+        "emilia.torres@example.com",
+        "+573205550303",
+        None,
+    ),
+    (
+        "CE",
+        "9000100104",
+        "Marco",
+        "Bianchi",
+        date(1990, 1, 30),
+        "marco.bianchi@example.com",
+        "+573205550304",
+        "EPS Ficticia Norte",
+    ),
+    (
+        "PA",
+        "AB1234567",
+        "Hannah",
+        "Müller",
+        date(1983, 9, 9),
+        "hannah.muller@example.com",
+        "+573205550305",
+        None,
+    ),
 ]
 
 # (índice de paciente, registro del profesional, días hacia adelante, hora, minuto, duración, motivo)
@@ -245,7 +375,9 @@ def seed() -> dict[str, int]:
         sedes = {s.nombre: s.id for s in db.query(Sede).all()}
         nuevos_profesionales = 0
         for nombres, apellidos, especialidad, sede, registro, telefono, bio in PROFESIONALES:
-            existe = db.query(Profesional).filter(Profesional.registro_profesional == registro).first()
+            existe = (
+                db.query(Profesional).filter(Profesional.registro_profesional == registro).first()
+            )
             if existe is None:
                 slug = f"{nombres}.{apellidos.split()[0]}".lower()
                 for con_tilde, sin_tilde in zip("áéíóúñ", "aeioun"):
@@ -316,7 +448,9 @@ def seed() -> dict[str, int]:
                 .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
                 .one()
             )
-            profesional = db.query(Profesional).filter(Profesional.registro_profesional == registro).one()
+            profesional = (
+                db.query(Profesional).filter(Profesional.registro_profesional == registro).one()
+            )
             existe = (
                 db.query(Cita)
                 .filter(
@@ -343,7 +477,13 @@ def seed() -> dict[str, int]:
 
         nuevos_usuarios = 0
         if db.query(Usuario).filter(Usuario.email == ADMIN_EMAIL).first() is None:
-            db.add(Usuario(email=ADMIN_EMAIL, password_hash=hashear(settings.demo_admin_password), rol="admin"))
+            db.add(
+                Usuario(
+                    email=ADMIN_EMAIL,
+                    password_hash=hashear(settings.demo_admin_password),
+                    rol="admin",
+                )
+            )
             nuevos_usuarios += 1
         tipo, documento = PACIENTES[PACIENTE_DEMO][:2]
         ficha_demo = (
@@ -351,9 +491,11 @@ def seed() -> dict[str, int]:
             .filter(Paciente.tipo_documento == tipo, Paciente.numero_documento == documento)
             .one()
         )
-        tiene_cuenta = db.query(Usuario).filter(
-            (Usuario.paciente_id == ficha_demo.id) | (Usuario.email == ficha_demo.email)
-        ).first()
+        tiene_cuenta = (
+            db.query(Usuario)
+            .filter((Usuario.paciente_id == ficha_demo.id) | (Usuario.email == ficha_demo.email))
+            .first()
+        )
         if tiene_cuenta is None:
             db.add(
                 Usuario(

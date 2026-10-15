@@ -18,7 +18,9 @@ UNICOS = {
     "uq_pacientes_email": "Ya existe un paciente con ese correo electrónico",
 }
 EN_USO = "No se puede eliminar el paciente: tiene citas asociadas"
-UNICOS_CON_CUENTA = UNICOS | {"uq_usuarios_email": "Ya existe una cuenta con ese correo electrónico"}
+UNICOS_CON_CUENTA = UNICOS | {
+    "uq_usuarios_email": "Ya existe una cuenta con ese correo electrónico"
+}
 
 
 def _aplicar_cambios(db: Session, paciente: Paciente, datos: PacienteBase) -> Paciente:

@@ -1,4 +1,5 @@
 """Fechas de prueba para las reglas de agenda (hora de Bogotá, UTC-5 sin horario de verano)."""
+
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 

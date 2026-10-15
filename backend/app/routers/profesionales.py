@@ -61,7 +61,9 @@ def obtener_profesional(profesional_id: int, db: Session = Depends(get_db)):
 def disponibilidad(
     profesional_id: int,
     fecha: date = Query(..., description="Día a consultar, YYYY-MM-DD (hora de Bogotá)"),
-    duracion: int = Query(30, description="Duración de la cita en minutos; también es el paso entre huecos"),
+    duracion: int = Query(
+        30, description="Duración de la cita en minutos; también es el paso entre huecos"
+    ),
     db: Session = Depends(get_db),
 ):
     """Huecos libres del profesional en un día. Fechas pasadas → 422; domingos, profesional inactivo o
@@ -80,7 +82,9 @@ def disponibilidad(
     }
 
 
-@router.post("", response_model=ProfesionalOut, status_code=201, dependencies=[Depends(require_admin)])
+@router.post(
+    "", response_model=ProfesionalOut, status_code=201, dependencies=[Depends(require_admin)]
+)
 def crear_profesional(datos: ProfesionalBase, db: Session = Depends(get_db)):
     _validar_referencias(db, datos)
     nuevo = Profesional(**datos.model_dump())
@@ -90,8 +94,12 @@ def crear_profesional(datos: ProfesionalBase, db: Session = Depends(get_db)):
     return nuevo
 
 
-@router.put("/{profesional_id}", response_model=ProfesionalOut, dependencies=[Depends(require_admin)])
-def actualizar_profesional(profesional_id: int, datos: ProfesionalBase, db: Session = Depends(get_db)):
+@router.put(
+    "/{profesional_id}", response_model=ProfesionalOut, dependencies=[Depends(require_admin)]
+)
+def actualizar_profesional(
+    profesional_id: int, datos: ProfesionalBase, db: Session = Depends(get_db)
+):
     profesional = obtener_o_404(db, Profesional, profesional_id, NO_ENCONTRADO)
     _validar_referencias(db, datos)
     for campo, valor in datos.model_dump().items():

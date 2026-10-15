@@ -1,4 +1,5 @@
 """Citas y reglas de agenda (tarea D3)."""
+
 from datetime import timedelta, timezone
 
 import pytest
@@ -83,12 +84,12 @@ def test_sabado_si_hay_atencion(client, escenario):
 @pytest.mark.parametrize(
     "hora, minuto, duracion, esperado",
     [
-        (6, 40, 20, 409),    # antes de abrir
-        (7, 0, 30, 201),     # justo a la apertura
-        (18, 30, 30, 201),   # termina justo a las 19:00
-        (18, 40, 30, 409),   # termina a las 19:10
-        (19, 0, 20, 409),    # empieza al cierre
-        (18, 40, 20, 201),   # termina a las 19:00
+        (6, 40, 20, 409),  # antes de abrir
+        (7, 0, 30, 201),  # justo a la apertura
+        (18, 30, 30, 201),  # termina justo a las 19:00
+        (18, 40, 30, 409),  # termina a las 19:10
+        (19, 0, 20, 409),  # empieza al cierre
+        (18, 40, 20, 201),  # termina a las 19:00
         (18, 0, 60, 201),
         (18, 20, 60, 409),
     ],
@@ -111,8 +112,20 @@ def test_horario_se_evalua_en_hora_de_bogota_aunque_llegue_en_utc(client, escena
 
 def test_profesional_inactivo_409(client, escenario):
     p = escenario["prof"]
-    cambios = {k: p[k] for k in ("nombres", "apellidos", "especialidad_id", "sede_id", "registro_profesional", "email")}
-    assert client.put(f"/profesionales/{p['id']}", json=cambios | {"activo": False}).status_code == 200
+    cambios = {
+        k: p[k]
+        for k in (
+            "nombres",
+            "apellidos",
+            "especialidad_id",
+            "sede_id",
+            "registro_profesional",
+            "email",
+        )
+    }
+    assert (
+        client.put(f"/profesionales/{p['id']}", json=cambios | {"activo": False}).status_code == 200
+    )
     r = reservar(client, escenario, dia_futuro(LUNES, 10, 0))
     assert r.status_code == 409 and "activo" in r.json()["detail"]
 
@@ -172,21 +185,38 @@ def test_no_se_cancela_una_cita_atendida(client, escenario):
 def test_reprogramar(client, escenario, paciente):
     inicio = dia_futuro(LUNES, 10, 0)
     cita = reservar(client, escenario, inicio).json()
-    bloqueo = reservar(client, {"pac": paciente(), "prof": escenario["prof"]}, inicio + timedelta(hours=1)).json()
+    bloqueo = reservar(
+        client, {"pac": paciente(), "prof": escenario["prof"]}, inicio + timedelta(hours=1)
+    ).json()
 
     # mover sobre la cita de otro paciente con el mismo profesional: conflicto
     r = client.put(f"/citas/{cita['id']}", json={"inicio": iso(inicio + timedelta(hours=1))})
     assert r.status_code == 409
     # a un hueco libre
-    r = client.put(f"/citas/{cita['id']}", json={"inicio": iso(inicio + timedelta(hours=3)), "duracion_min": 40})
+    r = client.put(
+        f"/citas/{cita['id']}",
+        json={"inicio": iso(inicio + timedelta(hours=3)), "duracion_min": 40},
+    )
     assert r.status_code == 200 and r.json()["duracion_min"] == 40
     assert r.json()["fin"] != cita["fin"]
     # moverse unos minutos sobre sí misma no cuenta como solape
-    r = client.put(f"/citas/{cita['id']}", json={"inicio": iso(inicio + timedelta(hours=3, minutes=10))})
+    r = client.put(
+        f"/citas/{cita['id']}", json={"inicio": iso(inicio + timedelta(hours=3, minutes=10))}
+    )
     assert r.status_code == 200
     # fuera de horario, al pasado
-    assert client.put(f"/citas/{cita['id']}", json={"inicio": iso(dia_futuro(DOMINGO, 10))}).status_code == 409
-    assert client.put(f"/citas/{cita['id']}", json={"inicio": iso(dia_futuro(LUNES, 10, semanas=-2))}).status_code == 422
+    assert (
+        client.put(
+            f"/citas/{cita['id']}", json={"inicio": iso(dia_futuro(DOMINGO, 10))}
+        ).status_code
+        == 409
+    )
+    assert (
+        client.put(
+            f"/citas/{cita['id']}", json={"inicio": iso(dia_futuro(LUNES, 10, semanas=-2))}
+        ).status_code
+        == 422
+    )
     # la cita cancelada no se puede editar
     client.post(f"/citas/{bloqueo['id']}/cancelar")
     assert client.put(f"/citas/{bloqueo['id']}", json={"motivo": "x"}).status_code == 409
@@ -205,7 +235,10 @@ def test_cambiar_de_profesional_actualiza_sede(client, escenario, crear):
     otro = crear.profesional()
     r = client.put(f"/citas/{cita['id']}", json={"profesional_id": otro["id"]})
     assert r.status_code == 200 and r.json()["sede_id"] == otro["sede_id"]
-    r = client.put(f"/citas/{cita['id']}", json={"profesional_id": escenario["prof"]["id"], "sede_id": otro["sede_id"]})
+    r = client.put(
+        f"/citas/{cita['id']}",
+        json={"profesional_id": escenario["prof"]["id"], "sede_id": otro["sede_id"]},
+    )
     assert r.status_code == 422
 
 
@@ -229,9 +262,13 @@ def test_listar_con_filtros_y_paginacion(client, escenario, paciente, crear):
     assert ids(estado="programada", profesional_id=escenario["prof"]["id"]) == [a["id"]]
     assert ids(desde=iso(inicio + timedelta(days=1))) == [b["id"], c["id"]]
     assert ids(hasta=iso(inicio + timedelta(days=1))) == [a["id"], b["id"]]
-    assert ids(desde=iso(inicio + timedelta(hours=1)), hasta=iso(inicio + timedelta(days=1, hours=1))) == [b["id"]]
+    assert ids(
+        desde=iso(inicio + timedelta(hours=1)), hasta=iso(inicio + timedelta(days=1, hours=1))
+    ) == [b["id"]]
     # sin zona horaria se interpreta como hora de Bogotá
-    assert ids(desde=inicio.replace(tzinfo=None).isoformat(), hasta=inicio.replace(tzinfo=None).isoformat()) == [a["id"]]
+    assert ids(
+        desde=inicio.replace(tzinfo=None).isoformat(), hasta=inicio.replace(tzinfo=None).isoformat()
+    ) == [a["id"]]
     pag = client.get("/citas", params={"limit": 2, "offset": 2}).json()
     assert pag["total"] == 3 and pag["limit"] == 2 and pag["offset"] == 2 and len(pag["items"]) == 1
     assert client.get("/citas", params={"estado": "otra"}).status_code == 422

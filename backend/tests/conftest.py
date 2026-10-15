@@ -7,6 +7,7 @@ servidor que la de desarrollo: se crea si no existe, las tablas se crean con
 `TEST_DATABASE_URL` permite elegir otra; su nombre de base debe terminar en `_test`
 para no tocar nunca datos de desarrollo por error.
 """
+
 import os
 from pathlib import Path
 
@@ -55,7 +56,9 @@ def _crear_base_si_falta() -> None:
     url = make_url(TEST_URL)
     admin = create_engine(url.set(database="postgres"), isolation_level="AUTOCOMMIT")
     with admin.connect() as con:
-        existe = con.scalar(text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": url.database})
+        existe = con.scalar(
+            text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": url.database}
+        )
         if not existe:
             con.execute(text(f'CREATE DATABASE "{url.database}"'))
     admin.dispose()
@@ -118,7 +121,9 @@ def _con_token(cliente: TestClient, email: str, contrasena: str = CONTRASENA) ->
 
 @pytest.fixture
 def admin(db):
-    usuario = Usuario(email="admin-prueba@example.com", password_hash=hashear(CONTRASENA), rol="admin")
+    usuario = Usuario(
+        email="admin-prueba@example.com", password_hash=hashear(CONTRASENA), rol="admin"
+    )
     db.add(usuario)
     db.commit()
     return usuario
@@ -147,7 +152,9 @@ def cuenta_paciente(db):
             email=f"cuenta{n}@example.com",
             telefono="3001234567",
         )
-        usuario = Usuario(email=ficha.email, password_hash=hashear(CONTRASENA), rol="paciente", paciente=ficha)
+        usuario = Usuario(
+            email=ficha.email, password_hash=hashear(CONTRASENA), rol="paciente", paciente=ficha
+        )
         db.add(usuario)
         db.commit()
         return usuario
@@ -172,6 +179,7 @@ def cliente_de(anon):
 
 # --- fábricas de datos vía API -------------------------------------------------------------
 
+
 @pytest.fixture
 def crear(client):
     contador = {"n": 0}
@@ -182,7 +190,11 @@ def crear(client):
 
     class Fabrica:
         def sede(self, **kw):
-            datos = {"nombre": f"Sede {_sig()}", "direccion": "Calle 1 # 2-3", "ciudad": "Bogotá"} | kw
+            datos = {
+                "nombre": f"Sede {_sig()}",
+                "direccion": "Calle 1 # 2-3",
+                "ciudad": "Bogotá",
+            } | kw
             r = client.post("/sedes", json=datos)
             assert r.status_code == 201, r.text
             return r.json()

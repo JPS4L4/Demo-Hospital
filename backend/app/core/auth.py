@@ -3,6 +3,7 @@
 401: falta el token o es inválido/expirado, o la cuenta está desactivada.
 403: hay sesión pero el rol no alcanza.
 """
+
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
