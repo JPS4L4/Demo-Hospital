@@ -172,6 +172,37 @@ describe('AdminAnalitica', () => {
     expect(el.querySelectorAll('app-heatmap tbody tr').length).toBe(7);
   });
 
+  it('flags the first and last month of the range as incomplete', async () => {
+    fixture.detectChanges();
+    const reqs = await capturar();
+    for (const r of reqs) {
+      const esMes =
+        r.request.url === `${API}/analitica/citas` &&
+        r.request.params.get('agrupar') === 'fecha.mes';
+      if (esMes) {
+        const filas = ['2025-10', '2025-11', '2026-09', '2026-10'].map((m) =>
+          fila({ 'fecha.mes': m }, 100),
+        );
+        r.flush({ medida: r.request.params.get('medida'), agrupar: ['fecha.mes'], filas });
+      } else {
+        flushDefault(r);
+      }
+    }
+    await responder();
+
+    const filas = Array.from(el.querySelectorAll('app-trend-chart tbody th')).map((c) =>
+      c.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(filas).toEqual([
+      'octubre de 2025 (periodo incompleto)',
+      'noviembre de 2025',
+      'septiembre de 2026',
+      'octubre de 2026 (periodo incompleto)',
+    ]);
+    // Dos series x dos meses incompletos, más el marcador de la leyenda.
+    expect(el.querySelectorAll('app-trend-chart circle.hueco').length).toBe(5);
+  });
+
   it('requests a new grouping when the detail level changes', async () => {
     fixture.detectChanges();
     await responder();

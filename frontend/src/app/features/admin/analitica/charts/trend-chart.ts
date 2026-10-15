@@ -16,6 +16,8 @@ export interface PuntoTendencia {
   corta: string;
   /** Etiqueta completa para el tooltip y la tabla ("marzo de 2026"). */
   larga: string;
+  /** El rango consultado no cubre el periodo entero: su valor no es comparable con los demás. */
+  parcial?: boolean;
 }
 
 export interface SerieTendencia {
@@ -38,6 +40,34 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
     [1, 1.5, 2, 2.5, 3, 4, 5, 10].map((m) => m * potencia).find((p) => p >= paso0) ?? paso0;
   const marcas = Array.from({ length: 5 }, (_, i) => i * paso);
   return { tope: marcas[4], marcas };
+}
+
+interface PuntoTrazo {
+  x: number;
+  y: number;
+  parcial: boolean;
+}
+
+/**
+ * Path de los tramos completos (`parcial = false`) o de los que tocan un periodo incompleto
+ * (`parcial = true`). Los tramos contiguos del mismo tipo forman un solo subtrazo.
+ */
+export function trazo(puntos: PuntoTrazo[], parcial: boolean): string {
+  let d = '';
+  let abierto = false;
+  for (let k = 1; k < puntos.length; k++) {
+    const toca = puntos[k - 1].parcial || puntos[k].parcial;
+    if (toca !== parcial) {
+      abierto = false;
+      continue;
+    }
+    const a = puntos[k - 1];
+    const b = puntos[k];
+    if (!abierto) d += `${d ? ' ' : ''}M${a.x.toFixed(1)} ${a.y.toFixed(1)}`;
+    d += ` L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
+    abierto = true;
+  }
+  return d;
 }
 
 /**
@@ -63,6 +93,15 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
             />
           </svg>
           {{ s.nombre }}
+        </li>
+      }
+      @if (hayParcial()) {
+        <li>
+          <svg width="22" height="10" viewBox="0 0 22 10">
+            <line x1="1" y1="5" x2="11" y2="5" class="line s-parcial" stroke-dasharray="1 4" />
+            <circle cx="16" cy="5" r="3" class="dot hueco f-brand" />
+          </svg>
+          Periodo incompleto
         </li>
       }
     </ul>
@@ -107,6 +146,16 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
           </text>
         }
 
+        @for (b of bandas(); track b.i) {
+          <rect
+            class="banda"
+            [attr.x]="b.x"
+            [attr.y]="arriba"
+            [attr.width]="b.w"
+            [attr.height]="alto() - arriba - abajo"
+          />
+        }
+
         @if (activoIdx() !== null) {
           <line
             class="cross"
@@ -123,10 +172,17 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
             [attr.d]="s.d"
             [attr.stroke-dasharray]="s.discontinua ? '5 3' : null"
           />
+          @if (s.dParcial) {
+            <path
+              [class]="'line s-' + s.tono + ' parcial'"
+              [attr.d]="s.dParcial"
+              stroke-dasharray="1 4"
+            />
+          }
           @for (p of s.puntos; track p.i) {
-            @if (marcadores() || p.i === activoIdx()) {
+            @if (marcadores() || p.parcial || p.i === activoIdx()) {
               <circle
-                [class]="'dot f-' + s.tono"
+                [class]="'dot f-' + s.tono + (p.parcial ? ' hueco' : '')"
                 [attr.cx]="p.x"
                 [attr.cy]="p.y"
                 [attr.r]="p.i === activoIdx() ? 5 : 3.5"
@@ -139,6 +195,9 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
       @if (tooltip(); as t) {
         <div class="tip" [style.left.px]="t.izquierda" aria-hidden="true">
           <strong>{{ t.titulo }}</strong>
+          @if (t.parcial) {
+            <em class="aviso">Periodo incompleto</em>
+          }
           @for (l of t.lineas; track l.nombre) {
             <span
               >{{ l.nombre }}: <b>{{ l.valor }}</b></span
@@ -147,6 +206,9 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
         </div>
         <p class="sr-only" role="status">
           {{ t.titulo }}.
+          @if (t.parcial) {
+            Periodo incompleto.
+          }
           @for (l of t.lineas; track l.nombre) {
             {{ l.nombre }}: {{ l.valor }}.
           }
@@ -174,7 +236,12 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
           <tbody>
             @for (p of puntos(); track $index; let i = $index) {
               <tr>
-                <th scope="row">{{ p.larga }}</th>
+                <th scope="row">
+                  {{ p.larga }}
+                  @if (p.parcial) {
+                    <span class="text-muted font-normal">(periodo incompleto)</span>
+                  }
+                </th>
                 @for (s of series(); track s.nombre) {
                   <td>{{ miles(s.valores[i]) }}</td>
                 }
@@ -239,6 +306,31 @@ export function escalaY(max: number): { tope: number; marcas: number[] } {
     .dot {
       stroke: var(--surface);
       stroke-width: 2;
+    }
+    /* Periodo incompleto: marcador hueco, tramo punteado y banda de fondo. */
+    .dot.hueco {
+      fill: var(--surface);
+      stroke-width: 2;
+    }
+    .dot.hueco.f-brand {
+      stroke: var(--brand);
+    }
+    .dot.hueco.f-accent {
+      stroke: var(--accent);
+    }
+    .line.parcial {
+      stroke-width: 2;
+    }
+    .s-parcial {
+      stroke: var(--muted);
+    }
+    .banda {
+      fill: var(--surface-sunken);
+      fill-opacity: 0.7;
+    }
+    .aviso {
+      color: var(--muted);
+      font-style: normal;
     }
     .f-brand {
       fill: var(--brand);
@@ -318,16 +410,30 @@ export class TrendChart {
 
   protected readonly trazos = computed(() =>
     this.series().map((s) => {
-      const puntos = s.valores.map((v, i) => ({ i, x: this.x(i), y: this.y(v) }));
+      const puntos = s.valores.map((v, i) => ({
+        i,
+        x: this.x(i),
+        y: this.y(v),
+        parcial: !!this.puntos()[i]?.parcial,
+      }));
       return {
         ...s,
         puntos,
-        d: puntos
-          .map((p, k) => `${k === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-          .join(' '),
+        d: trazo(puntos, false),
+        dParcial: trazo(puntos, true),
       };
     }),
   );
+
+  protected readonly hayParcial = computed(() => this.puntos().some((p) => p.parcial));
+
+  protected readonly bandas = computed(() => {
+    const n = Math.max(this.puntos().length, 1);
+    const w = this.anchoUtil() / n;
+    return this.puntos()
+      .map((p, i) => ({ i, parcial: !!p.parcial, x: this.x(i) - w / 2, w }))
+      .filter((b) => b.parcial);
+  });
 
   protected readonly tooltip = computed(() => {
     const i = this.activoIdx();
@@ -335,6 +441,7 @@ export class TrendChart {
     const medio = 80;
     return {
       titulo: this.puntos()[i].larga,
+      parcial: !!this.puntos()[i].parcial,
       izquierda: Math.min(Math.max(this.x(i), medio), this.ancho() - medio),
       lineas: this.series().map((s) => ({
         nombre: s.nombre,

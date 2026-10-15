@@ -15,7 +15,7 @@ import { Barra, BarChart } from './charts/bar-chart';
 import { Celda, Heatmap } from './charts/heatmap';
 import { PuntoTendencia, SerieTendencia, TrendChart } from './charts/trend-chart';
 import { Widget } from './charts/widget';
-import { formatear, periodoCorto, periodoLargo } from './format';
+import { esPeriodoParcial, formatear, periodoCorto, periodoLargo } from './format';
 
 type Preset = '3' | '6' | '12' | 'custom';
 
@@ -126,6 +126,7 @@ export class AdminAnalitica {
             puntos: claves.map((k) => ({
               corta: periodoCorto(c.nivel, k),
               larga: periodoLargo(c.nivel, k),
+              parcial: esPeriodoParcial(c.nivel, k, c.f.desde, c.f.hasta),
             })),
             series: [
               {
